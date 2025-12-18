@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { ChevronDown, ExternalLink } from 'lucide-react';
+import { ChevronDown, ExternalLink, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const roles = [
@@ -141,9 +141,15 @@ const HeroSection = () => {
 
       <div className="relative z-20 container mx-auto px-6 text-center">
         <div className="animate-fade-in">
-          <p className="text-muted-foreground text-lg mb-4 tracking-widest uppercase">
-            Welcome
-          </p>
+          {/* Profile Image */}
+          <div className="mb-8">
+            <div className="relative inline-block">
+              <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-primary/30 shadow-2xl mx-auto bg-gradient-to-br from-primary/30 to-accent/30 flex items-center justify-center">
+                <User className="w-16 h-16 md:w-20 md:h-20 text-primary/60" />
+              </div>
+              <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-primary/10 to-accent/10 pointer-events-none" />
+            </div>
+          </div>
           
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-6">
             <span className="text-foreground">濱田</span>{' '}

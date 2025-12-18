@@ -72,20 +72,38 @@ const tracks = [
 
 type RepeatMode = 'off' | 'all' | 'one';
 
+// Load play counts from localStorage
+const getPlayCounts = (): Record<number, number> => {
+  try {
+    const stored = localStorage.getItem('musicPlayCounts');
+    return stored ? JSON.parse(stored) : {};
+  } catch {
+    return {};
+  }
+};
+
+const savePlayCount = (trackId: number) => {
+  const counts = getPlayCounts();
+  counts[trackId] = (counts[trackId] || 0) + 1;
+  localStorage.setItem('musicPlayCounts', JSON.stringify(counts));
+  return counts;
+};
+
 const MusicPlayer = () => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTrack, setCurrentTrack] = useState(0);
+  const [currentTrack, setCurrentTrack] = useState(() => Math.floor(Math.random() * tracks.length));
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.7);
   const [isMuted, setIsMuted] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
-  const [isShuffle, setIsShuffle] = useState(false);
-  const [repeatMode, setRepeatMode] = useState<RepeatMode>('off');
+  const [isShuffle, setIsShuffle] = useState(true); // Default to shuffle ON
+  const [repeatMode, setRepeatMode] = useState<RepeatMode>('all'); // Default to repeat all
   const [analyzerData, setAnalyzerData] = useState<number[]>(new Array(32).fill(0));
   const [isChangingTrack, setIsChangingTrack] = useState(false);
-  const [displayedTrack, setDisplayedTrack] = useState(0);
+  const [displayedTrack, setDisplayedTrack] = useState(() => Math.floor(Math.random() * tracks.length));
+  const [playCounts, setPlayCounts] = useState<Record<number, number>>(getPlayCounts);
   
   const audioRef = useRef<HTMLAudioElement>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -202,6 +220,12 @@ const MusicPlayer = () => {
   }, [isPlaying, currentTrack]);
 
   const togglePlay = () => {
+    if (!isPlaying) {
+      // Record play count when starting to play
+      const trackId = tracks[currentTrack].id;
+      const newCounts = savePlayCount(trackId);
+      setPlayCounts(newCounts);
+    }
     setIsPlaying(!isPlaying);
   };
 
@@ -542,6 +566,8 @@ const MusicPlayer = () => {
                       key={t.id}
                       onClick={() => {
                         changeTrackWithAnimation(index);
+                        const newCounts = savePlayCount(t.id);
+                        setPlayCounts(newCounts);
                         setIsPlaying(true);
                       }}
                       className={`w-full p-2 rounded-lg text-left transition-colors flex items-center gap-3 ${
@@ -562,6 +588,12 @@ const MusicPlayer = () => {
                         </p>
                         <p className="text-xs text-muted-foreground">{t.artist}</p>
                       </div>
+                      {playCounts[t.id] > 0 && (
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded-full">
+                          <Play className="h-3 w-3" />
+                          {playCounts[t.id]}
+                        </div>
+                      )}
                     </motion.button>
                   ))}
                 </div>

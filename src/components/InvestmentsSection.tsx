@@ -2,40 +2,39 @@ import { TrendingUp, ExternalLink } from 'lucide-react';
 
 const investments = [
   {
-    name: 'LayerX',
-    category: 'FinTech / SaaS',
-    description: '経理DXを推進するSaaS企業',
-    logo: '📊',
+    name: 'NOT A HOTEL',
+    category: '不動産・ホスピタリティ',
+    description: '会員制のホテル兼不動産モデルを提供',
+    logo: '🏨',
+    url: 'https://notahotel.com/',
   },
   {
-    name: 'SmartHR',
-    category: 'HR Tech',
-    description: '人事労務クラウド',
-    logo: '👥',
+    name: '令和トラベル',
+    category: 'トラベルテック',
+    description: 'AIを活用したデジタルトラベルエージェンシー「NEWT」を運営',
+    logo: '✈️',
+    url: 'https://newt.net/',
   },
   {
-    name: 'ANDPAD',
-    category: 'ConTech',
-    description: '建設プロジェクト管理',
-    logo: '🏗️',
+    name: 'エルソウルラボ',
+    category: 'Web3・ブロックチェーン',
+    description: 'SolanaチェーンのバリデーターやWeb3アプリ開発のOSS提供',
+    logo: '⛓️',
+    url: 'https://labo.elsoul.nl/ja/',
   },
   {
-    name: 'カミナシ',
-    category: 'SaaS',
-    description: '現場DXプラットフォーム',
-    logo: '⚡',
+    name: 'フィナンシェ',
+    category: 'ブロックチェーン・クラウドファンディング',
+    description: 'トークン発行型クラウドファンディングプラットフォーム',
+    logo: '🪙',
+    url: 'https://www.corp.financie.jp/',
   },
   {
-    name: 'BECAUSE',
-    category: 'Food Tech',
-    description: '持続可能な食品ブランド',
-    logo: '🌱',
-  },
-  {
-    name: 'その他',
-    category: 'Various',
-    description: '多数のスタートアップに投資',
-    logo: '🚀',
+    name: 'VUILD',
+    category: 'デジタルファブリケーション',
+    description: '誰でも家や家具を設計・製作できるプラットフォーム「Nesting」',
+    logo: '🏠',
+    url: 'https://vuild.co.jp/',
   },
 ];
 
@@ -55,15 +54,18 @@ const InvestmentsSection = () => {
             投資<span className="gradient-text">ポートフォリオ</span>
           </h2>
           <p className="text-muted-foreground mt-4 max-w-2xl mx-auto">
-            革新的なスタートアップへの投資を通じて、次世代のイノベーションを支援しています
+            革新的なスタートアップへの投資を通じて、次世代のイノベーションを支援
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
           {investments.map((investment, index) => (
-            <div
+            <a
               key={investment.name}
-              className="group glass rounded-2xl p-6 card-hover cursor-pointer"
+              href={investment.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group glass rounded-2xl p-6 card-hover cursor-pointer block"
               style={{ animationDelay: `${index * 100}ms` }}
             >
               <div className="flex items-start justify-between mb-4">
@@ -71,7 +73,7 @@ const InvestmentsSection = () => {
                 <ExternalLink className="h-5 w-5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
               
-              <h3 className="text-xl font-bold text-foreground mb-1">
+              <h3 className="text-xl font-bold text-foreground mb-1 group-hover:text-primary transition-colors">
                 {investment.name}
               </h3>
               <p className="text-sm text-primary font-medium mb-2">
@@ -86,7 +88,7 @@ const InvestmentsSection = () => {
                   エンジェル投資
                 </span>
               </div>
-            </div>
+            </a>
           ))}
         </div>
       </div>

@@ -1,36 +1,60 @@
 import { useEffect, useRef, useState } from 'react';
-import { Building2, Rocket, Home, Briefcase } from 'lucide-react';
+import { Building2, Rocket, Home, Briefcase, ShoppingBag, Plane, Gift, Users } from 'lucide-react';
 
 const timelineItems = [
   {
     year: '2024〜',
-    title: 'イネブラ',
-    role: '創業者',
-    description: '世界中のクリエイターが活動できるコミュニティスペースを構築。3000カ所、そして宇宙を目指す。',
+    title: 'イネブラ株式会社',
+    role: '代表取締役CEO',
+    description: '世界中に美しい場所を作り、その場所を共有し合うことを通じて、特別なコミュニティを構築するプロジェクト。',
     icon: Rocket,
     highlight: true,
   },
   {
-    year: '2020〜2024',
+    year: '2024〜',
+    title: '令和トラベル',
+    role: '社外取締役・株主',
+    description: 'AIを活用したデジタルトラベルエージェンシー「NEWT」を運営。',
+    icon: Plane,
+    highlight: false,
+  },
+  {
+    year: '現在',
+    title: 'ギフトモール',
+    role: '社外取締役',
+    description: 'プレゼントに特化したオンラインショッピングモール。',
+    icon: Gift,
+    highlight: false,
+  },
+  {
+    year: '2018〜',
     title: 'NOT A HOTEL',
-    role: 'エンジニア',
-    description: '「自宅を持たない暮らし」を実現するNOT A HOTELのプロダクト開発に従事。',
+    role: '共同創業者・元取締役・現株主',
+    description: '会員制のホテル兼不動産モデルを提供する革新的なサービス。',
     icon: Home,
     highlight: false,
   },
   {
-    year: '2016〜2020',
-    title: 'メルカリ',
-    role: 'ソフトウェアエンジニア',
-    description: 'フリマアプリ「メルカリ」の開発チームでバックエンド・フロントエンド開発を担当。',
-    icon: Building2,
+    year: '〜2023',
+    title: 'キャスター',
+    role: '元社外取締役',
+    description: '日本初のフルリモートワーク企業。2023年に東証グロース市場に上場。',
+    icon: Users,
     highlight: false,
   },
   {
-    year: '〜2016',
-    title: 'キャリア初期',
-    role: '複数のスタートアップ',
-    description: '様々なスタートアップでエンジニアとして経験を積み、プロダクト開発のスキルを磨く。',
+    year: '2014〜2021',
+    title: 'メルカリ',
+    role: 'CPO・CINO・取締役',
+    description: '日本最大のフリマアプリを運営するグローバル企業。プロダクト責任者として成長を牽引。',
+    icon: ShoppingBag,
+    highlight: false,
+  },
+  {
+    year: '2003〜2013',
+    title: 'サイブリッジ',
+    role: '共同創業者',
+    description: '塾講師ナビ、オールクーポンなどのウェブサービスを開発・運営。',
     icon: Briefcase,
     highlight: false,
   },
@@ -72,6 +96,9 @@ const TimelineSection = () => {
           <h2 className="text-4xl md:text-5xl font-bold text-foreground">
             キャリア<span className="gradient-text">タイムライン</span>
           </h2>
+          <p className="text-muted-foreground mt-4 max-w-2xl mx-auto">
+            千葉県立大高校 → 東京理科大学（中退）→ 起業家・経営者として活動
+          </p>
         </div>
 
         <div className="max-w-4xl mx-auto relative">
@@ -91,9 +118,9 @@ const TimelineSection = () => {
 
             return (
               <div
-                key={item.title}
+                key={item.title + item.year}
                 ref={(el) => (itemRefs.current[index] = el)}
-                className={`relative flex items-center mb-16 last:mb-0 ${
+                className={`relative flex items-center mb-12 last:mb-0 ${
                   isLeft ? 'md:flex-row' : 'md:flex-row-reverse'
                 }`}
               >
@@ -112,9 +139,9 @@ const TimelineSection = () => {
                     }`}
                   >
                     <span className="text-sm text-primary font-medium">{item.year}</span>
-                    <h3 className="text-2xl font-bold text-foreground mt-1">{item.title}</h3>
+                    <h3 className="text-xl font-bold text-foreground mt-1">{item.title}</h3>
                     <p className="text-muted-foreground text-sm mt-1">{item.role}</p>
-                    <p className="text-muted-foreground mt-3 leading-relaxed">
+                    <p className="text-muted-foreground mt-3 leading-relaxed text-sm">
                       {item.description}
                     </p>
                   </div>
@@ -134,7 +161,9 @@ const TimelineSection = () => {
                   <Icon
                     className={`h-6 w-6 ${
                       isVisible ? 'text-primary-foreground' : 'text-muted-foreground'
-                    } ${item.highlight && isVisible ? 'text-primary-foreground' : ''}`}
+                    } ${item.highlight && isVisible ? 'text-primary-foreground' : ''} ${
+                      isVisible && !item.highlight ? 'text-primary' : ''
+                    }`}
                   />
                 </div>
               </div>

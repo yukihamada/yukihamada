@@ -1,27 +1,33 @@
 import { useState } from 'react';
-import { Dumbbell, Spade, Guitar } from 'lucide-react';
+import { Dumbbell, Spade, Guitar, ExternalLink } from 'lucide-react';
 
 const hobbies = [
   {
     name: '柔術',
     icon: Dumbbell,
-    description: '心身を鍛え、集中力を高める格闘技。定期的にトレーニング中。',
-    detail: 'ブラジリアン柔術を通じて、技術と戦略の両方を学んでいます。',
+    description: '2024年から開始。SJJJFの大会に参加中。',
+    detail: '来年はマスターズのラスベガス大会への参加を予定。心身を鍛え、集中力を高める格闘技。',
     color: 'from-blue-500 to-cyan-500',
+    links: [],
   },
   {
     name: 'ポーカー',
     icon: Spade,
-    description: '確率と心理戦。ビジネスにも通じる意思決定スキルを磨く。',
-    detail: 'テキサスホールデムを中心に、戦略的思考を楽しんでいます。',
+    description: '15年以上の経験。WSOP、EPT、APTで入賞経験あり。',
+    detail: '確率と心理戦。ビジネスにも通じる意思決定スキルを磨く。',
     color: 'from-red-500 to-orange-500',
+    links: [
+      { name: 'Global Poker Index', url: 'https://www.globalpokerindex.com/poker-players/yuki-hamata-1483674/' },
+      { name: 'The Hendon Mob', url: 'https://pokerdb.thehendonmob.com/player.php?a=r&n=1137313' },
+    ],
   },
   {
     name: 'ギター',
     icon: Guitar,
-    description: '音楽で創造性を表現。リラックスとインスピレーションの源。',
-    detail: 'アコースティックからエレキまで。弾き語りも好きです。',
+    description: '主にアコースティックギター。',
+    detail: 'メルカリで購入したMartin D-45（2002年製）を愛用。音楽で創造性を表現。',
     color: 'from-purple-500 to-pink-500',
+    links: [],
   },
 ];
 
@@ -80,9 +86,27 @@ const HobbiesSection = () => {
                     {hobby.name}
                   </h3>
 
-                  <p className="text-muted-foreground leading-relaxed">
+                  <p className="text-muted-foreground leading-relaxed text-sm">
                     {isActive ? hobby.detail : hobby.description}
                   </p>
+
+                  {/* Links */}
+                  {hobby.links.length > 0 && isActive && (
+                    <div className="mt-4 flex flex-wrap gap-2 justify-center">
+                      {hobby.links.map((link) => (
+                        <a
+                          key={link.name}
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                        >
+                          {link.name}
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      ))}
+                    </div>
+                  )}
 
                   {/* Hover indicator */}
                   <div

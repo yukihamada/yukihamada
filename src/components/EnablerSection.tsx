@@ -1,15 +1,6 @@
 import { Globe, Users, Rocket, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-const locations = [
-  { name: '東京', country: '日本', active: true },
-  { name: 'サンフランシスコ', country: 'アメリカ', active: true },
-  { name: 'バンコク', country: 'タイ', active: true },
-  { name: 'リスボン', country: 'ポルトガル', active: false },
-  { name: 'ベルリン', country: 'ドイツ', active: false },
-  { name: 'シンガポール', country: 'シンガポール', active: false },
-];
-
 const EnablerSection = () => {
   return (
     <section id="enabler" className="section-padding bg-background relative overflow-hidden">
@@ -26,30 +17,47 @@ const EnablerSection = () => {
             </div>
             
             <h2 className="text-4xl md:text-6xl font-bold">
-              <span className="gradient-text">イネブラ</span>
+              <span className="gradient-text">イネブラ株式会社</span>
               <br />
-              <span className="text-foreground">Enabler</span>
+              <span className="text-foreground text-2xl md:text-3xl">代表取締役CEO</span>
             </h2>
             
             <p className="text-xl text-muted-foreground leading-relaxed">
-              クリエイターが世界中どこでも活動できる環境を提供。
-              <span className="text-primary font-semibold">3000カ所</span>の拠点を目指し、
-              いつか<span className="text-primary font-semibold">宇宙にまで</span>。
+              世界中に美しい場所を作り、その場所を共有し合うことを通じて、
+              <span className="text-primary font-semibold">特別なコミュニティ</span>を構築するプロジェクト。
             </p>
 
-            <div className="grid grid-cols-3 gap-6">
-              <div className="text-center p-4 rounded-xl bg-card border border-border">
-                <p className="text-3xl font-bold gradient-text">3+</p>
-                <p className="text-sm text-muted-foreground">稼働拠点</p>
-              </div>
-              <div className="text-center p-4 rounded-xl bg-card border border-border">
-                <p className="text-3xl font-bold gradient-text">100+</p>
-                <p className="text-sm text-muted-foreground">メンバー</p>
-              </div>
-              <div className="text-center p-4 rounded-xl bg-card border border-border">
-                <p className="text-3xl font-bold gradient-text">3000</p>
-                <p className="text-sm text-muted-foreground">目標拠点数</p>
-              </div>
+            <div className="space-y-4 text-muted-foreground">
+              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                <MapPin className="h-5 w-5 text-primary" />
+                ビジョン
+              </h3>
+              <p>
+                世界中に<span className="text-primary font-semibold">3000カ所</span>、
+                そして<span className="text-primary font-semibold">宇宙にまで</span>拡がる宿泊施設と楽しめる拠点を創造すること。
+              </p>
+            </div>
+
+            <div className="space-y-3 text-muted-foreground">
+              <h3 className="text-lg font-semibold text-foreground">ミッション</h3>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">•</span>
+                  コミュニティを軸とした、新しい形の宿泊体験の提供
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">•</span>
+                  テクノロジーと人間性の融合による、未来志向の生活空間の創造
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">•</span>
+                  地球上の多様な文化と自然を結びつける、グローバルネットワークの構築
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-1">•</span>
+                  宇宙旅行や宇宙居住の実現に向けた、先駆的な取り組みの推進
+                </li>
+              </ul>
             </div>
 
             <div className="flex flex-wrap gap-4">
@@ -58,7 +66,7 @@ const EnablerSection = () => {
                 className="gradient-bg text-primary-foreground hover:opacity-90 glow-primary"
                 asChild
               >
-                <a href="https://www.patreon.com/yukihamada" target="_blank" rel="noopener noreferrer">
+                <a href="https://www.patreon.com/paradisecreator/" target="_blank" rel="noopener noreferrer">
                   <Users className="mr-2 h-5 w-5" />
                   Patreonで参加
                 </a>
@@ -69,7 +77,7 @@ const EnablerSection = () => {
                 className="border-primary/50 hover:bg-primary/10"
                 asChild
               >
-                <a href="https://enabler.fun" target="_blank" rel="noopener noreferrer">
+                <a href="https://enabler.fun/" target="_blank" rel="noopener noreferrer">
                   <Globe className="mr-2 h-5 w-5" />
                   Enabler.fun
                 </a>
@@ -77,39 +85,53 @@ const EnablerSection = () => {
             </div>
           </div>
 
-          {/* Locations Grid */}
+          {/* Projects Grid */}
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded-3xl blur-3xl" />
             <div className="relative glass rounded-3xl p-8">
-              <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-primary" />
-                グローバル拠点
+              <h3 className="text-xl font-semibold mb-6 text-foreground">
+                その他のプロジェクト
               </h3>
-              <div className="grid grid-cols-2 gap-4">
-                {locations.map((location) => (
-                  <div
-                    key={location.name}
-                    className={`p-4 rounded-xl border transition-all duration-300 hover-lift ${
-                      location.active
-                        ? 'bg-primary/10 border-primary/30'
-                        : 'bg-card border-border opacity-60'
-                    }`}
-                  >
-                    <p className="font-semibold text-foreground">{location.name}</p>
-                    <p className="text-sm text-muted-foreground">{location.country}</p>
-                    {location.active && (
-                      <span className="inline-flex items-center gap-1 mt-2 text-xs text-primary">
-                        <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-                        稼働中
-                      </span>
-                    )}
-                    {!location.active && (
-                      <span className="text-xs text-muted-foreground mt-2 block">
-                        Coming Soon
-                      </span>
-                    )}
-                  </div>
-                ))}
+              <div className="space-y-4">
+                <a
+                  href="https://retty.me/area/PRE13/ARE14/SUB1402/100001732246/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block p-4 rounded-xl border border-border hover:border-primary/50 transition-all hover-lift"
+                >
+                  <p className="font-semibold text-foreground">焼肉古今</p>
+                  <p className="text-sm text-muted-foreground">オーナー</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    2024年2月オープン。西麻布の高級焼肉店。全席完全個室。
+                  </p>
+                </a>
+                <a
+                  href="https://notahotel.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block p-4 rounded-xl border border-border hover:border-primary/50 transition-all hover-lift"
+                >
+                  <p className="font-semibold text-foreground">NOT A HOTEL</p>
+                  <p className="text-sm text-muted-foreground">共同創業者・元取締役・現株主</p>
+                </a>
+                <a
+                  href="https://newt.net/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block p-4 rounded-xl border border-border hover:border-primary/50 transition-all hover-lift"
+                >
+                  <p className="font-semibold text-foreground">令和トラベル（NEWT）</p>
+                  <p className="text-sm text-muted-foreground">社外取締役・株主</p>
+                </a>
+                <a
+                  href="https://giftmall.co.jp/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block p-4 rounded-xl border border-border hover:border-primary/50 transition-all hover-lift"
+                >
+                  <p className="font-semibold text-foreground">ギフトモール</p>
+                  <p className="text-sm text-muted-foreground">社外取締役</p>
+                </a>
               </div>
             </div>
           </div>

@@ -35,8 +35,8 @@ const Navigation = () => {
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
           <a href="#" className="text-xl font-bold">
-            <span className="text-foreground">Y</span>
-            <span className="gradient-text">H</span>
+            <span className="text-foreground">濱田</span>
+            <span className="gradient-text">優貴</span>
           </a>
 
           {/* Desktop Navigation */}
@@ -55,7 +55,7 @@ const Navigation = () => {
               className="gradient-bg text-primary-foreground hover:opacity-90"
               asChild
             >
-              <a href="https://www.patreon.com/yukihamada" target="_blank" rel="noopener noreferrer">
+              <a href="https://www.patreon.com/paradisecreator/" target="_blank" rel="noopener noreferrer">
                 Patreon
               </a>
             </Button>
@@ -89,7 +89,7 @@ const Navigation = () => {
               className="w-full gradient-bg text-primary-foreground hover:opacity-90"
               asChild
             >
-              <a href="https://www.patreon.com/yukihamada" target="_blank" rel="noopener noreferrer">
+              <a href="https://www.patreon.com/paradisecreator/" target="_blank" rel="noopener noreferrer">
                 Patreonに参加
               </a>
             </Button>

@@ -146,8 +146,8 @@ const HeroSection = () => {
           </p>
           
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-6">
-            <span className="text-foreground">Yuki</span>{' '}
-            <span className="gradient-text">Hamada</span>
+            <span className="text-foreground">濱田</span>{' '}
+            <span className="gradient-text">優貴</span>
           </h1>
 
           <div className="h-16 md:h-20 flex items-center justify-center mb-8">
@@ -158,9 +158,9 @@ const HeroSection = () => {
           </div>
 
           <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto mb-12 leading-relaxed">
-            世界中で活動するクリエイターを支援し、
+            イネブラ株式会社 代表取締役CEO
             <br className="hidden md:block" />
-            新しい価値を生み出すコミュニティを構築
+            元メルカリCPO・CINO・取締役
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -178,7 +178,7 @@ const HeroSection = () => {
               className="border-primary/50 text-foreground hover:bg-primary/10 px-8 py-6 text-lg"
               asChild
             >
-              <a href="https://www.patreon.com/yukihamada" target="_blank" rel="noopener noreferrer">
+              <a href="https://www.patreon.com/paradisecreator/" target="_blank" rel="noopener noreferrer">
                 Patreonに参加
               </a>
             </Button>

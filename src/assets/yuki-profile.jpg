@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Yuki Hamada | Innovator・Entrepreneur・Community Builder | 濱田 優貴 | イノベーター・起業家・コミュニティビルダー</title>
+    <meta name="description" content="Yuki Hamada's personal website. CEO of Enabler Inc., Former Board Director at Mercari. Challenging new value creation centered on community. | 濱田 優貴の個人サイト。イネブラ代表取締役、元メルカリ取締役。コミュニティを軸とした新しい価値創造に挑戦中。" />
+    <meta name="author" content="Yuki Hamada / 濱田 優貴" />
+    <meta property="og:title" content="Yuki Hamada | Innovator・Entrepreneur・Community Builder | 濱田 優貴" />
+    <meta property="og:description" content="CEO of Enabler Inc., Former Board Director at Mercari. Challenging new value creation centered on community. | イネブラ代表取締役、元メルカリ取締役。コミュニティを軸とした新しい価値創造に挑戦中。" />
+    <meta property="og:image" content="https://yukihamada.jp/_3wAha8i_400x400.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://yukihamada.jp" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="ja_JP" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Yuki Hamada | Innovator・Entrepreneur・Community Builder" />
+    <meta name="twitter:description" content="CEO of Enabler Inc., Former Board Director at Mercari. Challenging new value creation centered on community." />
+    <meta name="twitter:image" content="https://yukihamada.jp/_3wAha8i_400x400.png" />
+    <link rel="icon" type="image/png" href="/_3wAha8i_400x400.png" />
+    <link rel="alternate" hreflang="en" href="https://yukihamada.jp" />
+    <link rel="alternate" hreflang="ja" href="https://yukihamada.jp" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NJCDF5J5YN"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-NJCDF5J5YN');
+    </script>
+    <script type="module" crossorigin src="/assets/index-tpMXSXin.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-ChTvufut.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

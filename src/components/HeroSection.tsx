@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
-import { ChevronDown, ExternalLink, User } from 'lucide-react';
+import { ChevronDown, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import profileImage from '@/assets/yuki-profile.jpg';
 
 const roles = [
   'イノベーター',
@@ -144,8 +145,12 @@ const HeroSection = () => {
           {/* Profile Image */}
           <div className="mb-8">
             <div className="relative inline-block">
-              <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-primary/30 shadow-2xl mx-auto bg-gradient-to-br from-primary/30 to-accent/30 flex items-center justify-center">
-                <User className="w-16 h-16 md:w-20 md:h-20 text-primary/60" />
+              <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-primary/30 shadow-2xl mx-auto">
+                <img 
+                  src={profileImage} 
+                  alt="濱田優貴" 
+                  className="w-full h-full object-cover"
+                />
               </div>
               <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-primary/10 to-accent/10 pointer-events-none" />
             </div>

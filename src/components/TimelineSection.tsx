@@ -4,11 +4,12 @@ import { Building2, Rocket, Home, Briefcase, ShoppingBag, Plane, Gift, Users } f
 const timelineItems = [
   {
     year: '2024〜',
-    title: 'イネブラ株式会社',
+    title: '株式会社イネブラ',
     role: '代表取締役CEO',
-    description: '世界中に美しい場所を作り、その場所を共有し合うことを通じて、特別なコミュニティを構築するプロジェクト。',
+    description: '人生を「本質」だけで満たすEnablerとして、ライフスタイル・フィンテック・エデュテックの3つの事業を展開。',
     icon: Rocket,
     highlight: true,
+    link: 'https://enablerhq.com',
   },
   {
     year: '2024〜',

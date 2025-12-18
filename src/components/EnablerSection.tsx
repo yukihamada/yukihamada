@@ -17,14 +17,14 @@ const EnablerSection = () => {
             </div>
             
             <h2 className="text-4xl md:text-6xl font-bold">
-              <span className="gradient-text">イネブラ株式会社</span>
+              <span className="gradient-text">株式会社イネブラ</span>
               <br />
               <span className="text-foreground text-2xl md:text-3xl">代表取締役CEO</span>
             </h2>
             
             <p className="text-xl text-muted-foreground leading-relaxed">
-              世界中に美しい場所を作り、その場所を共有し合うことを通じて、
-              <span className="text-primary font-semibold">特別なコミュニティ</span>を構築するプロジェクト。
+              人生を「本質」だけで満たすための<span className="text-primary font-semibold">Enabler</span>として、
+              ライフスタイル・フィンテック・エデュテックの3つの事業を展開。
             </p>
 
             <div className="space-y-4 text-muted-foreground">
@@ -77,9 +77,9 @@ const EnablerSection = () => {
                 className="border-primary/50 hover:bg-primary/10"
                 asChild
               >
-                <a href="https://enabler.fun/" target="_blank" rel="noopener noreferrer">
+                <a href="https://enablerhq.com" target="_blank" rel="noopener noreferrer">
                   <Globe className="mr-2 h-5 w-5" />
-                  Enabler.fun
+                  enablerhq.com
                 </a>
               </Button>
             </div>
@@ -130,7 +130,7 @@ const EnablerSection = () => {
                   className="block p-4 rounded-xl border border-border hover:border-primary/50 transition-all hover-lift"
                 >
                   <p className="font-semibold text-foreground">ギフトモール</p>
-                  <p className="text-sm text-muted-foreground">社外取締役</p>
+                  <p className="text-sm text-muted-foreground">元社外取締役</p>
                 </a>
               </div>
             </div>

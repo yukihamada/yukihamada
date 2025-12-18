@@ -169,7 +169,7 @@ const HeroSection = () => {
           </div>
 
           <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto mb-12 leading-relaxed">
-            イネブラ株式会社 代表取締役CEO
+            株式会社イネブラ 代表取締役CEO
             <br className="hidden md:block" />
             元メルカリCPO・CINO・取締役
           </p>

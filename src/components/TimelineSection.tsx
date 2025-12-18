@@ -19,15 +19,15 @@ const timelineItems = [
     highlight: false,
   },
   {
-    year: '現在',
+    year: '〜2024',
     title: 'ギフトモール',
-    role: '社外取締役',
+    role: '元社外取締役',
     description: 'プレゼントに特化したオンラインショッピングモール。',
     icon: Gift,
     highlight: false,
   },
   {
-    year: '2018〜',
+    year: '2018〜2024',
     title: 'NOT A HOTEL',
     role: '共同創業者・元取締役・現株主',
     description: '「自宅を持たない暮らし」を実現する会員制ホテル兼不動産サービス。',

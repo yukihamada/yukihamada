@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { Github, Twitter, Linkedin, Mail, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MagneticButton from '@/components/MagneticButton';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const socialLinks = [
   { name: 'Twitter', icon: Twitter, href: 'https://twitter.com/yukihamada' },
@@ -10,15 +11,17 @@ const socialLinks = [
   { name: 'Email', icon: Mail, href: 'mailto:yuki@yukihamada.jp' },
 ];
 
-const quickLinks = [
-  { name: 'イネブラ', href: '#enabler' },
-  { name: 'キャリア', href: '#career' },
-  { name: '投資先', href: '#investments' },
-  { name: 'ブログ', href: '#blog' },
-  { name: '趣味', href: '#hobbies' },
-];
-
 const Footer = () => {
+  const { t } = useLanguage();
+
+  const quickLinks = [
+    { name: t.nav.enabler, href: '#enabler' },
+    { name: t.nav.career, href: '#career' },
+    { name: t.nav.investments, href: '#investments' },
+    { name: t.nav.blog, href: '#blog' },
+    { name: t.nav.hobbies, href: '#hobbies' },
+  ];
+
   return (
     <motion.footer 
       className="bg-card border-t border-border relative overflow-hidden"
@@ -47,15 +50,15 @@ const Footer = () => {
             transition={{ delay: 0.1 }}
           >
             <motion.h3 
-              className="text-2xl font-bold mb-4"
+              className="text-2xl font-bold mb-1"
               whileHover={{ scale: 1.02 }}
             >
-              <span className="text-foreground">濱田</span>{' '}
-              <span className="gradient-text">優貴</span>
+              <span className="text-foreground">Yuki</span>{' '}
+              <span className="gradient-text">Hamada</span>
             </motion.h3>
+            <p className="text-xs text-muted-foreground mb-4">濱田優貴</p>
             <p className="text-muted-foreground mb-6 max-w-md">
-              株式会社イネブラ 代表取締役CEO。人生を「本質」だけで満たすEnablerとして、
-              ライフスタイル・フィンテック・エデュテックの3つの事業を展開しています。
+              {t.footer.description}
             </p>
             
             {/* Social links */}
@@ -91,7 +94,7 @@ const Footer = () => {
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
           >
-            <h4 className="font-semibold text-foreground mb-4">クイックリンク</h4>
+            <h4 className="font-semibold text-foreground mb-4">{t.footer.quickLinks}</h4>
             <ul className="space-y-3">
               {quickLinks.map((link, index) => (
                 <motion.li 
@@ -120,9 +123,9 @@ const Footer = () => {
             viewport={{ once: true }}
             transition={{ delay: 0.3 }}
           >
-            <h4 className="font-semibold text-foreground mb-4">お問い合わせ</h4>
+            <h4 className="font-semibold text-foreground mb-4">{t.footer.contact}</h4>
             <p className="text-muted-foreground mb-4">
-              プロジェクトの相談や投資のお問い合わせはお気軽にどうぞ。
+              {t.footer.contactDesc}
             </p>
             <MagneticButton>
               <Button
@@ -131,7 +134,7 @@ const Footer = () => {
               >
                 <a href="mailto:yuki@yukihamada.jp">
                   <Mail className="mr-2 h-4 w-4" />
-                  連絡する
+                  {t.footer.contactBtn}
                 </a>
               </Button>
             </MagneticButton>

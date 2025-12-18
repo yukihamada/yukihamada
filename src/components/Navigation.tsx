@@ -2,18 +2,21 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
-const navLinks = [
-  { name: 'イネブラ', href: '#enabler' },
-  { name: 'キャリア', href: '#career' },
-  { name: '投資先', href: '#investments' },
-  { name: 'ブログ', href: '#blog' },
-  { name: '趣味', href: '#hobbies' },
-];
+import { useLanguage } from '@/contexts/LanguageContext';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { t } = useLanguage();
+
+  const navLinks = [
+    { name: t.nav.enabler, href: '#enabler' },
+    { name: t.nav.career, href: '#career' },
+    { name: t.nav.investments, href: '#investments' },
+    { name: t.nav.blog, href: '#blog' },
+    { name: t.nav.hobbies, href: '#hobbies' },
+  ];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -37,19 +40,24 @@ const Navigation = () => {
     >
       <div className="container mx-auto px-6">
         <div className="flex items-center justify-between h-16 md:h-20">
-          {/* Logo */}
+          {/* Logo - English main, Japanese small */}
           <motion.a 
             href="#" 
-            className="text-xl font-bold"
+            className="flex flex-col leading-none"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <span className="text-foreground">濱田</span>
-            <span className="gradient-text">優貴</span>
+            <span className="text-xl font-bold">
+              <span className="text-foreground">Yuki</span>
+              <span className="gradient-text ml-1">Hamada</span>
+            </span>
+            <span className="text-[10px] text-muted-foreground tracking-wider">
+              濱田優貴
+            </span>
           </motion.a>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-6">
             {navLinks.map((link, index) => (
               <motion.a
                 key={link.name}
@@ -69,6 +77,9 @@ const Navigation = () => {
                 />
               </motion.a>
             ))}
+            
+            <LanguageSwitcher />
+            
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -89,35 +100,38 @@ const Navigation = () => {
           </div>
 
           {/* Mobile Menu Button */}
-          <motion.button
-            className="md:hidden p-2 text-foreground"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            whileTap={{ scale: 0.9 }}
-          >
-            <AnimatePresence mode="wait">
-              {isMobileMenuOpen ? (
-                <motion.div
-                  key="close"
-                  initial={{ rotate: -90, opacity: 0 }}
-                  animate={{ rotate: 0, opacity: 1 }}
-                  exit={{ rotate: 90, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <X className="h-6 w-6" />
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="menu"
-                  initial={{ rotate: 90, opacity: 0 }}
-                  animate={{ rotate: 0, opacity: 1 }}
-                  exit={{ rotate: -90, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Menu className="h-6 w-6" />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.button>
+          <div className="md:hidden flex items-center gap-3">
+            <LanguageSwitcher />
+            <motion.button
+              className="p-2 text-foreground"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              whileTap={{ scale: 0.9 }}
+            >
+              <AnimatePresence mode="wait">
+                {isMobileMenuOpen ? (
+                  <motion.div
+                    key="close"
+                    initial={{ rotate: -90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: 90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <X className="h-6 w-6" />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="menu"
+                    initial={{ rotate: 90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: -90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Menu className="h-6 w-6" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.button>
+          </div>
         </div>
       </div>
 
@@ -155,7 +169,7 @@ const Navigation = () => {
                   asChild
                 >
                   <a href="https://www.patreon.com/paradisecreator/" target="_blank" rel="noopener noreferrer">
-                    Patreonに参加
+                    Patreon
                   </a>
                 </Button>
               </motion.div>

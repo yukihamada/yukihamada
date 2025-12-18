@@ -1,10 +1,71 @@
-import { motion } from 'framer-motion';
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { Globe, Users, Zap, Home, Banknote, Award, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import AnimatedSection from '@/components/AnimatedSection';
 import MagneticButton from '@/components/MagneticButton';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useRef } from 'react';
+
+interface ParallaxCardProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+const ParallaxCard = ({ children, className = '' }: ParallaxCardProps) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  const mouseXSpring = useSpring(x, { stiffness: 500, damping: 100 });
+  const mouseYSpring = useSpring(y, { stiffness: 500, damping: 100 });
+
+  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["15deg", "-15deg"]);
+  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-15deg", "15deg"]);
+  const transformStyle = useTransform(
+    [mouseXSpring, mouseYSpring],
+    ([latestX, latestY]) => `perspective(1000px) rotateX(${Number(latestY) * -30}deg) rotateY(${Number(latestX) * 30}deg)`
+  );
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!ref.current) return;
+    const rect = ref.current.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    const xPct = mouseX / width - 0.5;
+    const yPct = mouseY / height - 0.5;
+    x.set(xPct);
+    y.set(yPct);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  return (
+    <motion.div
+      ref={ref}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        rotateX,
+        rotateY,
+        transformStyle: "preserve-3d",
+      }}
+      className={className}
+    >
+      <div style={{ transform: "translateZ(50px)", transformStyle: "preserve-3d" }}>
+        {children}
+      </div>
+    </motion.div>
+  );
+};
 
 const EnablerSection = () => {
+  const { t } = useLanguage();
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -43,28 +104,28 @@ const EnablerSection = () => {
   const services = [
     {
       icon: Home,
-      title: 'enabler.fun',
-      subtitle: '高級バケーションレンタル',
-      description: '心が動かされるロケーションに、感性を刺激する空間を創ります。',
-      features: ['熱海・鎌倉など国内人気エリア', '完全プライベート空間', 'Airbnb連携'],
+      title: t.services.enablerFun.title,
+      subtitle: t.services.enablerFun.subtitle,
+      description: t.services.enablerFun.description,
+      features: t.services.enablerFun.features,
       href: 'https://enabler.fun',
       color: 'from-emerald-500 to-teal-600',
     },
     {
       icon: Banknote,
-      title: 'banto.work',
-      subtitle: '建設業向け請求書・即払いアプリ',
-      description: '現場が終わった瞬間、明日には金が入る。職人のための即払いアプリ。',
-      features: ['最短60分〜翌日入金', '手数料3%〜', '音声入力対応'],
+      title: t.services.banto.title,
+      subtitle: t.services.banto.subtitle,
+      description: t.services.banto.description,
+      features: t.services.banto.features,
       href: 'https://banto.work',
       color: 'from-amber-500 to-orange-600',
     },
     {
       icon: Award,
-      title: 'jiuflow.art',
-      subtitle: 'ブラジリアン柔術オンライン学習',
-      description: '「安全で、長く、そして強い」一生モノの柔術を、あなたに。',
-      features: ['世界チャンピオン監修', '上面からの4K撮影', '体系的なカリキュラム'],
+      title: t.services.jiuflow.title,
+      subtitle: t.services.jiuflow.subtitle,
+      description: t.services.jiuflow.description,
+      features: t.services.jiuflow.features,
       href: 'https://jiuflow.art',
       color: 'from-violet-500 to-purple-600',
     },
@@ -86,18 +147,16 @@ const EnablerSection = () => {
               variants={itemVariants}
               className="text-5xl md:text-7xl font-bold mb-6"
             >
-              <span className="gradient-text">ノイズを消せ。</span>
+              <span className="gradient-text">{t.enabler.mainTitle}</span>
               <br />
-              <span className="text-foreground">最短距離で、熱狂せよ。</span>
+              <span className="text-foreground">{t.enabler.mainSubtitle}</span>
             </motion.h1>
             
             <motion.p 
               variants={itemVariants}
               className="text-xl md:text-2xl text-muted-foreground leading-relaxed mb-8"
             >
-              生きるための「雑務」は、テクノロジーに任せればいい。
-              <br />
-              あなたが人生の主役に戻るための、3つのインフラストラクチャー。
+              {t.hero.subheadline}
             </motion.p>
           </motion.div>
         </AnimatedSection>
@@ -111,13 +170,10 @@ const EnablerSection = () => {
             whileHover={{ scale: 1.01 }}
           >
             <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-6">
-              人生は短い。だから、遠回りはさせない。
+              {t.enabler.philosophy}
             </h2>
             <p className="text-lg text-muted-foreground leading-relaxed mb-8">
-              お金の不安、都市の閉塞感、自己流の停滞。
-              <br />
-              あなたのポテンシャルを蝕む「摩擦（ノイズ）」を、
-              私たちが極限までゼロにする。
+              {t.enabler.philosophyDesc}
             </p>
             
             <div className="grid md:grid-cols-3 gap-8">
@@ -128,11 +184,9 @@ const EnablerSection = () => {
                 <div className="w-16 h-16 rounded-full bg-amber-500/20 flex items-center justify-center mx-auto mb-4">
                   <Zap className="h-8 w-8 text-amber-500" />
                 </div>
-                <h3 className="font-bold text-foreground mb-2">Earn Fast</h3>
+                <h3 className="font-bold text-foreground mb-2">{t.enabler.earnFast}</h3>
                 <p className="text-sm text-muted-foreground">
-                  働いた対価は、即座に手元へ。
-                  <br />
-                  職人の明日を守る、建設フィンテック。
+                  {t.enabler.earnFastDesc}
                 </p>
               </motion.div>
               
@@ -143,11 +197,9 @@ const EnablerSection = () => {
                 <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
                   <Home className="h-8 w-8 text-emerald-500" />
                 </div>
-                <h3 className="font-bold text-foreground mb-2">Reset Deep</h3>
+                <h3 className="font-bold text-foreground mb-2">{t.enabler.resetDeep}</h3>
                 <p className="text-sm text-muted-foreground">
-                  枯れた感性を、一瞬で潤す。
-                  <br />
-                  心を解放する、極上のバケーションレンタル。
+                  {t.enabler.resetDeepDesc}
                 </p>
               </motion.div>
               
@@ -158,11 +210,9 @@ const EnablerSection = () => {
                 <div className="w-16 h-16 rounded-full bg-violet-500/20 flex items-center justify-center mx-auto mb-4">
                   <Award className="h-8 w-8 text-violet-500" />
                 </div>
-                <h3 className="font-bold text-foreground mb-2">Grow Strong</h3>
+                <h3 className="font-bold text-foreground mb-2">{t.enabler.growStrong}</h3>
                 <p className="text-sm text-muted-foreground">
-                  一生モノの強さを、最速でインストールする。
-                  <br />
-                  世界基準の知恵を届ける、柔術エデュテック。
+                  {t.enabler.growStrongDesc}
                 </p>
               </motion.div>
             </div>
@@ -170,16 +220,15 @@ const EnablerSection = () => {
         </AnimatedSection>
       </div>
 
-      {/* Services Section */}
+      {/* Services Section with Parallax */}
       <div className="container mx-auto px-6 mb-24">
         <AnimatedSection>
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              3つの事業領域
+              {t.enabler.servicesTitle}
             </h2>
             <p className="text-muted-foreground">
-              ライフスタイル・フィンテック・エデュテックの各領域で、
-              人々の生活を豊かにするサービスを提供しています。
+              {t.enabler.servicesDesc}
             </p>
           </div>
         </AnimatedSection>
@@ -191,42 +240,39 @@ const EnablerSection = () => {
           whileInView="visible"
           viewport={{ once: true }}
         >
-          {services.map((service, index) => (
-            <motion.a
-              key={service.title}
-              href={service.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group glass rounded-2xl p-6 transition-all hover:border-primary/50 block"
-              variants={cardVariants}
-              whileHover={{ 
-                y: -10, 
-                scale: 1.02,
-                boxShadow: "0 20px 40px -15px hsl(var(--primary) / 0.2)"
-              }}
-            >
-              <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${service.color} flex items-center justify-center mb-4`}>
-                <service.icon className="h-6 w-6 text-white" />
-              </div>
-              
-              <h3 className="text-xl font-bold text-foreground mb-1">{service.title}</h3>
-              <p className="text-sm text-primary mb-3">{service.subtitle}</p>
-              <p className="text-sm text-muted-foreground mb-4">{service.description}</p>
-              
-              <ul className="space-y-2 mb-4">
-                {service.features.map((feature, i) => (
-                  <li key={i} className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-              
-              <div className="flex items-center gap-2 text-primary text-sm font-medium group-hover:gap-3 transition-all">
-                サービスを見る
-                <ArrowRight className="h-4 w-4" />
-              </div>
-            </motion.a>
+          {services.map((service) => (
+            <motion.div key={service.title} variants={cardVariants}>
+              <ParallaxCard className="h-full">
+                <a
+                  href={service.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group glass rounded-2xl p-6 transition-all hover:border-primary/50 block h-full"
+                >
+                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${service.color} flex items-center justify-center mb-4 shadow-lg`}>
+                    <service.icon className="h-6 w-6 text-white" />
+                  </div>
+                  
+                  <h3 className="text-xl font-bold text-foreground mb-1">{service.title}</h3>
+                  <p className="text-sm text-primary mb-3">{service.subtitle}</p>
+                  <p className="text-sm text-muted-foreground mb-4">{service.description}</p>
+                  
+                  <ul className="space-y-2 mb-4">
+                    {service.features.map((feature, i) => (
+                      <li key={i} className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  
+                  <div className="flex items-center gap-2 text-primary text-sm font-medium group-hover:gap-3 transition-all">
+                    {t.enabler.viewService}
+                    <ArrowRight className="h-4 w-4" />
+                  </div>
+                </a>
+              </ParallaxCard>
+            </motion.div>
           ))}
         </motion.div>
       </div>
@@ -239,12 +285,10 @@ const EnablerSection = () => {
             whileHover={{ scale: 1.01 }}
           >
             <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
-              もっと自由に、もっと素直に。
+              {t.enabler.visionTitle}
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
-              イネブラは、あなたの人生を「本質」だけで満たすための
-              <br />
-              舞台装置（<span className="text-primary font-semibold">Enabler</span>）です。
+              {t.enabler.visionDesc}
             </p>
             
             <div className="flex flex-wrap justify-center gap-4">
@@ -269,7 +313,7 @@ const EnablerSection = () => {
                 >
                   <a href="https://www.patreon.com/paradisecreator/" target="_blank" rel="noopener noreferrer">
                     <Users className="mr-2 h-5 w-5" />
-                    Patreonで参加
+                    Patreon
                   </a>
                 </Button>
               </MagneticButton>
@@ -287,7 +331,7 @@ const EnablerSection = () => {
               whileHover={{ scale: 1.01 }}
             >
               <h3 className="text-xl font-semibold mb-6 text-foreground">
-                その他のプロジェクト
+                {t.enabler.otherProjects}
               </h3>
               <motion.div 
                 className="grid md:grid-cols-2 gap-4"

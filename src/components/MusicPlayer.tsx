@@ -84,6 +84,8 @@ const MusicPlayer = () => {
   const [isShuffle, setIsShuffle] = useState(false);
   const [repeatMode, setRepeatMode] = useState<RepeatMode>('off');
   const [analyzerData, setAnalyzerData] = useState<number[]>(new Array(32).fill(0));
+  const [isChangingTrack, setIsChangingTrack] = useState(false);
+  const [displayedTrack, setDisplayedTrack] = useState(0);
   
   const audioRef = useRef<HTMLAudioElement>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -203,16 +205,29 @@ const MusicPlayer = () => {
     setIsPlaying(!isPlaying);
   };
 
+  const changeTrackWithAnimation = useCallback((newTrack: number) => {
+    if (newTrack === currentTrack) return;
+    setIsChangingTrack(true);
+    setTimeout(() => {
+      setCurrentTrack(newTrack);
+      setDisplayedTrack(newTrack);
+      setTimeout(() => {
+        setIsChangingTrack(false);
+      }, 300);
+    }, 300);
+  }, [currentTrack]);
+
   const handlePrevTrack = () => {
     if (currentTime > 3) {
       if (audioRef.current) audioRef.current.currentTime = 0;
     } else {
-      setCurrentTrack(prev => (prev === 0 ? tracks.length - 1 : prev - 1));
+      const prevTrack = currentTrack === 0 ? tracks.length - 1 : currentTrack - 1;
+      changeTrackWithAnimation(prevTrack);
     }
   };
 
   const handleNextTrack = () => {
-    setCurrentTrack(getNextTrack());
+    changeTrackWithAnimation(getNextTrack());
   };
 
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -310,47 +325,91 @@ const MusicPlayer = () => {
                 </div>
               </div>
 
-              {/* Vinyl Record Album Art */}
+              {/* Turntable with Vinyl Record */}
               <div className="text-center mb-4">
-                <div className="relative w-48 h-48 mx-auto mb-4">
-                  {/* Vinyl record base */}
-                  <motion.div
-                    className="absolute inset-0 rounded-full bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 shadow-2xl"
-                    animate={isPlaying ? { rotate: 360 } : {}}
-                    transition={isPlaying ? { duration: 3, repeat: Infinity, ease: "linear" } : {}}
-                    style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.5)" }}
-                  >
-                    {/* Vinyl grooves */}
-                    <div className="absolute inset-2 rounded-full border border-zinc-700/50" />
-                    <div className="absolute inset-4 rounded-full border border-zinc-700/30" />
-                    <div className="absolute inset-6 rounded-full border border-zinc-700/50" />
-                    <div className="absolute inset-8 rounded-full border border-zinc-700/30" />
-                    <div className="absolute inset-10 rounded-full border border-zinc-700/50" />
-                    
-                    {/* Center label with album art */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-zinc-700 shadow-inner">
-                        <img 
-                          src={track.artwork} 
-                          alt={track.title}
-                          className="w-full h-full object-cover"
-                        />
+                <div className="relative w-56 h-56 mx-auto mb-4">
+                  {/* Turntable base */}
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-zinc-800 via-zinc-900 to-black shadow-2xl border border-zinc-700/30" />
+                  
+                  {/* Platter */}
+                  <div className="absolute inset-4 rounded-full bg-gradient-to-br from-zinc-700 to-zinc-900 shadow-inner" />
+                  
+                  {/* Vinyl record with swap animation */}
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={displayedTrack}
+                      className="absolute inset-4 rounded-full bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900"
+                      initial={{ y: -100, opacity: 0, scale: 0.8 }}
+                      animate={{ 
+                        y: 0, 
+                        opacity: 1, 
+                        scale: 1,
+                        rotate: isPlaying && !isChangingTrack ? 360 : 0 
+                      }}
+                      exit={{ y: 100, opacity: 0, scale: 0.8 }}
+                      transition={
+                        isPlaying && !isChangingTrack 
+                          ? { rotate: { duration: 3, repeat: Infinity, ease: "linear" }, default: { duration: 0.3 } }
+                          : { duration: 0.3 }
+                      }
+                      style={{ boxShadow: "0 4px 20px rgba(0,0,0,0.5)" }}
+                    >
+                      {/* Vinyl grooves */}
+                      <div className="absolute inset-2 rounded-full border border-zinc-700/50" />
+                      <div className="absolute inset-4 rounded-full border border-zinc-700/30" />
+                      <div className="absolute inset-6 rounded-full border border-zinc-700/50" />
+                      <div className="absolute inset-8 rounded-full border border-zinc-700/30" />
+                      <div className="absolute inset-10 rounded-full border border-zinc-700/50" />
+                      
+                      {/* Center label with album art */}
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-16 h-16 rounded-full overflow-hidden border-4 border-zinc-700 shadow-inner">
+                          <img 
+                            src={tracks[displayedTrack].artwork} 
+                            alt={tracks[displayedTrack].title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
                       </div>
-                    </div>
+                      
+                      {/* Center hole */}
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-2 h-2 rounded-full bg-zinc-900 border border-zinc-600" />
+                      </div>
+                      
+                      {/* Shine effect */}
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-transparent via-white/5 to-transparent" />
+                    </motion.div>
+                  </AnimatePresence>
+                  
+                  {/* Tonearm */}
+                  <motion.div
+                    className="absolute top-2 right-2 origin-top-right"
+                    animate={{ rotate: isPlaying ? 25 : 0 }}
+                    transition={{ duration: 0.5, ease: "easeInOut" }}
+                  >
+                    {/* Tonearm base */}
+                    <div className="absolute top-0 right-0 w-6 h-6 rounded-full bg-gradient-to-br from-zinc-500 to-zinc-700 shadow-lg border border-zinc-400/30" />
                     
-                    {/* Center hole */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-3 h-3 rounded-full bg-zinc-900 border border-zinc-600" />
-                    </div>
+                    {/* Tonearm arm */}
+                    <div className="absolute top-3 right-3 w-1.5 h-28 bg-gradient-to-b from-zinc-400 to-zinc-600 rounded-full origin-top transform -rotate-12 shadow-md" />
                     
-                    {/* Shine effect */}
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-transparent via-white/5 to-transparent" />
+                    {/* Headshell */}
+                    <motion.div 
+                      className="absolute top-[7rem] right-1 transform -rotate-12"
+                      animate={isPlaying ? { y: [0, 0.5, 0] } : {}}
+                      transition={{ duration: 0.5, repeat: Infinity }}
+                    >
+                      <div className="w-3 h-5 bg-gradient-to-b from-zinc-400 to-zinc-500 rounded-sm shadow-md" />
+                      {/* Stylus */}
+                      <div className="w-0.5 h-1.5 bg-zinc-300 mx-auto mt-0.5" />
+                    </motion.div>
                   </motion.div>
                   
                   {/* Glow effect when playing */}
                   {isPlaying && (
                     <motion.div
-                      className="absolute inset-0 rounded-full"
+                      className="absolute inset-4 rounded-full pointer-events-none"
                       animate={{
                         boxShadow: [
                           "0 0 20px hsl(var(--primary) / 0.3)",
@@ -482,7 +541,7 @@ const MusicPlayer = () => {
                     <motion.button
                       key={t.id}
                       onClick={() => {
-                        setCurrentTrack(index);
+                        changeTrackWithAnimation(index);
                         setIsPlaying(true);
                       }}
                       className={`w-full p-2 rounded-lg text-left transition-colors flex items-center gap-3 ${

@@ -7,6 +7,7 @@ import InvestmentsSection from '@/components/InvestmentsSection';
 import BlogSection from '@/components/BlogSection';
 import HobbiesSection from '@/components/HobbiesSection';
 import Footer from '@/components/Footer';
+import OrganicBackground from '@/components/OrganicBackground';
 
 const Index = () => {
   useEffect(() => {
@@ -16,8 +17,9 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <OrganicBackground />
       <Navigation />
-      <main>
+      <main className="relative z-10">
         <HeroSection />
         <EnablerSection />
         <TimelineSection />

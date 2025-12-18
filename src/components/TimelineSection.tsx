@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
+import { motion, useInView } from 'framer-motion';
 import { Building2, Rocket, Home, Briefcase, ShoppingBag, Plane, Gift, Users } from 'lucide-react';
 
 const timelineItems = [
@@ -62,112 +63,144 @@ const timelineItems = [
 ];
 
 const TimelineSection = () => {
-  const [activeIndex, setActiveIndex] = useState(-1);
-  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const index = itemRefs.current.indexOf(entry.target as HTMLDivElement);
-            setActiveIndex((prev) => Math.max(prev, index));
-          }
-        });
-      },
-      { threshold: 0.5 }
-    );
-
-    itemRefs.current.forEach((ref) => {
-      if (ref) observer.observe(ref);
-    });
-
-    return () => observer.disconnect();
-  }, []);
+  const containerRef = useRef(null);
+  const isInView = useInView(containerRef, { once: true, margin: "-100px" });
 
   return (
     <section id="career" className="section-padding bg-card relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
+      <motion.div 
+        className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1 }}
+      />
       
-      <div className="container mx-auto px-6 relative z-10">
-        <div className="text-center mb-16">
-          <p className="text-primary text-sm font-medium tracking-widest uppercase mb-4">
+      <div className="container mx-auto px-6 relative z-10" ref={containerRef}>
+        <motion.div 
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <motion.p 
+            className="text-primary text-sm font-medium tracking-widest uppercase mb-4"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
             Career Journey
-          </p>
-          <h2 className="text-4xl md:text-5xl font-bold text-foreground">
+          </motion.p>
+          <motion.h2 
+            className="text-4xl md:text-5xl font-bold text-foreground"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+          >
             キャリア<span className="gradient-text">タイムライン</span>
-          </h2>
-          <p className="text-muted-foreground mt-4 max-w-2xl mx-auto">
+          </motion.h2>
+          <motion.p 
+            className="text-muted-foreground mt-4 max-w-2xl mx-auto"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+          >
             千葉県立大高校 → 東京理科大学（中退）→ 起業家・経営者として活動
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
 
         <div className="max-w-4xl mx-auto relative">
           {/* Timeline line */}
           <div className="absolute left-8 md:left-1/2 top-0 bottom-0 w-px bg-border" />
-          <div
-            className="absolute left-8 md:left-1/2 top-0 w-px bg-gradient-to-b from-primary to-accent transition-all duration-1000"
-            style={{
-              height: `${((activeIndex + 1) / timelineItems.length) * 100}%`,
-            }}
+          <motion.div
+            className="absolute left-8 md:left-1/2 top-0 w-px bg-gradient-to-b from-primary via-accent to-primary"
+            initial={{ height: 0 }}
+            animate={isInView ? { height: "100%" } : { height: 0 }}
+            transition={{ duration: 2, ease: "easeOut" }}
           />
 
           {timelineItems.map((item, index) => {
             const Icon = item.icon;
-            const isVisible = index <= activeIndex;
             const isLeft = index % 2 === 0;
 
             return (
-              <div
+              <motion.div
                 key={item.title + item.year}
-                ref={(el) => (itemRefs.current[index] = el)}
                 className={`relative flex items-center mb-12 last:mb-0 ${
                   isLeft ? 'md:flex-row' : 'md:flex-row-reverse'
                 }`}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ 
+                  duration: 0.6, 
+                  delay: index * 0.1,
+                  ease: [0.25, 0.4, 0.25, 1]
+                }}
               >
                 {/* Content */}
                 <div
                   className={`ml-20 md:ml-0 md:w-1/2 ${
                     isLeft ? 'md:pr-16 md:text-right' : 'md:pl-16 md:text-left'
-                  } transition-all duration-700 ${
-                    isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                   }`}
-                  style={{ transitionDelay: `${index * 100}ms` }}
                 >
-                  <div
-                    className={`inline-block glass rounded-2xl p-6 card-hover ${
+                  <motion.div
+                    className={`inline-block glass rounded-2xl p-6 ${
                       item.highlight ? 'border-primary/50' : ''
                     }`}
+                    whileHover={{ 
+                      scale: 1.02, 
+                      y: -5,
+                      boxShadow: item.highlight 
+                        ? "0 25px 50px -12px hsl(262 83% 58% / 0.25)"
+                        : "0 25px 50px -12px hsl(0 0% 0% / 0.15)"
+                    }}
+                    transition={{ type: "spring", stiffness: 300 }}
                   >
-                    <span className="text-sm text-primary font-medium">{item.year}</span>
+                    <motion.span 
+                      className="text-sm text-primary font-medium"
+                      animate={{ opacity: [0.7, 1, 0.7] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
+                      {item.year}
+                    </motion.span>
                     <h3 className="text-xl font-bold text-foreground mt-1">{item.title}</h3>
                     <p className="text-muted-foreground text-sm mt-1">{item.role}</p>
                     <p className="text-muted-foreground mt-3 leading-relaxed text-sm">
                       {item.description}
                     </p>
-                  </div>
+                  </motion.div>
                 </div>
 
                 {/* Icon */}
-                <div
-                  className={`absolute left-8 md:left-1/2 -translate-x-1/2 w-16 h-16 rounded-full flex items-center justify-center transition-all duration-500 ${
-                    isVisible
-                      ? item.highlight
-                        ? 'gradient-bg glow-primary'
-                        : 'bg-card border-2 border-primary'
-                      : 'bg-card border border-border'
+                <motion.div
+                  className={`absolute left-8 md:left-1/2 -translate-x-1/2 w-16 h-16 rounded-full flex items-center justify-center ${
+                    item.highlight
+                      ? 'gradient-bg'
+                      : 'bg-card border-2 border-primary'
                   }`}
-                  style={{ transitionDelay: `${index * 100 + 200}ms` }}
+                  initial={{ scale: 0, rotate: -180 }}
+                  whileInView={{ scale: 1, rotate: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ 
+                    delay: index * 0.1 + 0.3,
+                    type: "spring",
+                    stiffness: 200
+                  }}
+                  whileHover={{ 
+                    scale: 1.2,
+                    boxShadow: "0 0 30px hsl(262 83% 58% / 0.5)"
+                  }}
                 >
                   <Icon
                     className={`h-6 w-6 ${
-                      isVisible ? 'text-primary-foreground' : 'text-muted-foreground'
-                    } ${item.highlight && isVisible ? 'text-primary-foreground' : ''} ${
-                      isVisible && !item.highlight ? 'text-primary' : ''
+                      item.highlight ? 'text-primary-foreground' : 'text-primary'
                     }`}
                   />
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
             );
           })}
         </div>

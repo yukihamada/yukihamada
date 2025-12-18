@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Dumbbell, Spade, Guitar, ExternalLink } from 'lucide-react';
 
 const hobbies = [
@@ -36,20 +37,49 @@ const HobbiesSection = () => {
 
   return (
     <section id="hobbies" className="section-padding bg-background relative overflow-hidden">
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-1/2 bg-gradient-to-t from-primary/5 to-transparent" />
+      <motion.div 
+        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-1/2 bg-gradient-to-t from-primary/5 to-transparent"
+        animate={{
+          opacity: [0.3, 0.6, 0.3],
+        }}
+        transition={{ duration: 4, repeat: Infinity }}
+      />
       
       <div className="container mx-auto px-6 relative z-10">
-        <div className="text-center mb-16">
-          <p className="text-primary text-sm font-medium tracking-widest uppercase mb-4">
+        <motion.div 
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <motion.p 
+            className="text-primary text-sm font-medium tracking-widest uppercase mb-4"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
             Personal Life
-          </p>
-          <h2 className="text-4xl md:text-5xl font-bold text-foreground">
+          </motion.p>
+          <motion.h2 
+            className="text-4xl md:text-5xl font-bold text-foreground"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+          >
             趣味<span className="gradient-text">& ライフスタイル</span>
-          </h2>
-          <p className="text-muted-foreground mt-4 max-w-2xl mx-auto">
+          </motion.h2>
+          <motion.p 
+            className="text-muted-foreground mt-4 max-w-2xl mx-auto"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+          >
             仕事以外の時間も大切に。心身のバランスを保つための活動。
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
 
         <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           {hobbies.map((hobby, index) => {
@@ -57,65 +87,97 @@ const HobbiesSection = () => {
             const isActive = activeHobby === index;
 
             return (
-              <div
+              <motion.div
                 key={hobby.name}
                 className="group relative"
                 onMouseEnter={() => setActiveHobby(index)}
                 onMouseLeave={() => setActiveHobby(null)}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1, duration: 0.5 }}
               >
-                <div
-                  className={`glass rounded-3xl p-8 text-center transition-all duration-500 cursor-pointer ${
-                    isActive ? 'scale-105' : ''
-                  }`}
-                  style={{
+                <motion.div
+                  className="glass rounded-3xl p-8 text-center cursor-pointer h-full"
+                  animate={{
+                    scale: isActive ? 1.05 : 1,
                     boxShadow: isActive
                       ? '0 25px 50px -12px rgba(139, 92, 246, 0.25)'
-                      : undefined,
+                      : '0 0 0 0 transparent',
                   }}
+                  transition={{ type: "spring", stiffness: 300 }}
                 >
                   {/* Icon container */}
-                  <div
-                    className={`w-20 h-20 mx-auto mb-6 rounded-2xl flex items-center justify-center transition-all duration-500 bg-gradient-to-br ${hobby.color} ${
-                      isActive ? 'scale-110 rotate-3' : ''
-                    }`}
+                  <motion.div
+                    className={`w-20 h-20 mx-auto mb-6 rounded-2xl flex items-center justify-center bg-gradient-to-br ${hobby.color}`}
+                    animate={{
+                      scale: isActive ? 1.1 : 1,
+                      rotate: isActive ? 5 : 0,
+                    }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                    whileHover={{ rotate: [0, -5, 5, 0] }}
                   >
                     <Icon className="h-10 w-10 text-white" />
-                  </div>
+                  </motion.div>
 
-                  <h3 className="text-2xl font-bold text-foreground mb-3">
+                  <motion.h3 
+                    className="text-2xl font-bold text-foreground mb-3"
+                    animate={{ scale: isActive ? 1.05 : 1 }}
+                  >
                     {hobby.name}
-                  </h3>
+                  </motion.h3>
 
-                  <p className="text-muted-foreground leading-relaxed text-sm">
-                    {isActive ? hobby.detail : hobby.description}
-                  </p>
+                  <AnimatePresence mode="wait">
+                    <motion.p
+                      key={isActive ? 'detail' : 'description'}
+                      className="text-muted-foreground leading-relaxed text-sm"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {isActive ? hobby.detail : hobby.description}
+                    </motion.p>
+                  </AnimatePresence>
 
                   {/* Links */}
-                  {hobby.links.length > 0 && isActive && (
-                    <div className="mt-4 flex flex-wrap gap-2 justify-center">
-                      {hobby.links.map((link) => (
-                        <a
-                          key={link.name}
-                          href={link.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
-                        >
-                          {link.name}
-                          <ExternalLink className="h-3 w-3" />
-                        </a>
-                      ))}
-                    </div>
-                  )}
+                  <AnimatePresence>
+                    {hobby.links.length > 0 && isActive && (
+                      <motion.div 
+                        className="mt-4 flex flex-wrap gap-2 justify-center"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                      >
+                        {hobby.links.map((link) => (
+                          <motion.a
+                            key={link.name}
+                            href={link.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                            whileHover={{ scale: 1.05 }}
+                          >
+                            {link.name}
+                            <ExternalLink className="h-3 w-3" />
+                          </motion.a>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
                   {/* Hover indicator */}
-                  <div
-                    className={`mt-6 h-1 rounded-full bg-gradient-to-r ${hobby.color} transition-all duration-500 ${
-                      isActive ? 'w-full opacity-100' : 'w-0 opacity-0'
-                    }`}
+                  <motion.div
+                    className={`mt-6 h-1 rounded-full bg-gradient-to-r ${hobby.color} mx-auto`}
+                    initial={{ width: 0, opacity: 0 }}
+                    animate={{
+                      width: isActive ? "100%" : 0,
+                      opacity: isActive ? 1 : 0,
+                    }}
+                    transition={{ duration: 0.3 }}
                   />
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
             );
           })}
         </div>

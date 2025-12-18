@@ -310,30 +310,66 @@ const MusicPlayer = () => {
                 </div>
               </div>
 
-              {/* Album Art & Visualizer */}
+              {/* Vinyl Record Album Art */}
               <div className="text-center mb-4">
-                <motion.div
-                  className="relative w-48 h-48 mx-auto mb-4 rounded-2xl overflow-hidden shadow-xl"
-                  animate={isPlaying ? { 
-                    boxShadow: [
-                      "0 0 20px hsl(var(--primary) / 0.3)",
-                      "0 0 40px hsl(var(--primary) / 0.5)",
-                      "0 0 20px hsl(var(--primary) / 0.3)",
-                    ]
-                  } : {}}
-                  transition={{ duration: 2, repeat: Infinity }}
-                >
-                  <img 
-                    src={track.artwork} 
-                    alt={track.title}
-                    className="w-full h-full object-cover"
-                  />
-                  {isPlaying && (
-                    <div className="absolute inset-0 bg-black/30 flex items-end justify-center pb-2">
-                      <Visualizer />
+                <div className="relative w-48 h-48 mx-auto mb-4">
+                  {/* Vinyl record base */}
+                  <motion.div
+                    className="absolute inset-0 rounded-full bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 shadow-2xl"
+                    animate={isPlaying ? { rotate: 360 } : {}}
+                    transition={isPlaying ? { duration: 3, repeat: Infinity, ease: "linear" } : {}}
+                    style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.5)" }}
+                  >
+                    {/* Vinyl grooves */}
+                    <div className="absolute inset-2 rounded-full border border-zinc-700/50" />
+                    <div className="absolute inset-4 rounded-full border border-zinc-700/30" />
+                    <div className="absolute inset-6 rounded-full border border-zinc-700/50" />
+                    <div className="absolute inset-8 rounded-full border border-zinc-700/30" />
+                    <div className="absolute inset-10 rounded-full border border-zinc-700/50" />
+                    
+                    {/* Center label with album art */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-zinc-700 shadow-inner">
+                        <img 
+                          src={track.artwork} 
+                          alt={track.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
                     </div>
+                    
+                    {/* Center hole */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-3 h-3 rounded-full bg-zinc-900 border border-zinc-600" />
+                    </div>
+                    
+                    {/* Shine effect */}
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-transparent via-white/5 to-transparent" />
+                  </motion.div>
+                  
+                  {/* Glow effect when playing */}
+                  {isPlaying && (
+                    <motion.div
+                      className="absolute inset-0 rounded-full"
+                      animate={{
+                        boxShadow: [
+                          "0 0 20px hsl(var(--primary) / 0.3)",
+                          "0 0 40px hsl(var(--primary) / 0.5)",
+                          "0 0 20px hsl(var(--primary) / 0.3)",
+                        ]
+                      }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    />
                   )}
-                </motion.div>
+                </div>
+                
+                {/* Visualizer below vinyl */}
+                {isPlaying && (
+                  <div className="mb-3">
+                    <Visualizer />
+                  </div>
+                )}
+                
                 <h3 className="text-lg font-bold text-foreground truncate">{track.title}</h3>
                 <p className="text-sm text-muted-foreground">{track.artist}</p>
               </div>
@@ -482,27 +518,32 @@ const MusicPlayer = () => {
               onClick={() => setIsExpanded(true)}
               whileHover={{ scale: 1.02 }}
             >
+              {/* Mini Vinyl Record */}
               <motion.div
-                className="w-12 h-12 rounded-xl flex-shrink-0 overflow-hidden relative"
-                animate={isPlaying ? { 
-                  boxShadow: [
-                    "0 0 10px hsl(var(--primary) / 0.3)",
-                    "0 0 20px hsl(var(--primary) / 0.5)",
-                    "0 0 10px hsl(var(--primary) / 0.3)",
-                  ]
-                } : {}}
-                transition={{ duration: 2, repeat: Infinity }}
+                className="w-12 h-12 rounded-full flex-shrink-0 overflow-hidden relative bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900"
+                animate={isPlaying ? { rotate: 360 } : {}}
+                transition={isPlaying ? { duration: 3, repeat: Infinity, ease: "linear" } : {}}
+                style={{ boxShadow: isPlaying ? "0 0 15px hsl(var(--primary) / 0.4)" : "0 2px 8px rgba(0,0,0,0.3)" }}
               >
-                <img 
-                  src={track.artwork} 
-                  alt={track.title}
-                  className="w-full h-full object-cover"
-                />
-                {isPlaying && (
-                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                    <Visualizer compact />
+                {/* Mini grooves */}
+                <div className="absolute inset-1 rounded-full border border-zinc-700/30" />
+                <div className="absolute inset-2 rounded-full border border-zinc-700/50" />
+                
+                {/* Mini center label */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-5 h-5 rounded-full overflow-hidden border border-zinc-600">
+                    <img 
+                      src={track.artwork} 
+                      alt={track.title}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                )}
+                </div>
+                
+                {/* Mini center hole */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-1 h-1 rounded-full bg-zinc-900" />
+                </div>
               </motion.div>
               
               <div className="flex-1 min-w-0">

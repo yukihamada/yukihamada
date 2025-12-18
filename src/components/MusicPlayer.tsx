@@ -2,42 +2,71 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Music, X, ChevronUp, Shuffle, Repeat, Repeat1 } from 'lucide-react';
 
+import albumFreeToChange from '@/assets/album-free-to-change.jpg';
+import albumHello2150 from '@/assets/album-hello-2150.jpg';
+import albumBjj from '@/assets/album-everybody-bjj.jpg';
+import albumILoveYou from '@/assets/album-i-love-you.jpg';
+import albumAttention from '@/assets/album-attention.jpg';
+import albumKoiJujutsu from '@/assets/album-koi-jujutsu.jpg';
+import albumShioPixel from '@/assets/album-shio-pixel.jpg';
+import albumMusubinaosu from '@/assets/album-musubinaosu.jpg';
+
 const tracks = [
   {
     id: 1,
     title: 'Free to Change',
-    artist: '自由のアル',
+    artist: 'Yuki Hamada',
     src: '/audio/free-to-change.mp3',
+    artwork: albumFreeToChange,
   },
   {
     id: 2,
     title: 'HELLO 2150',
     artist: 'Yuki Hamada',
     src: '/audio/hello-2150.mp3',
+    artwork: albumHello2150,
   },
   {
     id: 3,
     title: 'Everybody say BJJ',
     artist: 'Yuki Hamada',
     src: '/audio/everybody-say-bjj.mp3',
+    artwork: albumBjj,
   },
   {
     id: 4,
     title: 'I Love You',
     artist: 'Yuki Hamada',
     src: '/audio/i-love-you.mp3',
+    artwork: albumILoveYou,
   },
   {
     id: 5,
     title: 'I Need Your Attention',
     artist: 'Yuki Hamada',
     src: '/audio/i-need-your-attention.mp3',
+    artwork: albumAttention,
   },
   {
     id: 6,
     title: 'それ恋じゃなく柔術でした',
     artist: 'Yuki Hamada',
     src: '/audio/sore-koi-janaku-jujutsu.mp3',
+    artwork: albumKoiJujutsu,
+  },
+  {
+    id: 7,
+    title: '塩とピクセル',
+    artist: 'Yuki Hamada',
+    src: '/audio/shio-to-pixel.mp3',
+    artwork: albumShioPixel,
+  },
+  {
+    id: 8,
+    title: '結び直す朝',
+    artist: 'Yuki Hamada',
+    src: '/audio/musubinaosu-asa.mp3',
+    artwork: albumMusubinaosu,
   },
 ];
 
@@ -62,7 +91,6 @@ const MusicPlayer = () => {
   const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
   const animationRef = useRef<number | null>(null);
 
-  // Initialize audio context and analyzer
   const initializeAudioContext = useCallback(() => {
     if (!audioRef.current || audioContextRef.current) return;
 
@@ -79,7 +107,6 @@ const MusicPlayer = () => {
     sourceRef.current = source;
   }, []);
 
-  // Visualizer animation loop
   const updateVisualizer = useCallback(() => {
     if (!analyzerRef.current) return;
 
@@ -210,7 +237,6 @@ const MusicPlayer = () => {
 
   const track = tracks[currentTrack];
 
-  // Visualizer component
   const Visualizer = ({ compact = false }: { compact?: boolean }) => (
     <div className={`flex items-end justify-center gap-[2px] ${compact ? 'h-8' : 'h-16'}`}>
       {analyzerData.map((value, index) => (
@@ -262,17 +288,8 @@ const MusicPlayer = () => {
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
             >
               {/* Header */}
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-2">
-                  <motion.div
-                    className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center"
-                    animate={isPlaying ? { rotate: 360 } : {}}
-                    transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                  >
-                    <Music className="h-5 w-5 text-primary-foreground" />
-                  </motion.div>
-                  <span className="text-sm font-medium text-foreground">Music Player</span>
-                </div>
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-sm font-medium text-foreground">Music Player</span>
                 <div className="flex gap-1">
                   <motion.button
                     onClick={() => setIsExpanded(false)}
@@ -293,26 +310,31 @@ const MusicPlayer = () => {
                 </div>
               </div>
 
-              {/* Visualizer & Track Info */}
-              <div className="text-center mb-6">
+              {/* Album Art & Visualizer */}
+              <div className="text-center mb-4">
                 <motion.div
-                  className="w-full h-24 mx-auto mb-4 rounded-2xl bg-secondary/50 flex items-center justify-center overflow-hidden"
+                  className="relative w-48 h-48 mx-auto mb-4 rounded-2xl overflow-hidden shadow-xl"
                   animate={isPlaying ? { 
                     boxShadow: [
-                      "0 0 20px hsl(var(--primary) / 0.2)",
-                      "0 0 40px hsl(var(--primary) / 0.4)",
-                      "0 0 20px hsl(var(--primary) / 0.2)",
+                      "0 0 20px hsl(var(--primary) / 0.3)",
+                      "0 0 40px hsl(var(--primary) / 0.5)",
+                      "0 0 20px hsl(var(--primary) / 0.3)",
                     ]
                   } : {}}
                   transition={{ duration: 2, repeat: Infinity }}
                 >
-                  {isPlaying ? (
-                    <Visualizer />
-                  ) : (
-                    <Music className="h-12 w-12 text-primary/50" />
+                  <img 
+                    src={track.artwork} 
+                    alt={track.title}
+                    className="w-full h-full object-cover"
+                  />
+                  {isPlaying && (
+                    <div className="absolute inset-0 bg-black/30 flex items-end justify-center pb-2">
+                      <Visualizer />
+                    </div>
                   )}
                 </motion.div>
-                <h3 className="text-lg font-bold text-foreground">{track.title}</h3>
+                <h3 className="text-lg font-bold text-foreground truncate">{track.title}</h3>
                 <p className="text-sm text-muted-foreground">{track.artist}</p>
               </div>
 
@@ -389,7 +411,7 @@ const MusicPlayer = () => {
               </div>
 
               {/* Volume */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 mb-4">
                 <motion.button
                   onClick={() => setIsMuted(!isMuted)}
                   className="p-1"
@@ -417,9 +439,9 @@ const MusicPlayer = () => {
               </div>
 
               {/* Track List */}
-              <div className="mt-4 pt-4 border-t border-border max-h-48 overflow-y-auto">
+              <div className="pt-4 border-t border-border max-h-40 overflow-y-auto">
                 <p className="text-xs text-muted-foreground mb-2">プレイリスト</p>
-                <div className="space-y-2">
+                <div className="space-y-1">
                   {tracks.map((t, index) => (
                     <motion.button
                       key={t.id}
@@ -427,15 +449,24 @@ const MusicPlayer = () => {
                         setCurrentTrack(index);
                         setIsPlaying(true);
                       }}
-                      className={`w-full p-2 rounded-lg text-left transition-colors ${
+                      className={`w-full p-2 rounded-lg text-left transition-colors flex items-center gap-3 ${
                         currentTrack === index
-                          ? 'bg-primary/20 text-primary'
-                          : 'hover:bg-secondary text-foreground'
+                          ? 'bg-primary/20'
+                          : 'hover:bg-secondary'
                       }`}
-                      whileHover={{ x: 5 }}
+                      whileHover={{ x: 3 }}
                     >
-                      <p className="text-sm font-medium truncate">{t.title}</p>
-                      <p className="text-xs text-muted-foreground">{t.artist}</p>
+                      <img 
+                        src={t.artwork} 
+                        alt={t.title}
+                        className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className={`text-sm font-medium truncate ${currentTrack === index ? 'text-primary' : 'text-foreground'}`}>
+                          {t.title}
+                        </p>
+                        <p className="text-xs text-muted-foreground">{t.artist}</p>
+                      </div>
                     </motion.button>
                   ))}
                 </div>
@@ -452,14 +483,25 @@ const MusicPlayer = () => {
               whileHover={{ scale: 1.02 }}
             >
               <motion.div
-                className="w-12 h-12 rounded-xl gradient-bg flex items-center justify-center flex-shrink-0 overflow-hidden"
-                animate={isPlaying ? { rotate: 360 } : {}}
-                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                className="w-12 h-12 rounded-xl flex-shrink-0 overflow-hidden relative"
+                animate={isPlaying ? { 
+                  boxShadow: [
+                    "0 0 10px hsl(var(--primary) / 0.3)",
+                    "0 0 20px hsl(var(--primary) / 0.5)",
+                    "0 0 10px hsl(var(--primary) / 0.3)",
+                  ]
+                } : {}}
+                transition={{ duration: 2, repeat: Infinity }}
               >
-                {isPlaying ? (
-                  <Visualizer compact />
-                ) : (
-                  <Music className="h-6 w-6 text-primary-foreground" />
+                <img 
+                  src={track.artwork} 
+                  alt={track.title}
+                  className="w-full h-full object-cover"
+                />
+                {isPlaying && (
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                    <Visualizer compact />
+                  </div>
                 )}
               </motion.div>
               

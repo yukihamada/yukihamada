@@ -27,12 +27,12 @@ const Footer = () => {
           {/* Brand */}
           <div className="lg:col-span-2">
             <h3 className="text-2xl font-bold mb-4">
-              <span className="text-foreground">Yuki</span>{' '}
-              <span className="gradient-text">Hamada</span>
+              <span className="text-foreground">濱田</span>{' '}
+              <span className="gradient-text">優貴</span>
             </h3>
             <p className="text-muted-foreground mb-6 max-w-md">
-              世界中のクリエイターを支援し、新しい価値を生み出すコミュニティを構築しています。
-              イネブラを通じて、どこでも活動できる環境を提供。
+              イネブラ株式会社 代表取締役CEO。世界中に美しい場所を作り、
+              その場所を共有し合うことを通じて、特別なコミュニティを構築しています。
             </p>
             
             {/* Social links */}
@@ -97,7 +97,7 @@ const Footer = () => {
           </p>
           <div className="flex items-center gap-4">
             <a
-              href="https://enabler.fun"
+              href="https://enabler.fun/"
               target="_blank"
               rel="noopener noreferrer"
               className="text-muted-foreground hover:text-primary text-sm flex items-center gap-1 transition-colors"
@@ -106,7 +106,7 @@ const Footer = () => {
               <ExternalLink className="h-3 w-3" />
             </a>
             <a
-              href="https://www.patreon.com/yukihamada"
+              href="https://www.patreon.com/paradisecreator/"
               target="_blank"
               rel="noopener noreferrer"
               className="text-muted-foreground hover:text-primary text-sm flex items-center gap-1 transition-colors"

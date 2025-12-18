@@ -8,6 +8,7 @@ import BlogSection from '@/components/BlogSection';
 import HobbiesSection from '@/components/HobbiesSection';
 import Footer from '@/components/Footer';
 import OrganicBackground from '@/components/OrganicBackground';
+import MusicPlayer from '@/components/MusicPlayer';
 
 const Index = () => {
   useEffect(() => {
@@ -28,6 +29,7 @@ const Index = () => {
         <HobbiesSection />
       </main>
       <Footer />
+      <MusicPlayer />
     </div>
   );
 };

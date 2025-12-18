@@ -1,0 +1,341 @@
+import { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Music, X, ChevronUp } from 'lucide-react';
+
+const tracks = [
+  {
+    id: 1,
+    title: 'Free to Change',
+    artist: '自由のアル',
+    src: '/audio/free-to-change.mp3',
+  },
+  {
+    id: 2,
+    title: 'HELLO 2150',
+    artist: 'Yuki Hamada',
+    src: '/audio/hello-2150.mp3',
+  },
+];
+
+const MusicPlayer = () => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTrack, setCurrentTrack] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(0.7);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = isMuted ? 0 : volume;
+    }
+  }, [volume, isMuted]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
+    const handleLoadedMetadata = () => setDuration(audio.duration);
+    const handleEnded = () => {
+      if (currentTrack < tracks.length - 1) {
+        setCurrentTrack(prev => prev + 1);
+      } else {
+        setCurrentTrack(0);
+        setIsPlaying(false);
+      }
+    };
+
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+    audio.addEventListener('ended', handleEnded);
+
+    return () => {
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
+      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      audio.removeEventListener('ended', handleEnded);
+    };
+  }, [currentTrack]);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.play();
+      } else {
+        audioRef.current.pause();
+      }
+    }
+  }, [isPlaying, currentTrack]);
+
+  const togglePlay = () => {
+    setIsPlaying(!isPlaying);
+  };
+
+  const handlePrevTrack = () => {
+    if (currentTime > 3) {
+      if (audioRef.current) audioRef.current.currentTime = 0;
+    } else {
+      setCurrentTrack(prev => (prev === 0 ? tracks.length - 1 : prev - 1));
+    }
+  };
+
+  const handleNextTrack = () => {
+    setCurrentTrack(prev => (prev === tracks.length - 1 ? 0 : prev + 1));
+  };
+
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const time = Number(e.target.value);
+    setCurrentTime(time);
+    if (audioRef.current) {
+      audioRef.current.currentTime = time;
+    }
+  };
+
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  const track = tracks[currentTrack];
+
+  if (!isVisible) {
+    return (
+      <motion.button
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full gradient-bg flex items-center justify-center shadow-lg glow-primary"
+        onClick={() => setIsVisible(true)}
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+      >
+        <Music className="h-6 w-6 text-primary-foreground" />
+      </motion.button>
+    );
+  }
+
+  return (
+    <>
+      <audio ref={audioRef} src={track.src} preload="metadata" />
+      
+      <motion.div
+        className="fixed bottom-6 right-6 z-50"
+        initial={{ y: 100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      >
+        <AnimatePresence mode="wait">
+          {isExpanded ? (
+            <motion.div
+              key="expanded"
+              className="glass rounded-3xl p-6 w-80 shadow-2xl"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
+                  <motion.div
+                    className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center"
+                    animate={isPlaying ? { rotate: 360 } : {}}
+                    transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                  >
+                    <Music className="h-5 w-5 text-primary-foreground" />
+                  </motion.div>
+                  <span className="text-sm font-medium text-foreground">Music Player</span>
+                </div>
+                <div className="flex gap-1">
+                  <motion.button
+                    onClick={() => setIsExpanded(false)}
+                    className="p-2 rounded-full hover:bg-secondary transition-colors"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    <ChevronUp className="h-4 w-4 text-muted-foreground rotate-180" />
+                  </motion.button>
+                  <motion.button
+                    onClick={() => setIsVisible(false)}
+                    className="p-2 rounded-full hover:bg-secondary transition-colors"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    <X className="h-4 w-4 text-muted-foreground" />
+                  </motion.button>
+                </div>
+              </div>
+
+              {/* Track Info */}
+              <div className="text-center mb-6">
+                <motion.div
+                  className="w-24 h-24 mx-auto mb-4 rounded-2xl gradient-bg flex items-center justify-center"
+                  animate={isPlaying ? { 
+                    scale: [1, 1.05, 1],
+                    boxShadow: [
+                      "0 0 20px hsl(262 83% 58% / 0.3)",
+                      "0 0 40px hsl(262 83% 58% / 0.5)",
+                      "0 0 20px hsl(262 83% 58% / 0.3)",
+                    ]
+                  } : {}}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  <Music className="h-12 w-12 text-primary-foreground" />
+                </motion.div>
+                <h3 className="text-lg font-bold text-foreground">{track.title}</h3>
+                <p className="text-sm text-muted-foreground">{track.artist}</p>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="mb-4">
+                <input
+                  type="range"
+                  min="0"
+                  max={duration || 0}
+                  value={currentTime}
+                  onChange={handleSeek}
+                  className="w-full h-1 rounded-full bg-secondary appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary"
+                />
+                <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                  <span>{formatTime(currentTime)}</span>
+                  <span>{formatTime(duration)}</span>
+                </div>
+              </div>
+
+              {/* Controls */}
+              <div className="flex items-center justify-center gap-4 mb-4">
+                <motion.button
+                  onClick={handlePrevTrack}
+                  className="p-2 rounded-full hover:bg-secondary transition-colors"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <SkipBack className="h-5 w-5 text-foreground" />
+                </motion.button>
+                
+                <motion.button
+                  onClick={togglePlay}
+                  className="w-14 h-14 rounded-full gradient-bg flex items-center justify-center shadow-lg"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  {isPlaying ? (
+                    <Pause className="h-6 w-6 text-primary-foreground" />
+                  ) : (
+                    <Play className="h-6 w-6 text-primary-foreground ml-1" />
+                  )}
+                </motion.button>
+                
+                <motion.button
+                  onClick={handleNextTrack}
+                  className="p-2 rounded-full hover:bg-secondary transition-colors"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <SkipForward className="h-5 w-5 text-foreground" />
+                </motion.button>
+              </div>
+
+              {/* Volume */}
+              <div className="flex items-center gap-2">
+                <motion.button
+                  onClick={() => setIsMuted(!isMuted)}
+                  className="p-1"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  {isMuted ? (
+                    <VolumeX className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <Volume2 className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </motion.button>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={isMuted ? 0 : volume}
+                  onChange={(e) => {
+                    setVolume(Number(e.target.value));
+                    setIsMuted(false);
+                  }}
+                  className="flex-1 h-1 rounded-full bg-secondary appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary"
+                />
+              </div>
+
+              {/* Track List */}
+              <div className="mt-4 pt-4 border-t border-border">
+                <p className="text-xs text-muted-foreground mb-2">プレイリスト</p>
+                <div className="space-y-2">
+                  {tracks.map((t, index) => (
+                    <motion.button
+                      key={t.id}
+                      onClick={() => {
+                        setCurrentTrack(index);
+                        setIsPlaying(true);
+                      }}
+                      className={`w-full p-2 rounded-lg text-left transition-colors ${
+                        currentTrack === index
+                          ? 'bg-primary/20 text-primary'
+                          : 'hover:bg-secondary text-foreground'
+                      }`}
+                      whileHover={{ x: 5 }}
+                    >
+                      <p className="text-sm font-medium">{t.title}</p>
+                      <p className="text-xs text-muted-foreground">{t.artist}</p>
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="compact"
+              className="glass rounded-2xl p-3 flex items-center gap-3 shadow-xl cursor-pointer"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={() => setIsExpanded(true)}
+              whileHover={{ scale: 1.02 }}
+            >
+              <motion.div
+                className="w-12 h-12 rounded-xl gradient-bg flex items-center justify-center flex-shrink-0"
+                animate={isPlaying ? { rotate: 360 } : {}}
+                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+              >
+                <Music className="h-6 w-6 text-primary-foreground" />
+              </motion.div>
+              
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground truncate">{track.title}</p>
+                <p className="text-xs text-muted-foreground truncate">{track.artist}</p>
+              </div>
+              
+              <motion.button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  togglePlay();
+                }}
+                className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0"
+                whileHover={{ scale: 1.1, backgroundColor: "hsl(262 83% 58% / 0.3)" }}
+                whileTap={{ scale: 0.9 }}
+              >
+                {isPlaying ? (
+                  <Pause className="h-5 w-5 text-primary" />
+                ) : (
+                  <Play className="h-5 w-5 text-primary ml-0.5" />
+                )}
+              </motion.button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+    </>
+  );
+};
+
+export default MusicPlayer;

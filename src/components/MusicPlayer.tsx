@@ -15,6 +15,30 @@ const tracks = [
     artist: 'Yuki Hamada',
     src: '/audio/hello-2150.mp3',
   },
+  {
+    id: 3,
+    title: 'Everybody say BJJ',
+    artist: 'Yuki Hamada',
+    src: '/audio/everybody-say-bjj.mp3',
+  },
+  {
+    id: 4,
+    title: 'I Love You',
+    artist: 'Yuki Hamada',
+    src: '/audio/i-love-you.mp3',
+  },
+  {
+    id: 5,
+    title: 'I Need Your Attention',
+    artist: 'Yuki Hamada',
+    src: '/audio/i-need-your-attention.mp3',
+  },
+  {
+    id: 6,
+    title: 'それ恋じゃなく柔術でした',
+    artist: 'Yuki Hamada',
+    src: '/audio/sore-koi-janaku-jujutsu.mp3',
+  },
 ];
 
 const MusicPlayer = () => {

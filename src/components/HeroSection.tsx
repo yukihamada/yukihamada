@@ -1,19 +1,19 @@
 import { useEffect, useState, useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { ChevronDown, ExternalLink, Play, Music2, Headphones } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MagneticButton from '@/components/MagneticButton';
 import profileImage from '@/assets/yuki-profile.jpg';
 
-// Roles with intentional typos that will be corrected
+// Roles with intentional typos that will be corrected (typoAt: -1 means no typo)
 const rolesWithTypos = [
-  { text: 'ポーカープレイヤー', typoAt: 6, wrong: 'ア', correctChar: 'ヤ' },
-  { text: '柔術家', typoAt: -1, wrong: '', correctChar: '' },
-  { text: '愛犬家', typoAt: 1, wrong: '権', correctChar: '犬' },
-  { text: 'ギタリスト', typoAt: 3, wrong: 'ル', correctChar: 'ス' },
-  { text: 'アーティスト', typoAt: -1, wrong: '', correctChar: '' },
-  { text: '起業家', typoAt: -1, wrong: '', correctChar: '' },
-  { text: 'エンジェル投資家', typoAt: 5, wrong: '当', correctChar: '投' },
+  { text: 'ポーカープレイヤー', typoAt: -1, wrong: '', correctChar: '', bgEmoji: '🃏', bgImage: 'https://images.unsplash.com/photo-1541278107931-e006523892df?w=800&auto=format&fit=crop&q=60' },
+  { text: '柔術家', typoAt: -1, wrong: '', correctChar: '', bgEmoji: '🥋', bgImage: 'https://images.unsplash.com/photo-1555597673-b21d5c935865?w=800&auto=format&fit=crop&q=60' },
+  { text: '愛犬家', typoAt: 1, wrong: '権', correctChar: '犬', bgEmoji: '🐕', bgImage: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800&auto=format&fit=crop&q=60' },
+  { text: 'ギタリスト', typoAt: -1, wrong: '', correctChar: '', bgEmoji: '🎸', bgImage: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=800&auto=format&fit=crop&q=60' },
+  { text: 'アーティスト', typoAt: 4, wrong: 'ク', correctChar: 'ス', bgEmoji: '🎨', bgImage: 'https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?w=800&auto=format&fit=crop&q=60' },
+  { text: '起業家', typoAt: -1, wrong: '', correctChar: '', bgEmoji: '🚀', bgImage: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800&auto=format&fit=crop&q=60' },
+  { text: 'エンジェル投資家', typoAt: -1, wrong: '', correctChar: '', bgEmoji: '💰', bgImage: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&auto=format&fit=crop&q=60' },
 ];
 
 type TypingState = 'typing' | 'typed-wrong' | 'deleting-wrong' | 'typing-correct' | 'waiting' | 'deleting';
@@ -312,9 +312,52 @@ const HeroSection = ({ onMusicPlay }: HeroSectionProps) => {
             </motion.span>
           </motion.h1>
 
+          {/* Background visualization for current role */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentRole}
+              className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden"
+              initial={{ opacity: 0, scale: 1.1 }}
+              animate={{ opacity: displayText.length > 0 ? 0.08 : 0, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.8 }}
+            >
+              <img 
+                src={rolesWithTypos[currentRole].bgImage} 
+                alt=""
+                className="w-full h-full object-cover blur-sm"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background" />
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Floating emoji */}
+          <AnimatePresence mode="wait">
+            {displayText.length > 2 && (
+              <motion.div
+                key={`emoji-${currentRole}`}
+                className="absolute top-1/4 right-1/4 text-6xl md:text-8xl pointer-events-none opacity-20"
+                initial={{ opacity: 0, scale: 0, rotate: -20 }}
+                animate={{ 
+                  opacity: 0.15, 
+                  scale: 1, 
+                  rotate: 0,
+                  y: [0, -10, 0]
+                }}
+                exit={{ opacity: 0, scale: 0.5, rotate: 20 }}
+                transition={{ 
+                  duration: 0.5,
+                  y: { duration: 3, repeat: Infinity, ease: "easeInOut" }
+                }}
+              >
+                {rolesWithTypos[currentRole].bgEmoji}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <motion.div 
             variants={itemVariants}
-            className="h-16 md:h-20 flex items-center justify-center mb-8"
+            className="h-16 md:h-20 flex items-center justify-center mb-8 relative"
           >
             <span className="text-2xl md:text-4xl text-muted-foreground font-medium">
               {displayText}

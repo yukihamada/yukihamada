@@ -1,5 +1,6 @@
-import { motion } from 'framer-motion';
-import { TrendingUp, ExternalLink } from 'lucide-react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { TrendingUp, ExternalLink, Sparkles } from 'lucide-react';
 
 const investments = [
   {
@@ -8,6 +9,7 @@ const investments = [
     description: '会員制のホテル兼不動産モデルを提供',
     logo: '🏨',
     url: 'https://notahotel.com/',
+    gradient: 'from-amber-500/20 to-orange-500/20',
   },
   {
     name: '令和トラベル',
@@ -15,6 +17,7 @@ const investments = [
     description: 'AIを活用したデジタルトラベルエージェンシー「NEWT」を運営',
     logo: '✈️',
     url: 'https://newt.net/',
+    gradient: 'from-sky-500/20 to-blue-500/20',
   },
   {
     name: 'エルソウルラボ',
@@ -22,6 +25,7 @@ const investments = [
     description: 'SolanaチェーンのバリデーターやWeb3アプリ開発のOSS提供',
     logo: '⛓️',
     url: 'https://labo.elsoul.nl/ja/',
+    gradient: 'from-purple-500/20 to-violet-500/20',
   },
   {
     name: 'フィナンシェ',
@@ -29,6 +33,7 @@ const investments = [
     description: 'トークン発行型クラウドファンディングプラットフォーム',
     logo: '🪙',
     url: 'https://www.corp.financie.jp/',
+    gradient: 'from-yellow-500/20 to-amber-500/20',
   },
   {
     name: 'VUILD',
@@ -36,10 +41,14 @@ const investments = [
     description: '誰でも家や家具を設計・製作できるプラットフォーム「Nesting」',
     logo: '🏠',
     url: 'https://vuild.co.jp/',
+    gradient: 'from-green-500/20 to-emerald-500/20',
   },
 ];
 
 const InvestmentsSection = () => {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [selectedCard, setSelectedCard] = useState<number | null>(null);
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -65,22 +74,47 @@ const InvestmentsSection = () => {
 
   return (
     <section id="investments" className="section-padding bg-background relative overflow-hidden">
+      {/* Animated background orbs */}
       <motion.div 
         className="absolute top-1/2 left-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl -translate-y-1/2"
         animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.5, 0.8, 0.5],
+          scale: [1, 1.3, 1],
+          opacity: [0.3, 0.6, 0.3],
+          x: [0, 50, 0],
         }}
-        transition={{ duration: 6, repeat: Infinity }}
+        transition={{ duration: 8, repeat: Infinity }}
       />
       <motion.div 
         className="absolute top-1/2 right-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl -translate-y-1/2"
         animate={{
-          scale: [1.2, 1, 1.2],
-          opacity: [0.5, 0.8, 0.5],
+          scale: [1.3, 1, 1.3],
+          opacity: [0.3, 0.6, 0.3],
+          x: [0, -50, 0],
         }}
-        transition={{ duration: 6, repeat: Infinity, delay: 3 }}
+        transition={{ duration: 8, repeat: Infinity, delay: 4 }}
       />
+      
+      {/* Floating particles */}
+      {[...Array(6)].map((_, i) => (
+        <motion.div
+          key={i}
+          className="absolute w-2 h-2 rounded-full bg-primary/30"
+          style={{
+            left: `${20 + i * 15}%`,
+            top: `${30 + (i % 3) * 20}%`,
+          }}
+          animate={{
+            y: [0, -30, 0],
+            opacity: [0.3, 0.7, 0.3],
+            scale: [1, 1.5, 1],
+          }}
+          transition={{ 
+            duration: 3 + i * 0.5, 
+            repeat: Infinity,
+            delay: i * 0.3 
+          }}
+        />
+      ))}
       
       <div className="container mx-auto px-6 relative z-10">
         <motion.div 
@@ -92,15 +126,16 @@ const InvestmentsSection = () => {
         >
           <motion.div 
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4"
-            whileHover={{ scale: 1.05 }}
+            whileHover={{ scale: 1.05, backgroundColor: "hsl(var(--primary) / 0.2)" }}
           >
             <motion.span
-              animate={{ rotate: [0, 15, -15, 0] }}
-              transition={{ duration: 2, repeat: Infinity }}
+              animate={{ rotate: [0, 360] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
             >
               <TrendingUp className="h-4 w-4" />
             </motion.span>
             Angel Investments
+            <Sparkles className="h-3 w-3" />
           </motion.div>
           <motion.h2 
             className="text-4xl md:text-5xl font-bold text-foreground"
@@ -129,66 +164,102 @@ const InvestmentsSection = () => {
           whileInView="visible"
           viewport={{ once: true, margin: "-50px" }}
         >
-          {investments.map((investment, index) => (
-            <motion.a
-              key={investment.name}
-              href={investment.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group glass rounded-2xl p-6 cursor-pointer block"
-              variants={cardVariants}
-              whileHover={{ 
-                scale: 1.03, 
-                y: -10,
-                boxShadow: "0 30px 60px -15px hsl(262 83% 58% / 0.2)"
-              }}
-              transition={{ type: "spring", stiffness: 300 }}
-            >
-              <div className="flex items-start justify-between mb-4">
-                <motion.span 
-                  className="text-4xl"
-                  animate={{ 
-                    rotate: [0, 5, -5, 0],
-                    scale: [1, 1.1, 1]
-                  }}
-                  transition={{ 
-                    duration: 3, 
-                    repeat: Infinity,
-                    delay: index * 0.2
-                  }}
-                >
-                  {investment.logo}
-                </motion.span>
-                <motion.span
-                  initial={{ opacity: 0, x: 10 }}
-                  whileHover={{ opacity: 1, x: 0 }}
-                  className="text-muted-foreground"
-                >
-                  <ExternalLink className="h-5 w-5" />
-                </motion.span>
-              </div>
-              
-              <h3 className="text-xl font-bold text-foreground mb-1 group-hover:text-primary transition-colors">
-                {investment.name}
-              </h3>
-              <p className="text-sm text-primary font-medium mb-2">
-                {investment.category}
-              </p>
-              <p className="text-muted-foreground text-sm">
-                {investment.description}
-              </p>
-              
-              <motion.div 
-                className="mt-4 pt-4 border-t border-border"
-                initial={{ opacity: 0.6 }}
-                whileHover={{ opacity: 1 }}
+          {investments.map((investment, index) => {
+            const isHovered = hoveredIndex === index;
+            
+            return (
+              <motion.a
+                key={investment.name}
+                href={investment.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group relative glass rounded-2xl p-6 cursor-pointer block overflow-hidden"
+                variants={cardVariants}
+                onMouseEnter={() => setHoveredIndex(index)}
+                onMouseLeave={() => setHoveredIndex(null)}
+                whileHover={{ 
+                  scale: 1.05, 
+                  y: -15,
+                }}
+                whileTap={{ scale: 0.98 }}
+                style={{
+                  boxShadow: isHovered 
+                    ? "0 30px 60px -15px hsl(var(--primary) / 0.3)"
+                    : "0 4px 20px -5px hsl(0 0% 0% / 0.1)"
+                }}
               >
-                <span className="text-xs text-muted-foreground">
-                  エンジェル投資
-                </span>
-              </motion.div>
-            </motion.a>
-          ))}
+                {/* Gradient background on hover */}
+                <motion.div 
+                  className={`absolute inset-0 bg-gradient-to-br ${investment.gradient}`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: isHovered ? 1 : 0 }}
+                  transition={{ duration: 0.3 }}
+                />
+                
+                {/* Shine effect */}
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                  initial={{ x: '-100%' }}
+                  animate={{ x: isHovered ? '100%' : '-100%' }}
+                  transition={{ duration: 0.6 }}
+                />
+                
+                <div className="relative z-10">
+                  <div className="flex items-start justify-between mb-4">
+                    <motion.span 
+                      className="text-4xl"
+                      animate={{ 
+                        scale: isHovered ? 1.3 : 1,
+                        rotate: isHovered ? [0, -10, 10, 0] : 0,
+                        y: isHovered ? -5 : 0,
+                      }}
+                      transition={{ duration: 0.4 }}
+                    >
+                      {investment.logo}
+                    </motion.span>
+                    <motion.div
+                      animate={{ 
+                        opacity: isHovered ? 1 : 0,
+                        x: isHovered ? 0 : 10,
+                        rotate: isHovered ? 45 : 0
+                      }}
+                      className="text-primary"
+                    >
+                      <ExternalLink className="h-5 w-5" />
+                    </motion.div>
+                  </div>
+                  
+                  <motion.h3 
+                    className="text-xl font-bold text-foreground mb-1 group-hover:text-primary transition-colors"
+                    animate={{ x: isHovered ? 5 : 0 }}
+                  >
+                    {investment.name}
+                  </motion.h3>
+                  <p className="text-sm text-primary font-medium mb-2">
+                    {investment.category}
+                  </p>
+                  <p className="text-muted-foreground text-sm">
+                    {investment.description}
+                  </p>
+                  
+                  <motion.div 
+                    className="mt-4 pt-4 border-t border-border flex items-center justify-between"
+                    animate={{ opacity: isHovered ? 1 : 0.6 }}
+                  >
+                    <span className="text-xs text-muted-foreground">
+                      エンジェル投資
+                    </span>
+                    <motion.div
+                      className="h-1 bg-gradient-to-r from-primary to-accent rounded-full"
+                      initial={{ width: 0 }}
+                      animate={{ width: isHovered ? 40 : 0 }}
+                      transition={{ duration: 0.3 }}
+                    />
+                  </motion.div>
+                </div>
+              </motion.a>
+            );
+          })}
         </motion.div>
       </div>
     </section>

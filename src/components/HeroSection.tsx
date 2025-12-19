@@ -4,12 +4,13 @@ import { ChevronDown, ExternalLink, Play, Music2, Headphones } from 'lucide-reac
 import { Button } from '@/components/ui/button';
 import MagneticButton from '@/components/MagneticButton';
 import profileImage from '@/assets/yuki-profile.jpg';
+import bichonFriseImage from '@/assets/bichon-frise.jpg';
 
 // Roles with intentional typos that will be corrected (typoAt: -1 means no typo)
 const rolesWithTypos = [
   { text: 'ポーカープレイヤー', typoAt: -1, wrong: '', correctChar: '', bgEmoji: '🃏', bgImage: 'https://images.unsplash.com/photo-1541278107931-e006523892df?w=800&auto=format&fit=crop&q=60' },
   { text: '柔術家', typoAt: -1, wrong: '', correctChar: '', bgEmoji: '🥋', bgImage: 'https://images.unsplash.com/photo-1555597673-b21d5c935865?w=800&auto=format&fit=crop&q=60' },
-  { text: '愛犬家', typoAt: 1, wrong: '権', correctChar: '犬', bgEmoji: '🐕', bgImage: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=800&auto=format&fit=crop&q=60' },
+  { text: '愛犬家', typoAt: 1, wrong: '権', correctChar: '犬', bgEmoji: '🐕', bgImage: bichonFriseImage },
   { text: 'ギタリスト', typoAt: -1, wrong: '', correctChar: '', bgEmoji: '🎸', bgImage: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=800&auto=format&fit=crop&q=60' },
   { text: 'アーティスト', typoAt: 4, wrong: 'ク', correctChar: 'ス', bgEmoji: '🎨', bgImage: 'https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?w=800&auto=format&fit=crop&q=60' },
   { text: '起業家', typoAt: -1, wrong: '', correctChar: '', bgEmoji: '🚀', bgImage: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800&auto=format&fit=crop&q=60' },

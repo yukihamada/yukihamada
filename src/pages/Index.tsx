@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import Navigation from '@/components/Navigation';
 import HeroSection from '@/components/HeroSection';
 import EnablerSection from '@/components/EnablerSection';
@@ -11,17 +11,24 @@ import OrganicBackground from '@/components/OrganicBackground';
 import MusicPlayer from '@/components/MusicPlayer';
 
 const Index = () => {
+  const musicPlayerRef = useRef<{ togglePlay: () => void } | null>(null);
+
   useEffect(() => {
     // Enable dark mode by default
     document.documentElement.classList.add('dark');
   }, []);
+
+  const handleMusicPlay = () => {
+    // Dispatch a custom event to trigger music play
+    window.dispatchEvent(new CustomEvent('toggleMusicPlayer'));
+  };
 
   return (
     <div className="min-h-screen bg-background">
       <OrganicBackground />
       <Navigation />
       <main className="relative z-10">
-        <HeroSection />
+        <HeroSection onMusicPlay={handleMusicPlay} />
         <EnablerSection />
         <TimelineSection />
         <InvestmentsSection />

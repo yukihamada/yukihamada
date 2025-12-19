@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, Send, X, Bot, User, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence, useDragControls } from 'framer-motion';
+import { MessageCircle, Send, X, Bot, User, Loader2, GripHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -19,6 +19,8 @@ export const AIChatSection = () => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const dragControls = useDragControls();
+  const constraintsRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -123,36 +125,91 @@ export const AIChatSection = () => {
 
   return (
     <>
-      {/* Chat Toggle Button */}
+      {/* Drag constraints container */}
+      <div ref={constraintsRef} className="fixed inset-0 pointer-events-none z-40" />
+
+      {/* Chat Toggle Button with Pulse Animation */}
       <motion.button
-        className="fixed bottom-6 left-6 z-50 w-14 h-14 rounded-full bg-gradient-to-r from-primary to-accent shadow-lg flex items-center justify-center text-primary-foreground hover:scale-110 transition-transform"
+        className="fixed bottom-6 left-6 z-50 w-14 h-14 rounded-full bg-gradient-to-r from-primary to-accent shadow-lg flex items-center justify-center text-primary-foreground"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
+        animate={!isOpen ? {
+          boxShadow: [
+            '0 0 20px hsl(var(--primary) / 0.4), 0 0 40px hsl(var(--primary) / 0.2)',
+            '0 0 30px hsl(var(--primary) / 0.6), 0 0 60px hsl(var(--primary) / 0.4)',
+            '0 0 20px hsl(var(--primary) / 0.4), 0 0 40px hsl(var(--primary) / 0.2)',
+          ],
+        } : {}}
+        transition={!isOpen ? {
+          duration: 2,
+          repeat: Infinity,
+          ease: "easeInOut",
+        } : {}}
       >
         {isOpen ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
+        
+        {/* Pulse rings */}
+        {!isOpen && (
+          <>
+            <motion.span
+              className="absolute inset-0 rounded-full border-2 border-primary"
+              animate={{
+                scale: [1, 1.5, 2],
+                opacity: [0.6, 0.3, 0],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeOut",
+              }}
+            />
+            <motion.span
+              className="absolute inset-0 rounded-full border-2 border-primary"
+              animate={{
+                scale: [1, 1.5, 2],
+                opacity: [0.6, 0.3, 0],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeOut",
+                delay: 0.5,
+              }}
+            />
+          </>
+        )}
       </motion.button>
 
       {/* Chat Window */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            drag
+            dragControls={dragControls}
+            dragConstraints={constraintsRef}
+            dragElastic={0.1}
+            dragMomentum={false}
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-24 left-6 z-50 w-[350px] sm:w-[400px] h-[500px] bg-card border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+            className="fixed bottom-24 left-6 z-50 w-[350px] sm:w-[400px] h-[500px] bg-card border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden pointer-events-auto"
           >
-            {/* Header */}
-            <div className="bg-gradient-to-r from-primary to-accent p-4 text-primary-foreground">
+            {/* Draggable Header */}
+            <div 
+              className="bg-gradient-to-r from-primary to-accent p-4 text-primary-foreground cursor-grab active:cursor-grabbing select-none"
+              onPointerDown={(e) => dragControls.start(e)}
+            >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-primary-foreground/20 flex items-center justify-center">
                   <Bot className="w-6 h-6" />
                 </div>
-                <div>
+                <div className="flex-1">
                   <h3 className="font-bold">Yukiに質問する</h3>
                   <p className="text-xs opacity-80">AIがYukiとして回答します</p>
                 </div>
+                <GripHorizontal className="w-5 h-5 opacity-50" />
               </div>
             </div>
 

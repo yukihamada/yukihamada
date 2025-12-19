@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Music, X, ChevronUp, Shuffle, Repeat, Repeat1, SlidersHorizontal } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Music, X, ChevronUp, Shuffle, Repeat, Repeat1, SlidersHorizontal, FileText, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 import albumFreeToChange from '@/assets/album-free-to-change.jpg';
 import albumHello2150 from '@/assets/album-hello-2150.jpg';
@@ -18,6 +19,7 @@ const tracks = [
     artist: 'Yuki Hamada',
     src: '/audio/free-to-change.mp3',
     artwork: albumFreeToChange,
+    lyrics: null as string | null,
   },
   {
     id: 2,
@@ -25,6 +27,7 @@ const tracks = [
     artist: 'Yuki Hamada',
     src: '/audio/hello-2150.mp3',
     artwork: albumHello2150,
+    lyrics: null as string | null,
   },
   {
     id: 3,
@@ -32,6 +35,7 @@ const tracks = [
     artist: 'Yuki Hamada',
     src: '/audio/everybody-say-bjj.mp3',
     artwork: albumBjj,
+    lyrics: null as string | null,
   },
   {
     id: 4,
@@ -39,6 +43,7 @@ const tracks = [
     artist: 'Yuki Hamada',
     src: '/audio/i-love-you.mp3',
     artwork: albumILoveYou,
+    lyrics: null as string | null,
   },
   {
     id: 5,
@@ -46,6 +51,7 @@ const tracks = [
     artist: 'Yuki Hamada',
     src: '/audio/i-need-your-attention.mp3',
     artwork: albumAttention,
+    lyrics: null as string | null,
   },
   {
     id: 6,
@@ -53,6 +59,7 @@ const tracks = [
     artist: 'Yuki Hamada',
     src: '/audio/sore-koi-janaku-jujutsu.mp3',
     artwork: albumKoiJujutsu,
+    lyrics: null as string | null,
   },
   {
     id: 7,
@@ -60,6 +67,7 @@ const tracks = [
     artist: 'Yuki Hamada',
     src: '/audio/shio-to-pixel.mp3',
     artwork: albumShioPixel,
+    lyrics: null as string | null,
   },
   {
     id: 8,
@@ -67,8 +75,12 @@ const tracks = [
     artist: 'Yuki Hamada',
     src: '/audio/musubinaosu-asa.mp3',
     artwork: albumMusubinaosu,
+    lyrics: null as string | null,
   },
 ];
+
+// Store lyrics in memory
+const lyricsCache: Record<number, string> = {};
 
 type RepeatMode = 'off' | 'all' | 'one';
 
@@ -128,6 +140,10 @@ const MusicPlayer = () => {
   const [showEqualizer, setShowEqualizer] = useState(false);
   const [eqValues, setEqValues] = useState<number[]>([0, 0, 0, 0, 0, 0, 0, 0]);
   const [eqPreset, setEqPreset] = useState<string>('flat');
+  const [showLyrics, setShowLyrics] = useState(false);
+  const [currentLyrics, setCurrentLyrics] = useState<string | null>(null);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const [transcribeError, setTranscribeError] = useState<string | null>(null);
   
   const audioRef = useRef<HTMLAudioElement>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -354,6 +370,61 @@ const MusicPlayer = () => {
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  // Transcribe lyrics using ElevenLabs
+  const transcribeLyrics = async () => {
+    const trackId = tracks[currentTrack].id;
+    
+    // Check cache first
+    if (lyricsCache[trackId]) {
+      setCurrentLyrics(lyricsCache[trackId]);
+      setShowLyrics(true);
+      return;
+    }
+
+    setIsTranscribing(true);
+    setTranscribeError(null);
+
+    try {
+      // Fetch the audio file
+      const audioResponse = await fetch(tracks[currentTrack].src);
+      const audioBlob = await audioResponse.blob();
+      
+      // Create FormData with the audio file
+      const formData = new FormData();
+      formData.append('audio', audioBlob, `${tracks[currentTrack].title}.mp3`);
+
+      // Call the transcription edge function
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/transcribe-lyrics`,
+        {
+          method: 'POST',
+          headers: {
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to transcribe');
+      }
+
+      const data = await response.json();
+      const lyrics = data.text || 'No lyrics detected';
+      
+      // Cache the lyrics
+      lyricsCache[trackId] = lyrics;
+      setCurrentLyrics(lyrics);
+      setShowLyrics(true);
+    } catch (error) {
+      console.error('Transcription error:', error);
+      setTranscribeError('歌詞の抽出に失敗しました');
+    } finally {
+      setIsTranscribing(false);
+    }
   };
 
   const track = tracks[currentTrack];
@@ -645,7 +716,63 @@ const MusicPlayer = () => {
                 >
                   <SlidersHorizontal className="h-4 w-4" />
                 </motion.button>
+                <motion.button
+                  onClick={transcribeLyrics}
+                  disabled={isTranscribing}
+                  className={`p-1.5 rounded-full transition-colors ${showLyrics ? 'bg-primary/20 text-primary' : 'hover:bg-secondary text-muted-foreground'}`}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  {isTranscribing ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <FileText className="h-4 w-4" />
+                  )}
+                </motion.button>
               </div>
+
+              {/* Lyrics Display */}
+              <AnimatePresence>
+                {showLyrics && currentLyrics && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden mb-4"
+                  >
+                    <div className="p-3 rounded-xl bg-secondary/30 border border-border/50 max-h-32 overflow-y-auto">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-medium text-foreground">歌詞 (AI自動抽出)</span>
+                        <motion.button
+                          onClick={() => setShowLyrics(false)}
+                          className="p-1 rounded-full hover:bg-secondary"
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                        >
+                          <X className="h-3 w-3 text-muted-foreground" />
+                        </motion.button>
+                      </div>
+                      <p className="text-xs text-muted-foreground whitespace-pre-wrap leading-relaxed">
+                        {currentLyrics}
+                      </p>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Transcribe Error */}
+              <AnimatePresence>
+                {transcribeError && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="mb-4 p-2 rounded-lg bg-destructive/10 border border-destructive/20"
+                  >
+                    <p className="text-xs text-destructive">{transcribeError}</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* Equalizer */}
               <AnimatePresence>

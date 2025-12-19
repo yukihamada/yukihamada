@@ -9,6 +9,7 @@ import HobbiesSection from '@/components/HobbiesSection';
 import Footer from '@/components/Footer';
 import OrganicBackground from '@/components/OrganicBackground';
 import MusicPlayer from '@/components/MusicPlayer';
+import { AIChatSection } from '@/components/AIChatSection';
 
 const Index = () => {
   const musicPlayerRef = useRef<{ togglePlay: () => void } | null>(null);
@@ -37,6 +38,7 @@ const Index = () => {
       </main>
       <Footer />
       <MusicPlayer />
+      <AIChatSection />
     </div>
   );
 };

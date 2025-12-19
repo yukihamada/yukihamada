@@ -6,7 +6,7 @@ const hobbies = [
   {
     name: '柔術',
     icon: Dumbbell,
-    description: 'IBJJFワールドマスター ライトフェザー マスター3 青帯銅メダル獲得',
+    description: 'IBJJFワールドマスター2025 ライトフェザー マスター3 青帯銅メダル獲得',
     detail: '2024年から開始。SJJJFの大会に参加中。来年はマスターズのラスベガス大会への参加を予定。心身を鍛え、集中力を高める格闘技。',
     color: 'from-blue-500 to-cyan-500',
     bgColor: 'bg-blue-500/10',

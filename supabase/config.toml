@@ -1,1 +1,4 @@
 project_id = "itryqwkqnexuawvpoetz"
+
+[functions.transcribe-lyrics]
+verify_jwt = false

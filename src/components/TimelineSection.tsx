@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
-import { motion, useInView } from 'framer-motion';
-import { Building2, Rocket, Home, Briefcase, ShoppingBag, Plane, Gift, Users } from 'lucide-react';
+import { motion, useInView, useScroll, useTransform } from 'framer-motion';
+import { Building2, Rocket, Home, Briefcase, ShoppingBag, Plane, Gift, Users, ChevronRight } from 'lucide-react';
 
 const timelineItems = [
   {
@@ -65,14 +65,39 @@ const timelineItems = [
 const TimelineSection = () => {
   const containerRef = useRef(null);
   const isInView = useInView(containerRef, { once: true, margin: "-100px" });
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"]
+  });
+  
+  const backgroundY = useTransform(scrollYProgress, [0, 1], [0, -100]);
 
   return (
     <section id="career" className="section-padding bg-card relative overflow-hidden">
+      {/* Parallax background elements */}
       <motion.div 
         className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1 }}
+        style={{ y: backgroundY }}
+      />
+      
+      {/* Floating decorative elements */}
+      <motion.div 
+        className="absolute top-20 left-10 w-32 h-32 rounded-full bg-primary/5 blur-2xl"
+        animate={{ 
+          y: [0, 30, 0],
+          scale: [1, 1.2, 1],
+        }}
+        transition={{ duration: 8, repeat: Infinity }}
+      />
+      <motion.div 
+        className="absolute bottom-20 right-10 w-40 h-40 rounded-full bg-accent/5 blur-2xl"
+        animate={{ 
+          y: [0, -30, 0],
+          scale: [1.2, 1, 1.2],
+        }}
+        transition={{ duration: 10, repeat: Infinity }}
       />
       
       <div className="container mx-auto px-6 relative z-10" ref={containerRef}>
@@ -124,6 +149,7 @@ const TimelineSection = () => {
           {timelineItems.map((item, index) => {
             const Icon = item.icon;
             const isLeft = index % 2 === 0;
+            const isHovered = hoveredIndex === index;
 
             return (
               <motion.div
@@ -139,6 +165,8 @@ const TimelineSection = () => {
                   delay: index * 0.1,
                   ease: [0.25, 0.4, 0.25, 1]
                 }}
+                onMouseEnter={() => setHoveredIndex(index)}
+                onMouseLeave={() => setHoveredIndex(null)}
               >
                 {/* Content */}
                 <div
@@ -147,30 +175,59 @@ const TimelineSection = () => {
                   }`}
                 >
                   <motion.div
-                    className={`inline-block glass rounded-2xl p-6 ${
+                    className={`relative glass rounded-2xl p-6 overflow-hidden ${
                       item.highlight ? 'border-primary/50' : ''
                     }`}
-                    whileHover={{ 
-                      scale: 1.02, 
-                      y: -5,
-                      boxShadow: item.highlight 
-                        ? "0 25px 50px -12px hsl(262 83% 58% / 0.25)"
-                        : "0 25px 50px -12px hsl(0 0% 0% / 0.15)"
+                    animate={{
+                      scale: isHovered ? 1.03 : 1,
+                      y: isHovered ? -8 : 0,
                     }}
                     transition={{ type: "spring", stiffness: 300 }}
+                    style={{
+                      boxShadow: isHovered 
+                        ? item.highlight 
+                          ? "0 25px 50px -12px hsl(var(--primary) / 0.35)"
+                          : "0 25px 50px -12px hsl(0 0% 0% / 0.2)"
+                        : "none"
+                    }}
                   >
+                    {/* Shine effect on hover */}
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+                      initial={{ x: '-100%' }}
+                      animate={{ x: isHovered ? '100%' : '-100%' }}
+                      transition={{ duration: 0.6 }}
+                    />
+                    
                     <motion.span 
                       className="text-sm text-primary font-medium"
-                      animate={{ opacity: [0.7, 1, 0.7] }}
-                      transition={{ duration: 2, repeat: Infinity }}
+                      animate={{ 
+                        scale: isHovered ? 1.05 : 1,
+                      }}
                     >
                       {item.year}
                     </motion.span>
-                    <h3 className="text-xl font-bold text-foreground mt-1">{item.title}</h3>
+                    <h3 className="text-xl font-bold text-foreground mt-1 flex items-center gap-2">
+                      {item.title}
+                      {item.link && (
+                        <motion.a
+                          href={item.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary"
+                          whileHover={{ scale: 1.2, rotate: 45 }}
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </motion.a>
+                      )}
+                    </h3>
                     <p className="text-muted-foreground text-sm mt-1">{item.role}</p>
-                    <p className="text-muted-foreground mt-3 leading-relaxed text-sm">
+                    <motion.p 
+                      className="text-muted-foreground mt-3 leading-relaxed text-sm"
+                      animate={{ opacity: isHovered ? 1 : 0.8 }}
+                    >
                       {item.description}
-                    </p>
+                    </motion.p>
                   </motion.div>
                 </div>
 
@@ -189,9 +246,12 @@ const TimelineSection = () => {
                     type: "spring",
                     stiffness: 200
                   }}
-                  whileHover={{ 
-                    scale: 1.2,
-                    boxShadow: "0 0 30px hsl(262 83% 58% / 0.5)"
+                  animate={{
+                    scale: isHovered ? 1.3 : 1,
+                    rotate: isHovered ? 10 : 0,
+                    boxShadow: isHovered 
+                      ? "0 0 40px hsl(var(--primary) / 0.6)"
+                      : "0 0 0 hsl(var(--primary) / 0)"
                   }}
                 >
                   <Icon

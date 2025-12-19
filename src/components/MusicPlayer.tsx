@@ -251,6 +251,23 @@ const MusicPlayer = () => {
     };
   }, [currentTrack, repeatMode, isShuffle, getNextTrack]);
 
+  // Listen for external toggle event
+  useEffect(() => {
+    const handleToggleMusic = () => {
+      if (!isPlaying) {
+        const trackId = tracks[currentTrack].id;
+        const newCounts = savePlayCount(trackId);
+        setPlayCounts(newCounts);
+      }
+      setIsPlaying(prev => !prev);
+      setIsExpanded(true);
+      setIsVisible(true);
+    };
+
+    window.addEventListener('toggleMusicPlayer', handleToggleMusic);
+    return () => window.removeEventListener('toggleMusicPlayer', handleToggleMusic);
+  }, [currentTrack, isPlaying]);
+
   useEffect(() => {
     if (audioRef.current) {
       if (isPlaying) {

@@ -66,7 +66,7 @@ const Navigation = () => {
                 transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
               />
             </motion.div>
-            <div className="flex flex-col leading-none">
+            <div className="hidden sm:flex flex-col leading-none">
               <span className="text-lg font-bold tracking-tight">
                 <span className="text-foreground">Yuki</span>
                 <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent ml-1">Hamada</span>

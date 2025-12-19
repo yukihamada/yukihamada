@@ -342,13 +342,13 @@ const MusicPlayer = () => {
   const track = tracks[currentTrack];
 
   const Visualizer = ({ compact = false }: { compact?: boolean }) => (
-    <div className={`flex items-end justify-center gap-[2px] ${compact ? 'h-8' : 'h-16'}`}>
-      {analyzerData.map((value, index) => (
+    <div className={`flex items-end justify-center gap-[1px] ${compact ? 'h-6' : 'h-10'}`}>
+      {analyzerData.slice(0, 24).map((value, index) => (
         <motion.div
           key={index}
-          className="w-1 rounded-full bg-gradient-to-t from-primary to-primary/50"
+          className="w-0.5 rounded-full bg-gradient-to-t from-primary to-primary/50"
           animate={{
-            height: `${Math.max(compact ? 8 : 4, value * (compact ? 32 : 64))}px`,
+            height: `${Math.max(compact ? 6 : 3, value * (compact ? 24 : 40))}px`,
           }}
           transition={{ duration: 0.05 }}
         />
@@ -385,7 +385,7 @@ const MusicPlayer = () => {
           {isExpanded ? (
             <motion.div
               key="expanded"
-              className="glass rounded-3xl p-6 w-80 shadow-2xl"
+              className="glass rounded-3xl p-4 w-72 shadow-2xl max-h-[80vh] overflow-y-auto"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
@@ -415,8 +415,8 @@ const MusicPlayer = () => {
               </div>
 
               {/* Turntable with Vinyl Record */}
-              <div className="text-center mb-4">
-                <div className="relative w-56 h-56 mx-auto mb-4">
+              <div className="text-center mb-3">
+                <div className="relative w-40 h-40 mx-auto mb-3">
                   {/* Turntable base */}
                   <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-zinc-800 via-zinc-900 to-black shadow-2xl border border-zinc-700/30" />
                   
@@ -452,7 +452,7 @@ const MusicPlayer = () => {
                       
                       {/* Center label with album art */}
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-16 h-16 rounded-full overflow-hidden border-4 border-zinc-700 shadow-inner">
+                        <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-zinc-700 shadow-inner">
                           <img 
                             src={tracks[displayedTrack].artwork} 
                             alt={tracks[displayedTrack].title}
@@ -473,25 +473,25 @@ const MusicPlayer = () => {
                   
                   {/* Tonearm */}
                   <motion.div
-                    className="absolute top-2 right-2 origin-top-right"
+                    className="absolute top-1 right-1 origin-top-right scale-75"
                     animate={{ rotate: isPlaying ? 25 : 0 }}
                     transition={{ duration: 0.5, ease: "easeInOut" }}
                   >
                     {/* Tonearm base */}
-                    <div className="absolute top-0 right-0 w-6 h-6 rounded-full bg-gradient-to-br from-zinc-500 to-zinc-700 shadow-lg border border-zinc-400/30" />
+                    <div className="absolute top-0 right-0 w-5 h-5 rounded-full bg-gradient-to-br from-zinc-500 to-zinc-700 shadow-lg border border-zinc-400/30" />
                     
                     {/* Tonearm arm */}
-                    <div className="absolute top-3 right-3 w-1.5 h-28 bg-gradient-to-b from-zinc-400 to-zinc-600 rounded-full origin-top transform -rotate-12 shadow-md" />
+                    <div className="absolute top-2 right-2 w-1 h-20 bg-gradient-to-b from-zinc-400 to-zinc-600 rounded-full origin-top transform -rotate-12 shadow-md" />
                     
                     {/* Headshell */}
                     <motion.div 
-                      className="absolute top-[7rem] right-1 transform -rotate-12"
+                      className="absolute top-[5rem] right-0.5 transform -rotate-12"
                       animate={isPlaying ? { y: [0, 0.5, 0] } : {}}
                       transition={{ duration: 0.5, repeat: Infinity }}
                     >
-                      <div className="w-3 h-5 bg-gradient-to-b from-zinc-400 to-zinc-500 rounded-sm shadow-md" />
+                      <div className="w-2 h-4 bg-gradient-to-b from-zinc-400 to-zinc-500 rounded-sm shadow-md" />
                       {/* Stylus */}
-                      <div className="w-0.5 h-1.5 bg-zinc-300 mx-auto mt-0.5" />
+                      <div className="w-0.5 h-1 bg-zinc-300 mx-auto mt-0.5" />
                     </motion.div>
                   </motion.div>
                   

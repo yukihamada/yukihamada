@@ -7,14 +7,16 @@ import profileImage from '@/assets/yuki-profile.jpg';
 
 // Roles with intentional typos that will be corrected
 const rolesWithTypos = [
-  { text: 'ポーカープレイヤー', typos: [{ at: 5, wrong: 'イ', correct: 'イヤ' }] },
-  { text: '柔術家', typos: [] },
-  { text: '愛犬家', typos: [{ at: 2, wrong: '権', correct: '犬' }] },
-  { text: 'ギタリスト', typos: [{ at: 3, wrong: 'リルト', correct: 'リスト' }] },
-  { text: 'アーティスト', typos: [] },
-  { text: '起業家', typos: [] },
-  { text: 'エンジェル投資家', typos: [{ at: 6, wrong: '当', correct: '投' }] },
+  { text: 'ポーカープレイヤー', typoAt: 6, wrong: 'ア', correctChar: 'ヤ' },
+  { text: '柔術家', typoAt: -1, wrong: '', correctChar: '' },
+  { text: '愛犬家', typoAt: 1, wrong: '権', correctChar: '犬' },
+  { text: 'ギタリスト', typoAt: 3, wrong: 'ル', correctChar: 'ス' },
+  { text: 'アーティスト', typoAt: -1, wrong: '', correctChar: '' },
+  { text: '起業家', typoAt: -1, wrong: '', correctChar: '' },
+  { text: 'エンジェル投資家', typoAt: 5, wrong: '当', correctChar: '投' },
 ];
+
+type TypingState = 'typing' | 'typed-wrong' | 'deleting-wrong' | 'typing-correct' | 'waiting' | 'deleting';
 
 interface HeroSectionProps {
   onMusicPlay?: () => void;
@@ -23,8 +25,7 @@ interface HeroSectionProps {
 const HeroSection = ({ onMusicPlay }: HeroSectionProps) => {
   const [currentRole, setCurrentRole] = useState(0);
   const [displayText, setDisplayText] = useState('');
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isTypingMistake, setIsTypingMistake] = useState(false);
+  const [typingState, setTypingState] = useState<TypingState>('typing');
   const [isMusicHovered, setIsMusicHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   
@@ -42,41 +43,76 @@ const HeroSection = ({ onMusicPlay }: HeroSectionProps) => {
     const roleData = rolesWithTypos[currentRole];
     const targetText = roleData.text;
     
+    const getDelay = () => {
+      switch (typingState) {
+        case 'typed-wrong': return 400; // Pause to "realize" mistake
+        case 'deleting-wrong': return 100;
+        case 'deleting': return 40;
+        default: return 100;
+      }
+    };
+    
     const timeout = setTimeout(() => {
-      if (!isDeleting) {
-        if (displayText.length < targetText.length) {
-          const nextCharIndex = displayText.length;
-          
-          // Check if we should make a typo
-          const typo = roleData.typos.find(t => t.at === nextCharIndex);
-          
-          if (typo && !isTypingMistake && Math.random() > 0.3) {
-            // Make a typo
-            setDisplayText(displayText + typo.wrong);
-            setIsTypingMistake(true);
-          } else if (isTypingMistake) {
-            // Correct the typo - delete last character
-            setDisplayText(displayText.slice(0, -1));
-            setIsTypingMistake(false);
+      switch (typingState) {
+        case 'typing': {
+          if (displayText.length < targetText.length) {
+            const nextIndex = displayText.length;
+            
+            // Check if this position should have a typo
+            if (roleData.typoAt === nextIndex && Math.random() > 0.3) {
+              // Type the wrong character
+              setDisplayText(displayText + roleData.wrong);
+              setTypingState('typed-wrong');
+            } else {
+              // Type correct character
+              setDisplayText(displayText + targetText[nextIndex]);
+            }
           } else {
-            // Normal typing
-            setDisplayText(targetText.slice(0, displayText.length + 1));
+            setTypingState('waiting');
           }
-        } else {
-          setTimeout(() => setIsDeleting(true), 2000);
+          break;
         }
-      } else {
-        if (displayText.length > 0) {
+        
+        case 'typed-wrong': {
+          // Start deleting the wrong character
+          setTypingState('deleting-wrong');
+          break;
+        }
+        
+        case 'deleting-wrong': {
+          // Delete the wrong character
           setDisplayText(displayText.slice(0, -1));
-        } else {
-          setIsDeleting(false);
-          setCurrentRole((prev) => (prev + 1) % rolesWithTypos.length);
+          setTypingState('typing-correct');
+          break;
+        }
+        
+        case 'typing-correct': {
+          // Type the correct character
+          const nextIndex = displayText.length;
+          setDisplayText(displayText + targetText[nextIndex]);
+          setTypingState('typing');
+          break;
+        }
+        
+        case 'waiting': {
+          setTimeout(() => setTypingState('deleting'), 1500);
+          break;
+        }
+        
+        case 'deleting': {
+          if (displayText.length > 0) {
+            setDisplayText(displayText.slice(0, -1));
+          } else {
+            setCurrentRole((prev) => (prev + 1) % rolesWithTypos.length);
+            setTypingState('typing');
+          }
+          break;
         }
       }
-    }, isDeleting ? 40 : isTypingMistake ? 150 : 120);
+    }, getDelay());
 
     return () => clearTimeout(timeout);
-  }, [displayText, isDeleting, currentRole, isTypingMistake]);
+  }, [displayText, typingState, currentRole]);
 
   const scrollToNext = () => {
     window.scrollTo({

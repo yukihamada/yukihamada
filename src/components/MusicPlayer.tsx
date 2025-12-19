@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Music, X, ChevronUp, Shuffle, Repeat, Repeat1 } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Music, X, ChevronUp, Shuffle, Repeat, Repeat1, SlidersHorizontal } from 'lucide-react';
 
 import albumFreeToChange from '@/assets/album-free-to-change.jpg';
 import albumHello2150 from '@/assets/album-hello-2150.jpg';
@@ -72,6 +72,27 @@ const tracks = [
 
 type RepeatMode = 'off' | 'all' | 'one';
 
+// Equalizer presets
+const EQ_BANDS = [
+  { frequency: 60, label: '60' },
+  { frequency: 170, label: '170' },
+  { frequency: 310, label: '310' },
+  { frequency: 600, label: '600' },
+  { frequency: 1000, label: '1K' },
+  { frequency: 3000, label: '3K' },
+  { frequency: 6000, label: '6K' },
+  { frequency: 12000, label: '12K' },
+];
+
+const EQ_PRESETS: Record<string, number[]> = {
+  flat: [0, 0, 0, 0, 0, 0, 0, 0],
+  bass: [6, 5, 4, 2, 0, 0, 0, 0],
+  treble: [0, 0, 0, 0, 2, 4, 5, 6],
+  vocal: [-2, 0, 2, 4, 4, 2, 0, -2],
+  rock: [5, 4, 2, 0, -1, 2, 4, 5],
+  electronic: [5, 4, 0, -2, 0, 2, 4, 5],
+};
+
 // Load play counts from localStorage
 const getPlayCounts = (): Record<number, number> => {
   try {
@@ -104,11 +125,15 @@ const MusicPlayer = () => {
   const [isChangingTrack, setIsChangingTrack] = useState(false);
   const [displayedTrack, setDisplayedTrack] = useState(() => Math.floor(Math.random() * tracks.length));
   const [playCounts, setPlayCounts] = useState<Record<number, number>>(getPlayCounts);
+  const [showEqualizer, setShowEqualizer] = useState(false);
+  const [eqValues, setEqValues] = useState<number[]>([0, 0, 0, 0, 0, 0, 0, 0]);
+  const [eqPreset, setEqPreset] = useState<string>('flat');
   
   const audioRef = useRef<HTMLAudioElement>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyzerRef = useRef<AnalyserNode | null>(null);
   const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
+  const eqFiltersRef = useRef<BiquadFilterNode[]>([]);
   const animationRef = useRef<number | null>(null);
 
   const initializeAudioContext = useCallback(() => {
@@ -119,13 +144,30 @@ const MusicPlayer = () => {
     analyzer.fftSize = 64;
     
     const source = audioContext.createMediaElementSource(audioRef.current);
-    source.connect(analyzer);
+    
+    // Create EQ filters
+    const filters = EQ_BANDS.map((band, index) => {
+      const filter = audioContext.createBiquadFilter();
+      filter.type = index === 0 ? 'lowshelf' : index === EQ_BANDS.length - 1 ? 'highshelf' : 'peaking';
+      filter.frequency.value = band.frequency;
+      filter.gain.value = eqValues[index];
+      filter.Q.value = 1;
+      return filter;
+    });
+    
+    // Chain filters: source -> filter1 -> filter2 -> ... -> analyzer -> destination
+    source.connect(filters[0]);
+    for (let i = 0; i < filters.length - 1; i++) {
+      filters[i].connect(filters[i + 1]);
+    }
+    filters[filters.length - 1].connect(analyzer);
     analyzer.connect(audioContext.destination);
 
     audioContextRef.current = audioContext;
     analyzerRef.current = analyzer;
     sourceRef.current = source;
-  }, []);
+    eqFiltersRef.current = filters;
+  }, [eqValues]);
 
   const updateVisualizer = useCallback(() => {
     if (!analyzerRef.current) return;
@@ -266,6 +308,29 @@ const MusicPlayer = () => {
     const modes: RepeatMode[] = ['off', 'all', 'one'];
     const currentIndex = modes.indexOf(repeatMode);
     setRepeatMode(modes[(currentIndex + 1) % modes.length]);
+  };
+
+  const updateEqBand = (index: number, value: number) => {
+    const newValues = [...eqValues];
+    newValues[index] = value;
+    setEqValues(newValues);
+    setEqPreset('custom');
+    
+    if (eqFiltersRef.current[index]) {
+      eqFiltersRef.current[index].gain.value = value;
+    }
+  };
+
+  const applyEqPreset = (preset: string) => {
+    setEqPreset(preset);
+    const values = EQ_PRESETS[preset] || EQ_PRESETS.flat;
+    setEqValues(values);
+    
+    eqFiltersRef.current.forEach((filter, index) => {
+      if (filter) {
+        filter.gain.value = values[index];
+      }
+    });
   };
 
   const formatTime = (time: number) => {
@@ -529,7 +594,7 @@ const MusicPlayer = () => {
                 </motion.button>
               </div>
 
-              {/* Volume */}
+              {/* Volume & EQ Toggle */}
               <div className="flex items-center gap-2 mb-4">
                 <motion.button
                   onClick={() => setIsMuted(!isMuted)}
@@ -555,7 +620,74 @@ const MusicPlayer = () => {
                   }}
                   className="flex-1 h-1 rounded-full bg-secondary appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary"
                 />
+                <motion.button
+                  onClick={() => setShowEqualizer(!showEqualizer)}
+                  className={`p-1.5 rounded-full transition-colors ${showEqualizer ? 'bg-primary/20 text-primary' : 'hover:bg-secondary text-muted-foreground'}`}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <SlidersHorizontal className="h-4 w-4" />
+                </motion.button>
               </div>
+
+              {/* Equalizer */}
+              <AnimatePresence>
+                {showEqualizer && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden mb-4"
+                  >
+                    <div className="p-3 rounded-xl bg-secondary/30 border border-border/50">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-xs font-medium text-foreground">Equalizer</span>
+                        <select
+                          value={eqPreset}
+                          onChange={(e) => applyEqPreset(e.target.value)}
+                          className="text-xs bg-background/50 border border-border rounded-md px-2 py-1 text-foreground"
+                        >
+                          <option value="flat">Flat</option>
+                          <option value="bass">Bass Boost</option>
+                          <option value="treble">Treble Boost</option>
+                          <option value="vocal">Vocal</option>
+                          <option value="rock">Rock</option>
+                          <option value="electronic">Electronic</option>
+                          {eqPreset === 'custom' && <option value="custom">Custom</option>}
+                        </select>
+                      </div>
+                      <div className="flex items-end justify-between gap-1 h-24">
+                        {EQ_BANDS.map((band, index) => (
+                          <div key={band.frequency} className="flex flex-col items-center gap-1 flex-1">
+                            <div className="relative h-16 w-full flex items-center justify-center">
+                              <input
+                                type="range"
+                                min="-12"
+                                max="12"
+                                step="1"
+                                value={eqValues[index]}
+                                onChange={(e) => updateEqBand(index, Number(e.target.value))}
+                                className="absolute h-12 w-1.5 appearance-none cursor-pointer bg-secondary/50 rounded-full [writing-mode:vertical-lr] [direction:rtl] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-lg"
+                              />
+                              <motion.div
+                                className="absolute bottom-0 w-1.5 bg-gradient-to-t from-primary/80 to-primary/40 rounded-full pointer-events-none"
+                                animate={{ height: `${((eqValues[index] + 12) / 24) * 48}px` }}
+                                transition={{ duration: 0.1 }}
+                              />
+                            </div>
+                            <span className="text-[9px] text-muted-foreground">{band.label}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex justify-between text-[8px] text-muted-foreground mt-1">
+                        <span>+12dB</span>
+                        <span>0dB</span>
+                        <span>-12dB</span>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* Track List */}
               <div className="pt-4 border-t border-border max-h-40 overflow-y-auto">

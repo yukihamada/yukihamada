@@ -247,6 +247,77 @@ export const AIChatSection = () => {
   const visitCount = getVisitCount();
   const isReturningVisitor = visitCount > 0;
 
+  // Quick reply suggestions based on context
+  const quickReplies = {
+    en: {
+      career: [
+        'What companies have you founded?',
+        'Tell me about Enabler',
+        'What is your investment philosophy?',
+      ],
+      bjj: [
+        'What belt are you?',
+        'How long have you trained?',
+        'What competitions have you won?',
+      ],
+      music: [
+        'Can I listen to your songs?',
+        'What genre do you make?',
+        'What instruments do you play?',
+      ],
+      general: [
+        'Tell me about your career',
+        'What are your hobbies?',
+        'How can I contact you?',
+      ],
+    },
+    ja: {
+      career: [
+        'どんな会社を創業した？',
+        'Enablerについて教えて',
+        '投資の哲学は？',
+      ],
+      bjj: [
+        '何帯？',
+        '柔術歴はどのくらい？',
+        'どんな大会で優勝した？',
+      ],
+      music: [
+        '曲を聴きたい',
+        'どんなジャンル？',
+        'どんな楽器を弾く？',
+      ],
+      general: [
+        '経歴を教えて',
+        '趣味は何？',
+        '連絡先を知りたい',
+      ],
+    },
+  };
+
+  // Determine which quick replies to show based on last assistant message
+  const getQuickReplies = (): string[] => {
+    if (messages.length === 0) return [];
+    
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage.role !== 'assistant') return [];
+    
+    const content = lastMessage.content.toLowerCase();
+    const replies = quickReplies[language];
+    
+    if (content.includes('career') || content.includes('経歴') || content.includes('enabler') || content.includes('起業') || content.includes('投資')) {
+      return replies.career;
+    }
+    if (content.includes('bjj') || content.includes('柔術') || content.includes('jiu') || content.includes('帯') || content.includes('belt')) {
+      return replies.bjj;
+    }
+    if (content.includes('music') || content.includes('音楽') || content.includes('song') || content.includes('曲')) {
+      return replies.music;
+    }
+    
+    return replies.general;
+  };
+
   const texts = {
     en: {
       name: 'Yuki Hamada',
@@ -894,8 +965,23 @@ export const AIChatSection = () => {
             </div>
 
             {/* Input */}
-            <div className="p-4 md:p-3 border-t border-border bg-card safe-area-inset-bottom">
-              <div className="flex gap-2 items-end">
+            <div className="border-t border-border bg-card safe-area-inset-bottom">
+              {/* Quick Reply Suggestions */}
+              {messages.length > 0 && !isLoading && getQuickReplies().length > 0 && (
+                <div className="px-3 pt-2 flex gap-1.5 overflow-x-auto scrollbar-hide">
+                  {getQuickReplies().map((reply) => (
+                    <button
+                      key={reply}
+                      onClick={() => setInput(reply)}
+                      className="flex-shrink-0 text-xs bg-secondary/50 hover:bg-secondary border border-border rounded-full px-3 py-1.5 transition-colors text-muted-foreground hover:text-foreground whitespace-nowrap"
+                    >
+                      {reply}
+                    </button>
+                  ))}
+                </div>
+              )}
+              
+              <div className="p-4 md:p-3 flex gap-2 items-end">
                 <VoiceInputButton 
                   onTranscript={(text) => setInput(prev => prev + text)}
                   isDisabled={isLoading}

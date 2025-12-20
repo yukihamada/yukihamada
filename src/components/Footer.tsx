@@ -1,8 +1,9 @@
 import { motion } from 'framer-motion';
-import { Github, Twitter, Linkedin, Mail, ExternalLink } from 'lucide-react';
+import { Github, Twitter, Linkedin, Mail, ExternalLink, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MagneticButton from '@/components/MagneticButton';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useChat } from '@/contexts/ChatContext';
 
 const socialLinks = [
   { name: 'Twitter', icon: Twitter, href: 'https://twitter.com/yukihamada' },
@@ -13,6 +14,7 @@ const socialLinks = [
 
 const Footer = () => {
   const { t } = useLanguage();
+  const { openChat } = useChat();
 
   const quickLinks = [
     { name: t.nav.enabler, href: '#enabler' },
@@ -130,12 +132,10 @@ const Footer = () => {
             <MagneticButton>
               <Button
                 className="gradient-bg text-primary-foreground hover:opacity-90 glow-primary"
-                asChild
+                onClick={openChat}
               >
-                <a href="mailto:yuki@yukihamada.jp">
-                  <Mail className="mr-2 h-4 w-4" />
-                  {t.footer.contactBtn}
-                </a>
+                <MessageCircle className="mr-2 h-4 w-4" />
+                {t.footer.contactBtn}
               </Button>
             </MagneticButton>
           </motion.div>

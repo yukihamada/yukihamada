@@ -7,6 +7,15 @@ import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import LikeButton from '@/components/LikeButton';
 
+// Blog post images
+import jiuflowHero from '@/assets/jiuflow-hero.png';
+import jiuflowLesson from '@/assets/jiuflow-lesson.png';
+
+const blogImages: Record<string, string> = {
+  'jiuflow-hero': jiuflowHero,
+  'jiuflow-lesson': jiuflowLesson,
+};
+
 const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
   const post = slug ? getBlogPostBySlug(slug) : undefined;
@@ -149,6 +158,13 @@ const BlogPost = () => {
                     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary hover:text-primary/80 underline underline-offset-4 transition-colors">$1</a>')
                     // Convert YouTube embed syntax to iframe
                     .replace(/\[youtube:([a-zA-Z0-9_-]+)\]/g, '<div class="my-8 aspect-video rounded-2xl overflow-hidden shadow-lg"><iframe class="w-full h-full" src="https://www.youtube.com/embed/$1" title="YouTube video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>')
+                    // Convert image syntax to img tags
+                    .replace(/\[image:([a-zA-Z0-9_-]+)\]/g, (_, imageKey) => {
+                      const imageSrc = blogImages[imageKey];
+                      return imageSrc 
+                        ? `<div class="my-8"><img src="${imageSrc}" alt="${imageKey}" class="w-full rounded-2xl shadow-lg" /></div>`
+                        : '';
+                    })
                     .replace(/\n\n/g, '</p><p class="mb-4 text-muted-foreground">')
                 }}
               />

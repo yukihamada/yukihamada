@@ -96,6 +96,12 @@ Lovableを使えば、ビジネスサイドのメンバーも直接画面を編�
 
 実際のサービスはこちらからご覧いただけます：[JiuFlow](https://jiuflow.art/)
 
+[image:jiuflow-hero]
+
+上面からの4K撮影と体系的なカリキュラムで、効率的に柔術を学べます。
+
+[image:jiuflow-lesson]
+
 こちらがJiuFlowの紹介動画です：
 
 [youtube:h982P-og66w]

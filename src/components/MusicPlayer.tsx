@@ -21,6 +21,7 @@ const tracks = [
     src: '/audio/free-to-change.mp3',
     artwork: albumFreeToChange,
     lyrics: null as string | null,
+    color: '#3b82f6', // Blue
   },
   {
     id: 2,
@@ -29,6 +30,7 @@ const tracks = [
     src: '/audio/hello-2150.mp3',
     artwork: albumHello2150,
     lyrics: null as string | null,
+    color: '#8b5cf6', // Purple
   },
   {
     id: 3,
@@ -37,6 +39,7 @@ const tracks = [
     src: '/audio/everybody-say-bjj.mp3',
     artwork: albumBjj,
     lyrics: null as string | null,
+    color: '#ef4444', // Red
   },
   {
     id: 4,
@@ -45,6 +48,7 @@ const tracks = [
     src: '/audio/i-love-you.mp3',
     artwork: albumILoveYou,
     lyrics: null as string | null,
+    color: '#ec4899', // Pink
   },
   {
     id: 5,
@@ -53,6 +57,7 @@ const tracks = [
     src: '/audio/i-need-your-attention.mp3',
     artwork: albumAttention,
     lyrics: null as string | null,
+    color: '#f59e0b', // Amber
   },
   {
     id: 6,
@@ -61,6 +66,7 @@ const tracks = [
     src: '/audio/sore-koi-janaku-jujutsu.mp3',
     artwork: albumKoiJujutsu,
     lyrics: null as string | null,
+    color: '#10b981', // Emerald
   },
   {
     id: 7,
@@ -69,6 +75,7 @@ const tracks = [
     src: '/audio/shio-to-pixel.mp3',
     artwork: albumShioPixel,
     lyrics: null as string | null,
+    color: '#06b6d4', // Cyan
   },
   {
     id: 8,
@@ -77,6 +84,7 @@ const tracks = [
     src: '/audio/musubinaosu-asa.mp3',
     artwork: albumMusubinaosu,
     lyrics: null as string | null,
+    color: '#f97316', // Orange
   },
 ];
 
@@ -124,7 +132,7 @@ const savePlayCount = (trackId: number) => {
 };
 
 const MusicPlayer = () => {
-  const { setIsPlaying: setGlobalIsPlaying, setAnalyzerData: setGlobalAnalyzerData } = useMusicPlayer();
+  const { setIsPlaying: setGlobalIsPlaying, setAnalyzerData: setGlobalAnalyzerData, setCurrentColor } = useMusicPlayer();
   const [isPlaying, setIsPlayingLocal] = useState(false);
   const [currentTrack, setCurrentTrack] = useState(() => Math.floor(Math.random() * tracks.length));
   const [currentTime, setCurrentTime] = useState(0);
@@ -146,6 +154,11 @@ const MusicPlayer = () => {
   const [currentLyrics, setCurrentLyrics] = useState<string | null>(null);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [transcribeError, setTranscribeError] = useState<string | null>(null);
+
+  // Update color when track changes
+  useEffect(() => {
+    setCurrentColor(tracks[currentTrack].color);
+  }, [currentTrack, setCurrentColor]);
 
   // Wrapper for setIsPlaying that also updates global state
   const setIsPlaying = (playing: boolean) => {

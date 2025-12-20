@@ -5,6 +5,8 @@ interface MusicPlayerContextType {
   setIsPlaying: (playing: boolean) => void;
   analyzerData: number[];
   setAnalyzerData: (data: number[]) => void;
+  currentColor: string;
+  setCurrentColor: (color: string) => void;
 }
 
 const MusicPlayerContext = createContext<MusicPlayerContextType | undefined>(undefined);
@@ -12,9 +14,17 @@ const MusicPlayerContext = createContext<MusicPlayerContextType | undefined>(und
 export const MusicPlayerProvider = ({ children }: { children: ReactNode }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [analyzerData, setAnalyzerData] = useState<number[]>(new Array(32).fill(0));
+  const [currentColor, setCurrentColor] = useState('hsl(var(--primary))');
 
   return (
-    <MusicPlayerContext.Provider value={{ isPlaying, setIsPlaying, analyzerData, setAnalyzerData }}>
+    <MusicPlayerContext.Provider value={{ 
+      isPlaying, 
+      setIsPlaying, 
+      analyzerData, 
+      setAnalyzerData,
+      currentColor,
+      setCurrentColor 
+    }}>
       {children}
     </MusicPlayerContext.Provider>
   );

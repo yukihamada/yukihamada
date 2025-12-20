@@ -289,8 +289,27 @@ const MusicPlayer = () => {
       setIsVisible(true);
     };
 
+    // Listen for specific track play request
+    const handlePlaySpecificTrack = (event: CustomEvent<{ trackIndex: number }>) => {
+      const { trackIndex } = event.detail;
+      if (trackIndex >= 0 && trackIndex < tracks.length) {
+        setCurrentTrack(trackIndex);
+        setDisplayedTrack(trackIndex);
+        const trackId = tracks[trackIndex].id;
+        const newCounts = savePlayCount(trackId);
+        setPlayCounts(newCounts);
+        setIsPlaying(true);
+        setIsExpanded(true);
+        setIsVisible(true);
+      }
+    };
+
     window.addEventListener('toggleMusicPlayer', handleToggleMusic);
-    return () => window.removeEventListener('toggleMusicPlayer', handleToggleMusic);
+    window.addEventListener('playSpecificTrack', handlePlaySpecificTrack as EventListener);
+    return () => {
+      window.removeEventListener('toggleMusicPlayer', handleToggleMusic);
+      window.removeEventListener('playSpecificTrack', handlePlaySpecificTrack as EventListener);
+    };
   }, [currentTrack, isPlaying]);
 
   useEffect(() => {

@@ -1,9 +1,198 @@
 import { useLocation, Link } from "react-router-dom";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Home, RotateCcw, Gamepad2 } from "lucide-react";
+import { Home, RotateCcw, Gamepad2, Trophy, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { supabase } from "@/integrations/supabase/client";
+
+interface HighScore {
+  id: string;
+  player_name: string;
+  score: number;
+  created_at: string;
+}
+
+// Leaderboard Component
+const Leaderboard = ({ currentScore, onClose }: { currentScore: number; onClose: () => void }) => {
+  const { language } = useLanguage();
+  const [highScores, setHighScores] = useState<HighScore[]>([]);
+  const [playerName, setPlayerName] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const texts = {
+    en: {
+      title: "Leaderboard",
+      yourScore: "Your Score",
+      enterName: "Enter your name",
+      submit: "Submit Score",
+      submitting: "Submitting...",
+      close: "Close",
+      rank: "Rank",
+      player: "Player",
+      score: "Score",
+      noScores: "No scores yet. Be the first!",
+      submitted: "Score submitted!",
+    },
+    ja: {
+      title: "ランキング",
+      yourScore: "あなたのスコア",
+      enterName: "名前を入力",
+      submit: "スコアを登録",
+      submitting: "送信中...",
+      close: "閉じる",
+      rank: "順位",
+      player: "プレイヤー",
+      score: "スコア",
+      noScores: "まだスコアがありません。最初のプレイヤーになろう！",
+      submitted: "スコアを登録しました！",
+    },
+  };
+
+  const t = texts[language];
+
+  useEffect(() => {
+    fetchHighScores();
+  }, []);
+
+  const fetchHighScores = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('game_high_scores')
+      .select('*')
+      .eq('game_type', 'snake')
+      .order('score', { ascending: false })
+      .limit(10);
+
+    if (!error && data) {
+      setHighScores(data);
+    }
+    setLoading(false);
+  };
+
+  const submitScore = async () => {
+    if (!playerName.trim() || currentScore <= 0) return;
+    
+    setIsSubmitting(true);
+    const { error } = await supabase
+      .from('game_high_scores')
+      .insert({
+        player_name: playerName.trim(),
+        score: currentScore,
+        game_type: 'snake',
+      });
+
+    if (!error) {
+      setHasSubmitted(true);
+      fetchHighScores();
+    }
+    setIsSubmitting(false);
+  };
+
+  const getRankIcon = (index: number) => {
+    if (index === 0) return <Crown className="w-4 h-4 text-yellow-500" />;
+    if (index === 1) return <Trophy className="w-4 h-4 text-gray-400" />;
+    if (index === 2) return <Trophy className="w-4 h-4 text-amber-600" />;
+    return <span className="w-4 text-center text-muted-foreground">{index + 1}</span>;
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ y: 20 }}
+        animate={{ y: 0 }}
+        className="bg-card border border-border rounded-xl p-6 max-w-md w-full shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 className="text-2xl font-bold text-center mb-4 flex items-center justify-center gap-2">
+          <Trophy className="w-6 h-6 text-primary" />
+          {t.title}
+        </h2>
+
+        {/* Score submission */}
+        {currentScore > 0 && !hasSubmitted && (
+          <div className="mb-6 p-4 bg-muted/50 rounded-lg">
+            <p className="text-sm text-muted-foreground mb-2">{t.yourScore}: <span className="text-primary font-bold text-lg">{currentScore}</span></p>
+            <div className="flex gap-2">
+              <Input
+                value={playerName}
+                onChange={(e) => setPlayerName(e.target.value)}
+                placeholder={t.enterName}
+                maxLength={20}
+                className="flex-1"
+                onKeyDown={(e) => e.key === 'Enter' && submitScore()}
+              />
+              <Button 
+                onClick={submitScore} 
+                disabled={!playerName.trim() || isSubmitting}
+                size="sm"
+              >
+                {isSubmitting ? t.submitting : t.submit}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {hasSubmitted && (
+          <motion.div 
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            className="mb-4 p-3 bg-primary/10 rounded-lg text-center text-primary font-medium"
+          >
+            🎉 {t.submitted}
+          </motion.div>
+        )}
+
+        {/* Leaderboard table */}
+        <div className="space-y-2 max-h-[300px] overflow-y-auto">
+          {loading ? (
+            <div className="text-center py-8 text-muted-foreground">Loading...</div>
+          ) : highScores.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">{t.noScores}</div>
+          ) : (
+            <>
+              <div className="grid grid-cols-[40px_1fr_80px] gap-2 text-xs text-muted-foreground font-medium px-2">
+                <span>{t.rank}</span>
+                <span>{t.player}</span>
+                <span className="text-right">{t.score}</span>
+              </div>
+              {highScores.map((score, index) => (
+                <motion.div
+                  key={score.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className={`grid grid-cols-[40px_1fr_80px] gap-2 items-center p-2 rounded-lg ${
+                    index === 0 ? 'bg-primary/10' : 'bg-muted/30'
+                  }`}
+                >
+                  <div className="flex items-center justify-center">
+                    {getRankIcon(index)}
+                  </div>
+                  <span className="font-medium truncate">{score.player_name}</span>
+                  <span className="text-right font-mono text-primary font-bold">{score.score}</span>
+                </motion.div>
+              ))}
+            </>
+          )}
+        </div>
+
+        <Button variant="outline" className="w-full mt-4" onClick={onClose}>
+          {t.close}
+        </Button>
+      </motion.div>
+    </motion.div>
+  );
+};
 
 // Snake Game Component
 const SnakeGame = () => {
@@ -14,6 +203,7 @@ const SnakeGame = () => {
     const saved = localStorage.getItem('snake_high_score');
     return saved ? parseInt(saved) : 0;
   });
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
   
   const gameRef = useRef({
     snake: [{ x: 10, y: 10 }],
@@ -201,9 +391,17 @@ const SnakeGame = () => {
 
   return (
     <div className="flex flex-col items-center gap-4">
-      <div className="flex gap-6 text-sm font-medium">
+      <div className="flex gap-6 text-sm font-medium items-center">
         <span className="text-muted-foreground">Score: <span className="text-primary">{score}</span></span>
         <span className="text-muted-foreground">Best: <span className="text-primary">{highScore}</span></span>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={() => setShowLeaderboard(true)}
+          className="gap-1"
+        >
+          <Trophy className="w-4 h-4" />
+        </Button>
       </div>
       
       <div className="relative">
@@ -254,10 +452,21 @@ const SnakeGame = () => {
                   🎉 New High Score!
                 </motion.p>
               )}
-              <Button onClick={resetGame} variant="default" size="sm" className="gap-2">
-                <RotateCcw className="w-4 h-4" />
-                Play Again
-              </Button>
+              <div className="flex gap-2">
+                <Button onClick={resetGame} variant="default" size="sm" className="gap-2">
+                  <RotateCcw className="w-4 h-4" />
+                  Play Again
+                </Button>
+                <Button 
+                  onClick={() => setShowLeaderboard(true)} 
+                  variant="outline" 
+                  size="sm" 
+                  className="gap-2"
+                >
+                  <Trophy className="w-4 h-4" />
+                  Ranking
+                </Button>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -316,6 +525,16 @@ const SnakeGame = () => {
           →
         </Button>
       </div>
+
+      {/* Leaderboard Modal */}
+      <AnimatePresence>
+        {showLeaderboard && (
+          <Leaderboard 
+            currentScore={gameState === 'gameover' ? score : 0} 
+            onClose={() => setShowLeaderboard(false)} 
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };

@@ -109,6 +109,30 @@ export type Database = {
           },
         ]
       }
+      game_high_scores: {
+        Row: {
+          created_at: string
+          game_type: string
+          id: string
+          player_name: string
+          score: number
+        }
+        Insert: {
+          created_at?: string
+          game_type?: string
+          id?: string
+          player_name: string
+          score: number
+        }
+        Update: {
+          created_at?: string
+          game_type?: string
+          id?: string
+          player_name?: string
+          score?: number
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

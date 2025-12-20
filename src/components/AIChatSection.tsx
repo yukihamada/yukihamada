@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
-import { MessageCircle, Send, Minus, Loader2, GripHorizontal, CheckCheck, Mic, MicOff } from 'lucide-react';
+import { MessageCircle, Send, Minus, Maximize2, Minimize2, Loader2, GripHorizontal, CheckCheck, Mic, MicOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -575,9 +575,11 @@ export const AIChatSection = () => {
   // Resizable chat dimensions
   const [chatWidth, setChatWidth] = useState(360);
   const [chatHeight, setChatHeight] = useState(450);
+  const [isMaximized, setIsMaximized] = useState(false);
   const isResizing = useRef(false);
   const resizeDirection = useRef<'right' | 'bottom' | 'corner' | null>(null);
   const startPos = useRef({ x: 0, y: 0, width: 0, height: 0 });
+  const prevSize = useRef({ width: 360, height: 450 });
 
   const handleResizeStart = (e: React.PointerEvent, direction: 'right' | 'bottom' | 'corner') => {
     if (window.innerWidth < 768) return;
@@ -708,6 +710,25 @@ export const AIChatSection = () => {
                     className="text-xs text-muted-foreground hover:text-foreground h-7 px-2"
                   >
                     {t.newChat}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      if (!isMaximized) {
+                        prevSize.current = { width: chatWidth, height: chatHeight };
+                        setChatWidth(window.innerWidth - 48);
+                        setChatHeight(window.innerHeight - 48);
+                      } else {
+                        setChatWidth(prevSize.current.width);
+                        setChatHeight(prevSize.current.height);
+                      }
+                      setIsMaximized(!isMaximized);
+                    }}
+                    className="hidden md:flex rounded-full h-7 w-7 hover:bg-muted"
+                    title={language === 'ja' ? (isMaximized ? '元に戻す' : '最大化') : (isMaximized ? 'Restore' : 'Maximize')}
+                  >
+                    {isMaximized ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
                   </Button>
                   <Button
                     variant="ghost"

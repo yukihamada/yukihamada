@@ -35,6 +35,63 @@ export type Database = {
         }
         Relationships: []
       }
+      blog_posts: {
+        Row: {
+          category_en: string
+          category_ja: string
+          content_en: string
+          content_ja: string
+          created_at: string
+          date_en: string
+          date_ja: string
+          excerpt_en: string
+          excerpt_ja: string
+          featured: boolean
+          id: string
+          image: string | null
+          slug: string
+          title_en: string
+          title_ja: string
+          updated_at: string
+        }
+        Insert: {
+          category_en: string
+          category_ja: string
+          content_en: string
+          content_ja: string
+          created_at?: string
+          date_en: string
+          date_ja: string
+          excerpt_en: string
+          excerpt_ja: string
+          featured?: boolean
+          id?: string
+          image?: string | null
+          slug: string
+          title_en: string
+          title_ja: string
+          updated_at?: string
+        }
+        Update: {
+          category_en?: string
+          category_ja?: string
+          content_en?: string
+          content_ja?: string
+          created_at?: string
+          date_en?: string
+          date_ja?: string
+          excerpt_en?: string
+          excerpt_ja?: string
+          featured?: boolean
+          id?: string
+          image?: string | null
+          slug?: string
+          title_en?: string
+          title_ja?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       blog_views: {
         Row: {
           created_at: string

@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
-import { MessageCircle, Send, X, Bot, Loader2, GripHorizontal, CheckCheck } from 'lucide-react';
+import { MessageCircle, Send, X, Loader2, GripHorizontal, CheckCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useChat } from '@/contexts/ChatContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import yukiProfile from '@/assets/yuki-profile.jpg';
 
 type Message = {
@@ -29,6 +30,7 @@ const getVisitorId = () => {
 export const AIChatSection = () => {
   const { toast } = useToast();
   const { isOpen, toggleChat } = useChat();
+  const { language } = useLanguage();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -38,6 +40,41 @@ export const AIChatSection = () => {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const dragControls = useDragControls();
   const constraintsRef = useRef<HTMLDivElement>(null);
+
+  const texts = {
+    en: {
+      name: 'Yuki Hamada',
+      title: 'Entrepreneur・Investor・BJJ Player・Musician',
+      online: 'Online',
+      newChat: 'New Chat',
+      placeholder: 'Type a message...',
+      errorTitle: 'Error',
+      errorConversation: 'Failed to start conversation',
+      suggestions: [
+        'Tell me about your career',
+        'What are your BJJ achievements?',
+        'What kind of music do you make?',
+        'Can I work with you?',
+      ],
+    },
+    ja: {
+      name: '濱田 優貴',
+      title: '起業家・投資家・柔術家・音楽家',
+      online: 'オンライン',
+      newChat: '新規チャット',
+      placeholder: 'メッセージを入力...',
+      errorTitle: 'エラー',
+      errorConversation: '会話の開始に失敗しました',
+      suggestions: [
+        '経歴について教えて',
+        '柔術の実績は？',
+        'どんな音楽を作ってる？',
+        '一緒に仕事できる？',
+      ],
+    },
+  };
+
+  const t = texts[language];
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -162,8 +199,8 @@ export const AIChatSection = () => {
     const convId = await ensureConversation();
     if (!convId) {
       toast({
-        title: "エラー",
-        description: "会話の開始に失敗しました",
+        title: t.errorTitle,
+        description: t.errorConversation,
         variant: "destructive",
       });
       return;
@@ -310,10 +347,10 @@ export const AIChatSection = () => {
                   <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-card rounded-full" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-foreground text-sm">濱田 優貴</h3>
+                  <h3 className="font-semibold text-foreground text-sm">{t.name}</h3>
                   <p className="text-xs text-green-500 flex items-center gap-1">
                     <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-                    オンライン
+                    {t.online}
                   </p>
                 </div>
                 <div className="flex items-center gap-1">
@@ -323,7 +360,7 @@ export const AIChatSection = () => {
                     onClick={handleNewChat}
                     className="text-xs text-muted-foreground hover:text-foreground"
                   >
-                    新規チャット
+                    {t.newChat}
                   </Button>
                   <GripHorizontal className="w-4 h-4 text-muted-foreground" />
                 </div>
@@ -339,12 +376,12 @@ export const AIChatSection = () => {
                     alt="Yuki" 
                     className="w-20 h-20 rounded-full object-cover mb-4 ring-4 ring-primary/20"
                   />
-                  <h4 className="font-semibold text-foreground mb-1">濱田 優貴</h4>
+                  <h4 className="font-semibold text-foreground mb-1">{t.name}</h4>
                   <p className="text-xs text-muted-foreground mb-6">
-                    起業家・投資家・柔術家・音楽家
+                    {t.title}
                   </p>
                   <div className="space-y-2 w-full max-w-[280px]">
-                    {['経歴について教えて', '柔術の実績は？', 'どんな音楽を作ってる？'].map((suggestion) => (
+                    {t.suggestions.map((suggestion) => (
                       <button
                         key={suggestion}
                         onClick={() => setInput(suggestion)}
@@ -449,7 +486,7 @@ export const AIChatSection = () => {
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="メッセージを入力..."
+                    placeholder={t.placeholder}
                     disabled={isLoading}
                     rows={1}
                     className="w-full resize-none rounded-full border border-border bg-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50 max-h-32"

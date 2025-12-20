@@ -74,7 +74,7 @@ const BlogSection = () => {
             whileHover={{ x: 5 }}
           >
             <Button variant="ghost" className="mt-4 md:mt-0 text-primary hover:text-primary/80" asChild>
-              <Link to="/#blog">
+              <Link to="/blog">
                 すべての記事を見る
                 <motion.span
                   className="ml-2"

@@ -47,14 +47,14 @@ const BlogViewStats = ({ postSlug }: BlogViewStatsProps) => {
         .insert({ post_slug: postSlug, visitor_id: visitorId });
     };
 
-    // Get total view count
+    // Get total view count using security definer function
     const fetchTotalViews = async () => {
-      const { count } = await supabase
-        .from('blog_views')
-        .select('*', { count: 'exact', head: true })
-        .eq('post_slug', postSlug);
+      const { data, error } = await supabase
+        .rpc('get_blog_view_count', { p_post_slug: postSlug });
       
-      setTotalViews(count || 0);
+      if (!error && data !== null) {
+        setTotalViews(data);
+      }
       setIsLoading(false);
     };
 

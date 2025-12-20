@@ -7,6 +7,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { MusicPlayerProvider } from "@/contexts/MusicPlayerContext";
 import ScrollToTop from "@/components/ScrollToTop";
 import MusicPlayer from "@/components/MusicPlayer";
+import AudioVisualBackground from "@/components/AudioVisualBackground";
 import { AIChatSection } from "@/components/AIChatSection";
 import Index from "./pages/Index";
 import Blog from "./pages/Blog";
@@ -25,6 +26,7 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <ScrollToTop />
+            <AudioVisualBackground />
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/blog" element={<Blog />} />

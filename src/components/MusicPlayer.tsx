@@ -510,24 +510,14 @@ const MusicPlayer = () => {
               {/* Header */}
               <div className="flex items-center justify-between mb-4">
                 <span className="text-sm font-medium text-foreground">Music Player</span>
-                <div className="flex gap-1">
-                  <motion.button
-                    onClick={() => setIsExpanded(false)}
-                    className="p-2 rounded-full hover:bg-secondary transition-colors"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                  >
-                    <ChevronUp className="h-4 w-4 text-muted-foreground rotate-180" />
-                  </motion.button>
-                  <motion.button
-                    onClick={() => setIsVisible(false)}
-                    className="p-2 rounded-full hover:bg-secondary transition-colors"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                  >
-                    <X className="h-4 w-4 text-muted-foreground" />
-                  </motion.button>
-                </div>
+                <motion.button
+                  onClick={() => setIsExpanded(false)}
+                  className="p-2 rounded-full hover:bg-secondary transition-colors"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <ChevronUp className="h-4 w-4 text-muted-foreground rotate-180" />
+                </motion.button>
               </div>
 
               {/* Turntable with Vinyl Record */}

@@ -562,20 +562,42 @@ export const AIChatSection = () => {
   };
 
   const streamChat = async (userMessages: Message[], convId: string) => {
-    const resp = await fetch(CHAT_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-      },
-      body: JSON.stringify({ 
-        messages: userMessages.map(m => ({ role: m.role, content: m.content }))
-      }),
-    });
+    let resp: Response;
+    try {
+      resp = await fetch(CHAT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ 
+          messages: userMessages.map(m => ({ role: m.role, content: m.content }))
+        }),
+      });
+    } catch (networkError) {
+      throw new Error(language === 'ja' 
+        ? 'ネットワークエラー: インターネット接続を確認してください' 
+        : 'Network error: Please check your internet connection');
+    }
 
     if (!resp.ok) {
+      if (resp.status === 429) {
+        throw new Error(language === 'ja' 
+          ? 'リクエスト制限: しばらく待ってから再度お試しください' 
+          : 'Rate limited: Please wait a moment and try again');
+      }
+      if (resp.status === 402) {
+        throw new Error(language === 'ja' 
+          ? 'サービス一時停止中: しばらくお待ちください' 
+          : 'Service temporarily unavailable');
+      }
+      if (resp.status === 401 || resp.status === 403) {
+        throw new Error(language === 'ja' 
+          ? '認証エラー: ページを再読み込みしてください' 
+          : 'Authentication error: Please reload the page');
+      }
       const errorData = await resp.json().catch(() => ({}));
-      throw new Error(errorData.error || 'チャットの開始に失敗しました');
+      throw new Error(errorData.error || (language === 'ja' ? 'チャットの開始に失敗しました' : 'Failed to start chat'));
     }
 
     if (!resp.body) throw new Error('レスポンスボディがありません');

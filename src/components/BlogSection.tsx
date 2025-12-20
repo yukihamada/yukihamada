@@ -2,13 +2,15 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Calendar, Tag } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { blogPosts } from '@/data/blogPosts';
+import { useBlogPosts } from '@/hooks/useBlogPosts';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const BlogSection = () => {
   const { language } = useLanguage();
+  const { posts: blogPosts, isLoading } = useBlogPosts();
   const featuredPost = blogPosts.find((post) => post.featured);
-  const otherPosts = blogPosts.filter((post) => !post.featured);
+  const otherPosts = blogPosts.filter((post) => !post.featured).slice(0, 4);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -90,104 +92,114 @@ const BlogSection = () => {
           </motion.div>
         </motion.div>
 
-        <motion.div 
-          className="grid lg:grid-cols-2 gap-8"
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-50px" }}
-        >
-          {featuredPost && (
-            <Link to={`/blog/${featuredPost.slug}`}>
-              <motion.div
-                className="group glass rounded-3xl p-8 lg:row-span-2 block h-full"
-                variants={cardVariants}
-                whileHover={{ 
-                  scale: 1.02, 
-                  y: -5,
-                  boxShadow: "0 30px 60px -15px hsl(262 83% 58% / 0.2)"
-                }}
-                transition={{ type: "spring", stiffness: 300 }}
-              >
-                <div className="flex items-center gap-2 mb-4">
-                  <motion.span 
-                    className="px-3 py-1 rounded-full bg-primary/20 text-primary text-sm font-medium"
-                    animate={{ 
-                      boxShadow: [
-                        "0 0 0 0 hsl(262 83% 58% / 0.4)",
-                        "0 0 0 10px hsl(262 83% 58% / 0)",
-                      ]
-                    }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
-                    Featured
-                  </motion.span>
-                  <span className="flex items-center gap-1 text-muted-foreground text-sm">
-                    <Tag className="h-3 w-3" />
-                    {featuredPost[language].category}
-                  </span>
-                </div>
-                
-                <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-4 group-hover:text-primary transition-colors">
-                  {featuredPost[language].title}
-                </h3>
-                
-                <p className="text-muted-foreground leading-relaxed mb-6">
-                  {featuredPost[language].excerpt}
-                </p>
-                
-                <div className="flex items-center justify-between mt-auto pt-6 border-t border-border">
-                  <span className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Calendar className="h-4 w-4" />
-                    {featuredPost[language].date}
-                  </span>
-                  <motion.span 
-                    className="text-primary flex items-center gap-1"
-                    whileHover={{ x: 5 }}
-                  >
-                    {language === 'ja' ? '続きを読む' : 'Read More'}
-                    <ArrowRight className="h-4 w-4" />
-                  </motion.span>
-                </div>
-              </motion.div>
-            </Link>
-          )}
-
-          {/* Other Posts */}
-          <div className="space-y-4">
-            {otherPosts.map((post) => (
-              <Link key={post.slug} to={`/blog/${post.slug}`}>
+        {isLoading ? (
+          <div className="grid lg:grid-cols-2 gap-8">
+            <Skeleton className="h-96 rounded-3xl" />
+            <div className="space-y-4">
+              <Skeleton className="h-32 rounded-2xl" />
+              <Skeleton className="h-32 rounded-2xl" />
+              <Skeleton className="h-32 rounded-2xl" />
+            </div>
+          </div>
+        ) : (
+          <motion.div 
+            className="grid lg:grid-cols-2 gap-8"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+          >
+            {featuredPost && (
+              <Link to={`/blog/${featuredPost.slug}`}>
                 <motion.div
-                  className="group glass rounded-2xl p-6 cursor-pointer block"
+                  className="group glass rounded-3xl p-8 lg:row-span-2 block h-full"
                   variants={cardVariants}
                   whileHover={{ 
                     scale: 1.02, 
-                    x: 10,
-                    boxShadow: "0 20px 40px -15px hsl(262 83% 58% / 0.15)"
+                    y: -5,
+                    boxShadow: "0 30px 60px -15px hsl(262 83% 58% / 0.2)"
                   }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="flex items-center gap-1 text-primary text-xs font-medium">
+                  <div className="flex items-center gap-2 mb-4">
+                    <motion.span 
+                      className="px-3 py-1 rounded-full bg-primary/20 text-primary text-sm font-medium"
+                      animate={{ 
+                        boxShadow: [
+                          "0 0 0 0 hsl(262 83% 58% / 0.4)",
+                          "0 0 0 10px hsl(262 83% 58% / 0)",
+                        ]
+                      }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
+                      Featured
+                    </motion.span>
+                    <span className="flex items-center gap-1 text-muted-foreground text-sm">
                       <Tag className="h-3 w-3" />
-                      {post[language].category}
+                      {featuredPost[language].category}
                     </span>
-                    <span className="text-muted-foreground text-xs">•</span>
-                    <span className="text-muted-foreground text-xs">{post[language].date}</span>
                   </div>
                   
-                  <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors mb-2">
-                    {post[language].title}
+                  <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-4 group-hover:text-primary transition-colors">
+                    {featuredPost[language].title}
                   </h3>
                   
-                  <p className="text-muted-foreground text-sm line-clamp-2">
-                    {post[language].excerpt}
+                  <p className="text-muted-foreground leading-relaxed mb-6">
+                    {featuredPost[language].excerpt}
                   </p>
+                  
+                  <div className="flex items-center justify-between mt-auto pt-6 border-t border-border">
+                    <span className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Calendar className="h-4 w-4" />
+                      {featuredPost[language].date}
+                    </span>
+                    <motion.span 
+                      className="text-primary flex items-center gap-1"
+                      whileHover={{ x: 5 }}
+                    >
+                      {language === 'ja' ? '続きを読む' : 'Read More'}
+                      <ArrowRight className="h-4 w-4" />
+                    </motion.span>
+                  </div>
                 </motion.div>
               </Link>
-            ))}
-          </div>
-        </motion.div>
+            )}
+
+            <div className="space-y-4">
+              {otherPosts.map((post) => (
+                <Link key={post.slug} to={`/blog/${post.slug}`}>
+                  <motion.div
+                    className="group glass rounded-2xl p-6 cursor-pointer block"
+                    variants={cardVariants}
+                    whileHover={{ 
+                      scale: 1.02, 
+                      x: 10,
+                      boxShadow: "0 20px 40px -15px hsl(262 83% 58% / 0.15)"
+                    }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="flex items-center gap-1 text-primary text-xs font-medium">
+                        <Tag className="h-3 w-3" />
+                        {post[language].category}
+                      </span>
+                      <span className="text-muted-foreground text-xs">•</span>
+                      <span className="text-muted-foreground text-xs">{post[language].date}</span>
+                    </div>
+                    
+                    <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors mb-2">
+                      {post[language].title}
+                    </h3>
+                    
+                    <p className="text-muted-foreground text-sm line-clamp-2">
+                      {post[language].excerpt}
+                    </p>
+                  </motion.div>
+                </Link>
+              ))}
+            </div>
+          </motion.div>
+        )}
       </div>
     </section>
   );

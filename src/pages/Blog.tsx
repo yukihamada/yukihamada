@@ -2,15 +2,17 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Calendar, Tag, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { blogPosts } from '@/data/blogPosts';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useBlogPosts } from '@/hooks/useBlogPosts';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const Blog = () => {
   const { language } = useLanguage();
+  const { posts: blogPosts, isLoading } = useBlogPosts();
   const [viewCounts, setViewCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
@@ -23,8 +25,10 @@ const Blog = () => {
       }
       setViewCounts(counts);
     };
-    fetchViewCounts();
-  }, []);
+    if (blogPosts.length > 0) {
+      fetchViewCounts();
+    }
+  }, [blogPosts]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -71,93 +75,110 @@ const Blog = () => {
               {language === 'ja' ? 'すべての記事' : 'All Articles'}
             </h1>
             <p className="text-lg text-muted-foreground">
-              {language === 'ja' 
-                ? `${blogPosts.length}件の記事があります` 
-                : `${blogPosts.length} articles available`}
+              {isLoading 
+                ? (language === 'ja' ? '読み込み中...' : 'Loading...') 
+                : (language === 'ja' 
+                  ? `${blogPosts.length}件の記事があります` 
+                  : `${blogPosts.length} articles available`)}
             </p>
           </motion.div>
 
-          <motion.div
-            className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            {blogPosts.map((post) => {
-              const content = post[language];
-              return (
-                <Link key={post.slug} to={`/blog/${post.slug}`}>
-                  <motion.article
-                    className="group glass rounded-2xl overflow-hidden h-full flex flex-col"
-                    variants={cardVariants}
-                    whileHover={{ 
-                      scale: 1.02, 
-                      y: -5,
-                      boxShadow: "0 20px 40px -15px hsl(var(--primary) / 0.2)"
-                    }}
-                    transition={{ type: "spring", stiffness: 300 }}
-                  >
-                    {/* Image */}
-                    {post.image && (
-                      <div className="aspect-video overflow-hidden">
-                        <img 
-                          src={post.image} 
-                          alt={content.title}
-                          loading="lazy"
-                          decoding="async"
-                          width="400"
-                          height="225"
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                      </div>
-                    )}
-                    
-                    <div className="p-6 flex flex-col flex-grow">
-                      <div className="flex items-center gap-2 mb-3 flex-wrap">
-                        {post.featured && (
-                          <span className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-xs font-medium">
-                            Featured
-                          </span>
-                        )}
-                        <span className="flex items-center gap-1 text-primary text-xs font-medium">
-                          <Tag className="h-3 w-3" />
-                          {content.category}
-                        </span>
-                      </div>
+          {isLoading ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="glass rounded-2xl overflow-hidden">
+                  <Skeleton className="aspect-video" />
+                  <div className="p-6 space-y-3">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-6 w-full" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-3/4" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <motion.div
+              className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+            >
+              {blogPosts.map((post) => {
+                const content = post[language];
+                return (
+                  <Link key={post.slug} to={`/blog/${post.slug}`}>
+                    <motion.article
+                      className="group glass rounded-2xl overflow-hidden h-full flex flex-col"
+                      variants={cardVariants}
+                      whileHover={{ 
+                        scale: 1.02, 
+                        y: -5,
+                        boxShadow: "0 20px 40px -15px hsl(var(--primary) / 0.2)"
+                      }}
+                      transition={{ type: "spring", stiffness: 300 }}
+                    >
+                      {post.image && (
+                        <div className="aspect-video overflow-hidden">
+                          <img 
+                            src={post.image} 
+                            alt={content.title}
+                            loading="lazy"
+                            decoding="async"
+                            width="400"
+                            height="225"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                        </div>
+                      )}
                       
-                      <h2 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors mb-3">
-                        {content.title}
-                      </h2>
-                      
-                      <p className="text-muted-foreground text-sm line-clamp-3 mb-4 flex-grow">
-                        {content.excerpt}
-                      </p>
-                      
-                      <div className="flex items-center justify-between pt-4 border-t border-border mt-auto">
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            {content.date}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Eye className="h-3 w-3" />
-                            {viewCounts[post.slug] || 0}
+                      <div className="p-6 flex flex-col flex-grow">
+                        <div className="flex items-center gap-2 mb-3 flex-wrap">
+                          {post.featured && (
+                            <span className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-xs font-medium">
+                              Featured
+                            </span>
+                          )}
+                          <span className="flex items-center gap-1 text-primary text-xs font-medium">
+                            <Tag className="h-3 w-3" />
+                            {content.category}
                           </span>
                         </div>
-                        <motion.span 
-                          className="text-primary flex items-center gap-1 text-sm"
-                          whileHover={{ x: 5 }}
-                        >
-                          {language === 'ja' ? '読む' : 'Read'}
-                          <ArrowRight className="h-3 w-3" />
-                        </motion.span>
+                        
+                        <h2 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors mb-3">
+                          {content.title}
+                        </h2>
+                        
+                        <p className="text-muted-foreground text-sm line-clamp-3 mb-4 flex-grow">
+                          {content.excerpt}
+                        </p>
+                        
+                        <div className="flex items-center justify-between pt-4 border-t border-border mt-auto">
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
+                              {content.date}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Eye className="h-3 w-3" />
+                              {viewCounts[post.slug] || 0}
+                            </span>
+                          </div>
+                          <motion.span 
+                            className="text-primary flex items-center gap-1 text-sm"
+                            whileHover={{ x: 5 }}
+                          >
+                            {language === 'ja' ? '読む' : 'Read'}
+                            <ArrowRight className="h-3 w-3" />
+                          </motion.span>
+                        </div>
                       </div>
-                    </div>
-                  </motion.article>
-                </Link>
-              );
-            })}
-          </motion.div>
+                    </motion.article>
+                  </Link>
+                );
+              })}
+            </motion.div>
+          )}
         </div>
       </main>
 

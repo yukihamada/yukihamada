@@ -164,17 +164,17 @@ const Navigation = () => {
           )}
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-1">
-            <div className="flex items-center bg-secondary/30 backdrop-blur-sm rounded-full p-1 border border-border/30">
+          <div className="hidden md:flex items-center gap-6">
+            {/* Main Nav Links */}
+            <div className="flex items-center gap-1 bg-secondary/30 backdrop-blur-sm rounded-full p-1 border border-border/30">
               {navLinks.map((link, index) => {
-                // On blog pages, link to home page with hash
                 const href = isHomePage ? link.href : `/${link.href}`;
                 
                 return (
                   <motion.a
                     key={link.name}
                     href={href}
-                    className="relative px-4 py-2 text-sm font-medium transition-colors rounded-full"
+                    className="relative px-3 py-1.5 text-sm font-medium transition-colors rounded-full"
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.08 }}
@@ -191,10 +191,9 @@ const Navigation = () => {
                         transition={{ type: "spring", stiffness: 500, damping: 30 }}
                       />
                     )}
-                    <span className={`relative z-10 flex items-center gap-1.5 ${
+                    <span className={`relative z-10 ${
                       hoveredIndex === index ? 'text-primary' : 'text-muted-foreground'
                     }`}>
-                      <span className="text-[10px] opacity-60">{link.icon}</span>
                       {link.name}
                     </span>
                   </motion.a>
@@ -202,65 +201,49 @@ const Navigation = () => {
               })}
             </div>
             
-            <div className="flex items-center gap-2 ml-4">
-              {/* Community Link */}
+            {/* Right Side Actions */}
+            <div className="flex items-center gap-1">
               <Button
                 variant="ghost"
                 size="sm"
-                className="rounded-full"
+                className="rounded-full h-8 px-3 text-muted-foreground hover:text-foreground"
                 onClick={() => navigate('/community')}
               >
-                <Users className="h-4 w-4 mr-1" />
-                {language === 'ja' ? 'コミュニティ' : 'Community'}
+                <Users className="h-4 w-4" />
+                <span className="ml-1.5 hidden lg:inline">{language === 'ja' ? 'コミュニティ' : 'Community'}</span>
               </Button>
 
               <LanguageSwitcher />
               
-              {/* Auth Button */}
               {isAuthenticated ? (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-full"
-                  onClick={() => navigate('/profile')}
-                >
-                  <User className="h-4 w-4" />
-                </Button>
+                <>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full h-8 w-8"
+                    onClick={() => navigate('/profile')}
+                  >
+                    <User className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="rounded-full h-8 px-4 bg-primary text-primary-foreground hover:bg-primary/90"
+                    asChild
+                  >
+                    <a href="https://www.patreon.com/paradisecreator/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5">
+                      <Sparkles className="h-3.5 w-3.5" />
+                      <span>Patreon</span>
+                    </a>
+                  </Button>
+                </>
               ) : (
                 <Button
-                  variant="ghost"
                   size="sm"
-                  className="rounded-full"
+                  className="rounded-full h-8 px-4"
                   onClick={() => navigate('/auth')}
                 >
                   {language === 'ja' ? 'ログイン' : 'Login'}
                 </Button>
-              )}
-              
-              {isAuthenticated && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.5 }}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Button
-                    size="sm"
-                    className="relative overflow-hidden bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 rounded-full px-5"
-                    asChild
-                  >
-                    <a href="https://www.patreon.com/paradisecreator/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
-                      <Sparkles className="h-3.5 w-3.5" />
-                      <span>Patreon</span>
-                      <motion.div 
-                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                        animate={{ x: ['-200%', '200%'] }}
-                        transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
-                      />
-                    </a>
-                  </Button>
-                </motion.div>
               )}
             </div>
           </div>

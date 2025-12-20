@@ -6,6 +6,7 @@ import { getBlogPostBySlug, blogPosts } from '@/data/blogPosts';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import LikeButton from '@/components/LikeButton';
+import BlogViewStats from '@/components/BlogViewStats';
 
 // Blog post images
 import jiuflowHero from '@/assets/jiuflow-hero.png';
@@ -66,7 +67,7 @@ const BlogPost = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <div className="flex items-center gap-3 mb-6">
+            <div className="flex flex-wrap items-center gap-3 mb-4">
               <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-primary/20 text-primary text-sm font-medium">
                 <Tag className="h-3 w-3" />
                 {post.category}
@@ -75,6 +76,11 @@ const BlogPost = () => {
                 <Calendar className="h-4 w-4" />
                 {post.date}
               </span>
+            </div>
+
+            {/* View Stats */}
+            <div className="mb-6">
+              <BlogViewStats postSlug={post.slug} />
             </div>
 
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight mb-6">

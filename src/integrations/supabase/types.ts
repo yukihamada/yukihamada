@@ -35,6 +35,27 @@ export type Database = {
         }
         Relationships: []
       }
+      blog_views: {
+        Row: {
+          created_at: string
+          id: string
+          post_slug: string
+          visitor_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_slug: string
+          visitor_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_slug?: string
+          visitor_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

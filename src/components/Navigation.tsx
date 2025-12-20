@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Sparkles, User, Users } from 'lucide-react';
+import { Menu, X, Sparkles, User, Users, ChevronDown, Briefcase, TrendingUp, BookOpen, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
@@ -10,33 +10,64 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const { t, language } = useLanguage();
   const { isPlaying, analyzerData } = useMusicPlayer();
   const { isAuthenticated, profile } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Check if we're on a blog page (not the home page)
   const isOnBlogPage = location.pathname.startsWith('/blog');
   const isHomePage = location.pathname === '/';
 
-  const navLinks = [
-    { name: t.nav.enabler, href: '#enabler', icon: '◆' },
-    { name: t.nav.career, href: '#career', icon: '◈' },
-    { name: t.nav.investments, href: '#investments', icon: '◇' },
-    { name: t.nav.blog, href: '#blog', icon: '▣' },
-    { name: t.nav.hobbies, href: '#hobbies', icon: '✦' },
+  // Grouped navigation
+  const navGroups = {
+    work: {
+      label: language === 'ja' ? '仕事' : 'Work',
+      icon: Briefcase,
+      items: [
+        { name: t.nav.enabler, href: '#enabler' },
+        { name: t.nav.career, href: '#career' },
+      ]
+    },
+    interests: {
+      label: language === 'ja' ? '活動' : 'Activities',
+      icon: Heart,
+      items: [
+        { name: t.nav.investments, href: '#investments' },
+        { name: t.nav.hobbies, href: '#hobbies' },
+      ]
+    }
+  };
+  
+  const singleLinks = [
+    { name: t.nav.blog, href: '#blog', icon: BookOpen },
   ];
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      const scrollY = window.scrollY;
+      setIsScrolled(scrollY > 50);
+      // Calculate scroll progress (0 to 1) over first 200px
+      setScrollProgress(Math.min(scrollY / 200, 1));
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setActiveDropdown(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   // Mini equalizer component for header
@@ -57,23 +88,32 @@ const Navigation = () => {
 
   return (
     <motion.nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        isScrolled
-          ? 'py-2'
-          : 'py-4'
-      }`}
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.8, ease: [0.25, 0.4, 0.25, 1] }}
+      className="fixed top-0 left-0 right-0 z-50"
+      initial={{ y: -100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.6, ease: [0.25, 0.4, 0.25, 1] }}
+      style={{
+        paddingTop: `${16 - scrollProgress * 8}px`,
+        paddingBottom: `${16 - scrollProgress * 8}px`,
+      }}
     >
+      {/* Progress bar */}
+      <motion.div
+        className="absolute bottom-0 left-0 h-[2px] bg-gradient-to-r from-primary via-primary/80 to-primary/60"
+        style={{ width: `${scrollProgress * 100}%` }}
+      />
+      
       <div className="container mx-auto px-6">
         <motion.div 
-          className={`flex items-center justify-between transition-all duration-500 ${
-            isScrolled 
-              ? 'bg-background/60 backdrop-blur-2xl border border-border/50 rounded-2xl px-6 py-3 shadow-lg shadow-primary/5' 
-              : 'bg-transparent px-0 py-2'
-          }`}
-          layout
+          className="flex items-center justify-between transition-all duration-300"
+          style={{
+            backgroundColor: `hsl(var(--background) / ${0.6 * scrollProgress})`,
+            backdropFilter: `blur(${scrollProgress * 24}px)`,
+            borderRadius: `${scrollProgress * 16}px`,
+            padding: `${12 + scrollProgress * 4}px ${scrollProgress * 24}px`,
+            boxShadow: scrollProgress > 0.5 ? `0 4px 20px -4px hsl(var(--primary) / ${scrollProgress * 0.1})` : 'none',
+            border: scrollProgress > 0.3 ? `1px solid hsl(var(--border) / ${scrollProgress * 0.5})` : '1px solid transparent',
+          }}
         >
           {/* Logo - Animated */}
           {isHomePage ? (
@@ -164,39 +204,62 @@ const Navigation = () => {
           )}
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-6">
-            {/* Main Nav Links */}
+          <div className="hidden md:flex items-center gap-4" ref={dropdownRef}>
+            {/* Dropdown Groups */}
             <div className="flex items-center gap-1 bg-secondary/30 backdrop-blur-sm rounded-full p-1 border border-border/30">
-              {navLinks.map((link, index) => {
+              {Object.entries(navGroups).map(([key, group]) => (
+                <div key={key} className="relative">
+                  <button
+                    onClick={() => setActiveDropdown(activeDropdown === key ? null : key)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-full transition-colors ${
+                      activeDropdown === key ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    <group.icon className="h-3.5 w-3.5" />
+                    <span>{group.label}</span>
+                    <ChevronDown className={`h-3 w-3 transition-transform ${activeDropdown === key ? 'rotate-180' : ''}`} />
+                  </button>
+                  
+                  <AnimatePresence>
+                    {activeDropdown === key && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute top-full left-0 mt-2 min-w-[140px] bg-popover border border-border rounded-xl shadow-lg overflow-hidden z-50"
+                      >
+                        {group.items.map((item) => {
+                          const href = isHomePage ? item.href : `/${item.href}`;
+                          return (
+                            <a
+                              key={item.name}
+                              href={href}
+                              onClick={() => setActiveDropdown(null)}
+                              className="block px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                            >
+                              {item.name}
+                            </a>
+                          );
+                        })}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ))}
+              
+              {/* Single Links */}
+              {singleLinks.map((link) => {
                 const href = isHomePage ? link.href : `/${link.href}`;
-                
                 return (
-                  <motion.a
+                  <a
                     key={link.name}
                     href={href}
-                    className="relative px-3 py-1.5 text-sm font-medium transition-colors rounded-full"
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.08 }}
-                    onMouseEnter={() => setHoveredIndex(index)}
-                    onMouseLeave={() => setHoveredIndex(null)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground rounded-full transition-colors"
                   >
-                    {hoveredIndex === index && (
-                      <motion.div
-                        className="absolute inset-0 bg-primary/10 rounded-full"
-                        layoutId="navHover"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                      />
-                    )}
-                    <span className={`relative z-10 ${
-                      hoveredIndex === index ? 'text-primary' : 'text-muted-foreground'
-                    }`}>
-                      {link.name}
-                    </span>
-                  </motion.a>
+                    <link.icon className="h-3.5 w-3.5" />
+                    <span>{link.name}</span>
+                  </a>
                 );
               })}
             </div>
@@ -297,9 +360,31 @@ const Navigation = () => {
           >
             <div className="container mx-auto px-6 pt-24 pb-8 h-full flex flex-col">
               <div className="flex-1 flex flex-col justify-center space-y-2">
-                {navLinks.map((link, index) => {
+                {/* Mobile: Flat list of all items */}
+                {Object.entries(navGroups).flatMap(([key, group], groupIndex) =>
+                  group.items.map((item, itemIndex) => {
+                    const href = isHomePage ? item.href : `/${item.href}`;
+                    const index = groupIndex * 2 + itemIndex;
+                    return (
+                      <motion.a
+                        key={item.name}
+                        href={href}
+                        className="group flex items-center gap-4 py-4 border-b border-border/20"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        initial={{ opacity: 0, x: -40 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.08 + 0.2 }}
+                      >
+                        <span className="text-2xl font-medium text-foreground group-hover:text-primary transition-colors">
+                          {item.name}
+                        </span>
+                        <span className="ml-auto text-muted-foreground/30 text-sm">→</span>
+                      </motion.a>
+                    );
+                  })
+                )}
+                {singleLinks.map((link, index) => {
                   const href = isHomePage ? link.href : `/${link.href}`;
-                  
                   return (
                     <motion.a
                       key={link.name}
@@ -308,21 +393,12 @@ const Navigation = () => {
                       onClick={() => setIsMobileMenuOpen(false)}
                       initial={{ opacity: 0, x: -40 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.08 + 0.2 }}
+                      transition={{ delay: (index + 4) * 0.08 + 0.2 }}
                     >
-                      <span className="text-2xl text-primary/50 group-hover:text-primary transition-colors">
-                        {link.icon}
-                      </span>
                       <span className="text-2xl font-medium text-foreground group-hover:text-primary transition-colors">
                         {link.name}
                       </span>
-                      <motion.span 
-                        className="ml-auto text-muted-foreground/30 text-sm"
-                        initial={{ x: 10, opacity: 0 }}
-                        whileHover={{ x: 0, opacity: 1 }}
-                      >
-                        →
-                      </motion.span>
+                      <span className="ml-auto text-muted-foreground/30 text-sm">→</span>
                     </motion.a>
                   );
                 })}

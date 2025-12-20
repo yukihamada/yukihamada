@@ -1,18 +1,21 @@
 import { useState, useEffect } from 'react';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Sparkles } from 'lucide-react';
+import { Menu, X, Sparkles, User, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
+import { useAuth } from '@/hooks/useAuth';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { isPlaying, analyzerData } = useMusicPlayer();
+  const { isAuthenticated, profile } = useAuth();
+  const navigate = useNavigate();
   const location = useLocation();
   
   // Check if we're on a blog page (not the home page)
@@ -200,7 +203,39 @@ const Navigation = () => {
             </div>
             
             <div className="flex items-center gap-2 ml-4">
+              {/* Community Link */}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="rounded-full"
+                onClick={() => navigate('/community')}
+              >
+                <Users className="h-4 w-4 mr-1" />
+                {language === 'ja' ? 'コミュニティ' : 'Community'}
+              </Button>
+
               <LanguageSwitcher />
+              
+              {/* Auth Button */}
+              {isAuthenticated ? (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full"
+                  onClick={() => navigate('/profile')}
+                >
+                  <User className="h-4 w-4" />
+                </Button>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="rounded-full"
+                  onClick={() => navigate('/auth')}
+                >
+                  {language === 'ja' ? 'ログイン' : 'Login'}
+                </Button>
+              )}
               
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
@@ -308,12 +343,42 @@ const Navigation = () => {
                 })}
               </div>
               
+              {/* Mobile Menu Bottom Buttons */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
-                className="pt-8"
+                className="pt-8 space-y-3"
               >
+                <Button
+                  variant="outline"
+                  className="w-full h-12 text-base rounded-xl"
+                  onClick={() => { setIsMobileMenuOpen(false); navigate('/community'); }}
+                >
+                  <Users className="h-5 w-5 mr-2" />
+                  {language === 'ja' ? 'コミュニティ' : 'Community'}
+                </Button>
+                
+                {isAuthenticated ? (
+                  <Button
+                    variant="outline"
+                    className="w-full h-12 text-base rounded-xl"
+                    onClick={() => { setIsMobileMenuOpen(false); navigate('/profile'); }}
+                  >
+                    <User className="h-5 w-5 mr-2" />
+                    {profile?.display_name || (language === 'ja' ? 'プロフィール' : 'Profile')}
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    className="w-full h-12 text-base rounded-xl"
+                    onClick={() => { setIsMobileMenuOpen(false); navigate('/auth'); }}
+                  >
+                    <User className="h-5 w-5 mr-2" />
+                    {language === 'ja' ? 'ログイン' : 'Login'}
+                  </Button>
+                )}
+                
                 <Button
                   className="w-full h-14 text-lg bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-2xl"
                   asChild

@@ -648,9 +648,9 @@ export const AIChatSection = () => {
             drag={window.innerWidth >= 768 && !isResizing.current}
             dragControls={dragControls}
             dragConstraints={constraintsRef}
-            dragElastic={0.1}
+            dragElastic={0.05}
             dragMomentum={false}
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            initial={{ opacity: 0, y: 20, scale: 0.95, x: 0 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
@@ -660,7 +660,7 @@ export const AIChatSection = () => {
             }}
             className="fixed z-50 bg-background border border-border shadow-2xl flex flex-col overflow-hidden pointer-events-auto
               bottom-0 left-0 right-0 h-[70vh] rounded-t-2xl
-              md:bottom-20 md:left-6 md:right-auto md:rounded-xl"
+              md:bottom-6 md:left-6 md:right-auto md:rounded-xl"
           >
             {/* Resize handles - desktop only */}
             <div 

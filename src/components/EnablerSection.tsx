@@ -5,6 +5,7 @@ import AnimatedSection from '@/components/AnimatedSection';
 import MagneticButton from '@/components/MagneticButton';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useRef } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ParallaxCardProps {
   children: React.ReactNode;
@@ -65,6 +66,7 @@ const ParallaxCard = ({ children, className = '' }: ParallaxCardProps) => {
 
 const EnablerSection = () => {
   const { t } = useLanguage();
+  const { isAuthenticated } = useAuth();
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -304,19 +306,21 @@ const EnablerSection = () => {
                   </a>
                 </Button>
               </MagneticButton>
-              <MagneticButton>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-primary/50 hover:bg-primary/10"
-                  asChild
-                >
-                  <a href="https://www.patreon.com/paradisecreator/" target="_blank" rel="noopener noreferrer">
-                    <Users className="mr-2 h-5 w-5" />
-                    Patreon
-                  </a>
-                </Button>
-              </MagneticButton>
+              {isAuthenticated && (
+                <MagneticButton>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="border-primary/50 hover:bg-primary/10"
+                    asChild
+                  >
+                    <a href="https://www.patreon.com/paradisecreator/" target="_blank" rel="noopener noreferrer">
+                      <Users className="mr-2 h-5 w-5" />
+                      Patreon
+                    </a>
+                  </Button>
+                </MagneticButton>
+              )}
             </div>
           </motion.div>
         </AnimatedSection>

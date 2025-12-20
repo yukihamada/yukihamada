@@ -7,12 +7,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { useChat } from '@/contexts/ChatContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import yukiProfile from '@/assets/yuki-profile.jpg';
+import { TypingText } from '@/components/TypingText';
 
 type Message = {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
   status?: 'sending' | 'sent' | 'delivered';
+  isGreeting?: boolean;
 };
 
 type StoredMessage = {
@@ -254,21 +256,45 @@ export const AIChatSection = () => {
         'What companies have you founded?',
         'Tell me about Enabler',
         'What is your investment philosophy?',
+        'How did you start your career?',
+        'What was your biggest success?',
       ],
       bjj: [
         'What belt are you?',
         'How long have you trained?',
         'What competitions have you won?',
+        'Who is your favorite BJJ player?',
+        'Do you teach BJJ?',
       ],
       music: [
         'Can I listen to your songs?',
         'What genre do you make?',
         'What instruments do you play?',
+        'Where can I stream your music?',
+        'Are you releasing new songs?',
+      ],
+      investment: [
+        'What kind of startups do you invest in?',
+        'How can I pitch to you?',
+        'What do you look for in founders?',
+        'Do you do angel investing?',
+      ],
+      blog: [
+        'What topics do you write about?',
+        'What is your favorite article?',
+        'Do you accept guest posts?',
+      ],
+      collaboration: [
+        'Are you open to collaborations?',
+        'How can I work with you?',
+        'Do you offer consulting?',
+        'What is the best way to contact you?',
       ],
       general: [
         'Tell me about your career',
         'What are your hobbies?',
         'How can I contact you?',
+        'What is your background?',
       ],
     },
     ja: {
@@ -276,21 +302,45 @@ export const AIChatSection = () => {
         'どんな会社を創業した？',
         'Enablerについて教えて',
         '投資の哲学は？',
+        'キャリアはどう始まった？',
+        '一番の成功体験は？',
       ],
       bjj: [
         '何帯？',
         '柔術歴はどのくらい？',
         'どんな大会で優勝した？',
+        '好きな柔術家は？',
+        '柔術を教えてる？',
       ],
       music: [
         '曲を聴きたい',
         'どんなジャンル？',
         'どんな楽器を弾く？',
+        'どこで曲を聴ける？',
+        '新曲は出す予定？',
+      ],
+      investment: [
+        'どんなスタートアップに投資してる？',
+        'ピッチはどうすればいい？',
+        '起業家に何を求める？',
+        'エンジェル投資してる？',
+      ],
+      blog: [
+        'どんな記事を書いてる？',
+        'おすすめの記事は？',
+        'ゲスト投稿は受け付けてる？',
+      ],
+      collaboration: [
+        'コラボはできる？',
+        '一緒に仕事したい',
+        'コンサルティングはしてる？',
+        '連絡先を教えて',
       ],
       general: [
         '経歴を教えて',
         '趣味は何？',
         '連絡先を知りたい',
+        'バックグラウンドは？',
       ],
     },
   };
@@ -305,14 +355,24 @@ export const AIChatSection = () => {
     const content = lastMessage.content.toLowerCase();
     const replies = quickReplies[language];
     
-    if (content.includes('career') || content.includes('経歴') || content.includes('enabler') || content.includes('起業') || content.includes('投資')) {
+    // Check for specific topics
+    if (content.includes('career') || content.includes('経歴') || content.includes('enabler') || content.includes('起業') || content.includes('founded') || content.includes('創業')) {
       return replies.career;
     }
-    if (content.includes('bjj') || content.includes('柔術') || content.includes('jiu') || content.includes('帯') || content.includes('belt')) {
+    if (content.includes('bjj') || content.includes('柔術') || content.includes('jiu') || content.includes('帯') || content.includes('belt') || content.includes('grappling')) {
       return replies.bjj;
     }
-    if (content.includes('music') || content.includes('音楽') || content.includes('song') || content.includes('曲')) {
+    if (content.includes('music') || content.includes('音楽') || content.includes('song') || content.includes('曲') || content.includes('album') || content.includes('アルバム')) {
       return replies.music;
+    }
+    if (content.includes('invest') || content.includes('投資') || content.includes('startup') || content.includes('スタートアップ') || content.includes('vc') || content.includes('angel')) {
+      return replies.investment;
+    }
+    if (content.includes('blog') || content.includes('ブログ') || content.includes('article') || content.includes('記事') || content.includes('write') || content.includes('書')) {
+      return replies.blog;
+    }
+    if (content.includes('work together') || content.includes('collaborate') || content.includes('contact') || content.includes('連絡') || content.includes('仕事') || content.includes('コラボ')) {
+      return replies.collaboration;
     }
     
     return replies.general;
@@ -444,6 +504,7 @@ export const AIChatSection = () => {
       content: greeting,
       timestamp: new Date(),
       status: 'delivered',
+      isGreeting: true, // Mark as greeting for typing animation
     };
 
     setMessages([greetingMessage]);
@@ -903,7 +964,13 @@ export const AIChatSection = () => {
                           : 'bg-card text-foreground border border-border rounded-bl-sm shadow-sm'
                       }`}
                     >
-                      <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                      <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                        {message.isGreeting && message.role === 'assistant' ? (
+                          <TypingText text={message.content} speed={25} />
+                        ) : (
+                          message.content
+                        )}
+                      </p>
                     </div>
                     <div className="flex items-center gap-1 mt-1 px-1">
                       <span className="text-[10px] text-muted-foreground">

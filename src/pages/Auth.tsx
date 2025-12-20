@@ -114,6 +114,14 @@ const Auth = () => {
     }
   };
 
+  // Email provider links
+  const emailProviders = [
+    { name: 'Gmail', url: 'https://mail.google.com', icon: '📧' },
+    { name: 'Yahoo', url: 'https://mail.yahoo.com', icon: '📬' },
+    { name: 'Outlook', url: 'https://outlook.live.com', icon: '📩' },
+    { name: 'iCloud', url: 'https://www.icloud.com/mail', icon: '🍎' },
+  ];
+
   if (emailSent) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -147,6 +155,27 @@ const Auth = () => {
             <p className="text-sm text-muted-foreground mb-6">
               {t.clickLink}
             </p>
+
+            {/* Email provider quick links */}
+            <div className="mb-6">
+              <p className="text-xs text-muted-foreground mb-3">
+                {language === 'ja' ? 'メールを開く' : 'Open your email'}
+              </p>
+              <div className="flex flex-wrap justify-center gap-2">
+                {emailProviders.map((provider) => (
+                  <a
+                    key={provider.name}
+                    href={provider.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 px-3 py-2 text-xs bg-secondary/50 hover:bg-secondary border border-border rounded-full transition-colors text-muted-foreground hover:text-foreground"
+                  >
+                    <span>{provider.icon}</span>
+                    <span>{provider.name}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
             
             <Button
               variant="outline"

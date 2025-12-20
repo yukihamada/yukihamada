@@ -2,22 +2,79 @@ import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMemo } from 'react';
 
-// Generate random particles
-const generateParticles = (count: number) => {
+type ParticleShape = 'circle' | 'star' | 'heart' | 'diamond' | 'triangle';
+
+interface Particle {
+  id: number;
+  x: number;
+  y: number;
+  size: number;
+  delay: number;
+  duration: number;
+  shape: ParticleShape;
+}
+
+// Generate random particles with different shapes
+const generateParticles = (count: number): Particle[] => {
+  const shapes: ParticleShape[] = ['circle', 'star', 'heart', 'diamond', 'triangle'];
   return Array.from({ length: count }, (_, i) => ({
     id: i,
     x: Math.random() * 100,
     y: Math.random() * 100,
-    size: Math.random() * 6 + 2,
+    size: Math.random() * 8 + 4,
     delay: Math.random() * 2,
     duration: Math.random() * 3 + 2,
+    shape: shapes[Math.floor(Math.random() * shapes.length)],
   }));
+};
+
+// SVG paths for different shapes
+const getShapePath = (shape: ParticleShape, size: number): JSX.Element => {
+  const halfSize = size / 2;
+  
+  switch (shape) {
+    case 'star':
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+        </svg>
+      );
+    case 'heart':
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+        </svg>
+      );
+    case 'diamond':
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2L2 12l10 10 10-10L12 2z" />
+        </svg>
+      );
+    case 'triangle':
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2L2 22h20L12 2z" />
+        </svg>
+      );
+    default:
+      return (
+        <div 
+          style={{ 
+            width: size, 
+            height: size, 
+            borderRadius: '50%', 
+            backgroundColor: 'currentColor' 
+          }} 
+        />
+      );
+  }
 };
 
 const AudioVisualBackground = () => {
   const { isPlaying, analyzerData, currentColor } = useMusicPlayer();
   
-  const particles = useMemo(() => generateParticles(50), []);
+  const particles = useMemo(() => generateParticles(60), []);
   const floatingOrbs = useMemo(() => generateParticles(8), []);
 
   if (!isPlaying) return null;
@@ -50,17 +107,15 @@ const AudioVisualBackground = () => {
           transition={{ duration: 0.3 }}
         />
 
-        {/* Floating particles */}
+        {/* Floating particles with different shapes */}
         {particles.map((particle) => (
           <motion.div
             key={`particle-${particle.id}`}
-            className="absolute rounded-full"
+            className="absolute"
             style={{
               left: `${particle.x}%`,
-              width: particle.size,
-              height: particle.size,
-              background: `${currentColor}`,
-              boxShadow: `0 0 ${particle.size * 2}px ${currentColor}`,
+              color: currentColor,
+              filter: `drop-shadow(0 0 ${particle.size}px ${currentColor})`,
             }}
             animate={{
               y: [
@@ -68,8 +123,11 @@ const AudioVisualBackground = () => {
                 `${particle.y - 30 - avgEnergy * 20}vh`,
                 `${particle.y}vh`,
               ],
-              opacity: [0.2, 0.8 * (0.5 + avgEnergy), 0.2],
+              opacity: [0.3, 0.9 * (0.5 + avgEnergy), 0.3],
               scale: [1, 1.5 + avgEnergy, 1],
+              rotate: particle.shape === 'star' || particle.shape === 'diamond' 
+                ? [0, 180, 360] 
+                : [0, 0, 0],
             }}
             transition={{
               duration: particle.duration,
@@ -77,7 +135,9 @@ const AudioVisualBackground = () => {
               repeat: Infinity,
               ease: 'easeInOut',
             }}
-          />
+          >
+            {getShapePath(particle.shape, particle.size)}
+          </motion.div>
         ))}
 
         {/* Left side wave bars - Enhanced */}

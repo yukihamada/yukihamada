@@ -1,4 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Calendar, Tag, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -38,16 +39,37 @@ const trackMapping: Record<string, number> = {
 };
 
 // Function to dispatch custom event to play specific track
-const playTrack = (trackId: string) => {
-  const trackIndex = trackMapping[trackId];
-  if (trackIndex !== undefined) {
-    window.dispatchEvent(new CustomEvent('playSpecificTrack', { detail: { trackIndex } }));
-  }
+const playTrack = (trackIndex: number) => {
+  window.dispatchEvent(new CustomEvent('playSpecificTrack', { detail: { trackIndex } }));
 };
 
 const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
   const post = slug ? getBlogPostBySlug(slug) : undefined;
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // Add click listeners for play buttons after content renders
+  useEffect(() => {
+    if (!contentRef.current) return;
+    
+    const playButtons = contentRef.current.querySelectorAll('[data-play-track]');
+    playButtons.forEach((button) => {
+      const trackIndex = parseInt(button.getAttribute('data-play-track') || '0', 10);
+      const handleClick = () => playTrack(trackIndex);
+      button.addEventListener('click', handleClick);
+      // Store handler for cleanup
+      (button as any)._playHandler = handleClick;
+    });
+
+    return () => {
+      playButtons.forEach((button) => {
+        const handler = (button as any)._playHandler;
+        if (handler) {
+          button.removeEventListener('click', handler);
+        }
+      });
+    };
+  }, [post]);
 
   if (!post) {
     return (
@@ -133,6 +155,7 @@ const BlogPost = () => {
           >
             <div className="glass rounded-3xl p-4 md:p-8 lg:p-12">
               <div 
+                ref={contentRef}
                 className="blog-content prose prose-lg dark:prose-invert max-w-none"
                 dangerouslySetInnerHTML={{ 
                   __html: DOMPurify.sanitize(
@@ -141,20 +164,23 @@ const BlogPost = () => {
                       .replace(/^## (.+)$/gm, '<h2 class="text-2xl md:text-3xl font-bold mt-12 mb-6 text-foreground border-l-4 border-primary pl-4">$1</h2>')
                       .replace(/^### (.+)$/gm, '<h3 class="text-xl md:text-2xl font-semibold mt-8 mb-4 text-foreground">$1</h3>')
                       // Convert markdown tables to HTML tables
-                      .replace(/\n\| (.+) \|\n\|[-| ]+\|\n((?:\| .+ \|\n?)+)/g, (match, header, body) => {
-                        const headers = header.split(' | ').map((h: string) => 
-                          `<th class="px-3 py-3 md:px-5 md:py-4 text-left text-xs md:text-sm font-semibold text-foreground bg-primary/10 first:rounded-tl-xl last:rounded-tr-xl">${h.trim()}</th>`
-                        ).join('');
-                        const rows = body.trim().split('\n').map((row: string) => {
-                          const cells = row.replace(/^\| /, '').replace(/ \|$/, '').split(' | ').map((cell: string, idx: number) => 
-                            `<td class="px-3 py-3 md:px-5 md:py-4 text-sm ${idx === 0 ? 'font-medium text-foreground' : 'text-muted-foreground'} border-b border-border/30">${cell.trim()}</td>`
-                          ).join('');
-                          return `<tr class="hover:bg-primary/5 transition-colors">${cells}</tr>`;
-                        }).join('');
-                        return `<div class="overflow-x-auto my-8 -mx-2 md:mx-0"><table class="w-full min-w-[320px] border-collapse rounded-xl overflow-hidden shadow-md border border-border/20 bg-card/50"><thead><tr>${headers}</tr></thead><tbody>${rows}</tbody></table></div>`;
+                      .replace(/\|(.+)\|/g, (match) => {
+                        const cells = match.split('|').filter(c => c.trim());
+                        if (cells.every(c => c.trim().match(/^[-:]+$/))) {
+                          return ''; // Skip separator row
+                        }
+                        const cellsHtml = cells.map(c => `<td class="px-4 py-3 border border-border/30">${c.trim()}</td>`).join('');
+                        return `<tr class="even:bg-muted/30">${cellsHtml}</tr>`;
                       })
-                      // Numbered lists with bold items
-                      .replace(/^(\d+)\. \*\*(.+?)\*\*: (.+)$/gm, '<div class="flex gap-3 mb-4 p-4 rounded-xl bg-foreground/5 hover:bg-foreground/10 transition-colors"><span class="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 text-primary font-bold flex items-center justify-center text-sm">$1</span><div><strong class="text-foreground font-semibold">$2</strong><span class="text-muted-foreground">: $3</span></div></div>')
+                      .replace(/(<tr.*?<\/tr>\s*)+/g, (match) => {
+                        return `<div class="overflow-x-auto my-8"><table class="w-full border-collapse rounded-xl overflow-hidden shadow-lg ring-1 ring-border/20"><tbody>${match}</tbody></table></div>`;
+                      })
+                      // Blockquotes with emoji support
+                      .replace(/^> (.+)$/gm, '<blockquote class="border-l-4 border-primary/50 pl-6 py-4 my-8 bg-primary/5 rounded-r-xl italic text-muted-foreground text-lg">$1</blockquote>')
+                      // Horizontal rules
+                      .replace(/^---$/gm, '<hr class="my-12 border-t border-border/30" />')
+                      // Numbered lists
+                      .replace(/^(\d+)\. (.+)$/gm, '<li class="flex items-start gap-3 mb-3"><span class="flex-shrink-0 w-7 h-7 rounded-full bg-primary/20 text-primary text-sm font-bold flex items-center justify-center mt-0.5">$1</span><span class="text-muted-foreground leading-relaxed">$2</span></li>')
                       // Bullet lists - wrap in ul and style nicely
                       .replace(/^- (.+)$/gm, '<li class="flex items-start gap-3 mb-3"><span class="flex-shrink-0 w-2 h-2 rounded-full bg-primary mt-2.5"></span><span class="text-muted-foreground leading-relaxed">$1</span></li>')
                       // Bold text
@@ -175,13 +201,14 @@ const BlogPost = () => {
                           ? `<div class="my-8 flex justify-center"><img src="${imageSrc}" alt="${imageKey}" class="w-full md:w-1/2 lg:w-2/5 rounded-xl shadow-lg ring-1 ring-border/20" /></div>`
                           : '';
                       })
-                      // Play button syntax [play:track-id]
+                      // Play button syntax [play:track-id] - using data attribute for click handling
                       .replace(/\[play:([a-zA-Z0-9_-]+)\]/g, (_, trackId) => {
-                        return `<div class="my-10 flex justify-center"><button onclick="window.dispatchEvent(new CustomEvent('playSpecificTrack', { detail: { trackIndex: ${trackMapping[trackId] ?? 0} } }))" class="group flex items-center gap-4 px-8 py-5 rounded-2xl bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-semibold text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300"><span class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="ml-1"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></span><span>🎵 塩とピクセル を再生</span></button></div>`;
+                        const trackIndex = trackMapping[trackId] ?? 0;
+                        return `<div class="my-10 flex justify-center"><button data-play-track="${trackIndex}" class="group flex items-center gap-4 px-8 py-5 rounded-2xl bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-semibold text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer"><span class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="ml-1"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></span><span>🎵 塩とピクセル を再生</span></button></div>`;
                       })
                       // Paragraphs
                       .replace(/\n\n/g, '</p><p class="mb-6 text-muted-foreground leading-relaxed text-lg">'),
-                    { ADD_ATTR: ['target', 'rel', 'allowfullscreen', 'allow', 'frameborder'], ADD_TAGS: ['iframe'] }
+                    { ADD_ATTR: ['target', 'rel', 'allowfullscreen', 'allow', 'frameborder', 'data-play-track'], ADD_TAGS: ['iframe'] }
                   )
                 }}
               />

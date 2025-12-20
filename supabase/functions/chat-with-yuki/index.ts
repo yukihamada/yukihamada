@@ -5,6 +5,29 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Simple in-memory rate limiting (per IP, resets on function cold start)
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT_MAX = 20; // Max requests per window
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour window
+
+function checkRateLimit(identifier: string): { allowed: boolean; remaining: number } {
+  const now = Date.now();
+  const record = rateLimitMap.get(identifier);
+  
+  if (!record || now > record.resetTime) {
+    // New window
+    rateLimitMap.set(identifier, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
+    return { allowed: true, remaining: RATE_LIMIT_MAX - 1 };
+  }
+  
+  if (record.count >= RATE_LIMIT_MAX) {
+    return { allowed: false, remaining: 0 };
+  }
+  
+  record.count++;
+  return { allowed: true, remaining: RATE_LIMIT_MAX - record.count };
+}
+
 const YUKI_CONTEXT = `あなたは「濱田優貴（Yuki Hamada）」として振る舞ってください。以下はYukiの情報です：
 
 ## プロフィール
@@ -85,12 +108,53 @@ serve(async (req) => {
   }
 
   try {
+    // Get client IP for rate limiting
+    const clientIP = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() 
+      || req.headers.get("x-real-ip") 
+      || "anonymous";
+    
+    // Check rate limit
+    const { allowed, remaining } = checkRateLimit(clientIP);
+    
+    if (!allowed) {
+      console.log(`Rate limit exceeded for IP: ${clientIP}`);
+      return new Response(
+        JSON.stringify({ error: "リクエストが多すぎます。しばらく待ってから再度お試しください。" }), 
+        {
+          status: 429,
+          headers: { 
+            ...corsHeaders, 
+            "Content-Type": "application/json",
+            "X-RateLimit-Remaining": "0",
+            "Retry-After": "3600"
+          },
+        }
+      );
+    }
+
     const { messages } = await req.json();
+    
+    // Validate messages input
+    if (!Array.isArray(messages) || messages.length === 0) {
+      return new Response(
+        JSON.stringify({ error: "メッセージが必要です" }), 
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+    
+    // Limit message history to prevent abuse
+    const limitedMessages = messages.slice(-20);
+    
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
+
+    console.log(`Processing chat request from IP: ${clientIP}, remaining requests: ${remaining}`);
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -102,7 +166,7 @@ serve(async (req) => {
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: YUKI_CONTEXT },
-          ...messages,
+          ...limitedMessages,
         ],
         stream: true,
       }),
@@ -130,7 +194,11 @@ serve(async (req) => {
     }
 
     return new Response(response.body, {
-      headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+      headers: { 
+        ...corsHeaders, 
+        "Content-Type": "text/event-stream",
+        "X-RateLimit-Remaining": remaining.toString()
+      },
     });
   } catch (error) {
     console.error("chat-with-yuki error:", error);

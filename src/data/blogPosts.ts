@@ -1,20 +1,30 @@
-export interface BlogPost {
-  slug: string;
+export interface BlogPostContent {
   title: string;
   excerpt: string;
   content: string;
   date: string;
   category: string;
+}
+
+export interface BlogPost {
+  slug: string;
   featured: boolean;
   image?: string;
+  ja: BlogPostContent;
+  en: BlogPostContent;
 }
 
 export const blogPosts: BlogPost[] = [
   {
     slug: '2025-12-20-sinic',
-    title: '【衝撃】55年前の予言が的中。オムロン「サイニック理論」が示す、AIの次の未来',
-    excerpt: 'サイニック理論が示す社会の方向性と限界費用ゼロ社会が示す経済のメカニズム。この2つを組み合わせると、未来の解像度が劇的に上がります。',
-    content: `
+    featured: true,
+    image: '/images/blog-sinic-theory.jpg',
+    ja: {
+      title: '【衝撃】55年前の予言が的中。オムロン「サイニック理論」が示す、AIの次の未来',
+      excerpt: 'サイニック理論が示す社会の方向性と限界費用ゼロ社会が示す経済のメカニズム。この2つを組み合わせると、未来の解像度が劇的に上がります。',
+      date: '2025年12月20日',
+      category: '未来予測',
+      content: `
 ## 半世紀以上前の予言と、僕の中で繋がった「点」の話
 
 僕がオムロンの創業者・立石一真氏が提唱した未来予測理論「サイニック（SINIC）理論」を初めて知ったのは、今から5年ほど前のことでした。
@@ -177,16 +187,187 @@ AIに任せられることはAIに任せ、人間にしかできないことに�
 
 それが、AIと共に生きる「自律社会」の最高の歩き方だと思います。
     `,
-    date: '2025年12月20日',
-    category: '未来予測',
-    featured: true,
-    image: '/images/blog-sinic-theory.jpg',
+    },
+    en: {
+      title: '[Shocking] A 55-Year-Old Prophecy Comes True: Omron\'s SINIC Theory Reveals the Next Era of AI',
+      excerpt: 'When you combine SINIC Theory\'s social direction with the Zero Marginal Cost Society\'s economic mechanism, the resolution of the future becomes dramatically clearer.',
+      date: 'December 20, 2025',
+      category: 'Future Predictions',
+      content: `
+## A Half-Century-Old Prophecy and the Dots That Connected in My Mind
+
+I first learned about the SINIC Theory—a future prediction framework proposed by Kazuma Tateishi, founder of Omron—about five years ago.
+
+At the time, I honestly thought it was just "a well-made future timeline." I was amazed that a theory written in 1970, before PCs and the internet, had accurately predicted the arrival of the "Information Society." But the words "Autonomous Society" that came after felt like a story from some distant country.
+
+However, the dramatic changes of recent years—especially the emergence of LLMs like ChatGPT and Claude—made all the puzzle pieces click into place.
+
+**"Ah, this is what SINIC Theory was predicting."**
+
+Now that I have AI as a "tool to extend individual capabilities," I can finally be confident about the future this theory describes. And when you add another piece—Jeremy Rifkin's "Zero Marginal Cost Society"—the world from 2030 to 2050 becomes terrifyingly clear.
+
+Today, I want to write about what we can see when we overlay the **"compass (SINIC Theory)"** drawn 55 years ago with the **"economic revolution (zero marginal cost)"** triggered by modern technology.
+
+---
+
+## 1. The Compass: What 2025 Means in SINIC Theory
+
+First, let me share an amazing fact. In SINIC Theory, published in 1970, the year 2025—the year we're living in—is defined as a historic **"turning point."**
+
+[image:sinic-diagram]
+
+The theory classifies social evolution as follows:
+
+| Period | Society | Characteristics |
+|--------|---------|-----------------|
+| ~1974 | Industrial Society | Pursuit of material wealth |
+| 1974-2005 | Information Society | Growth of information value and processing technology |
+| 2005-2025 | Optimization Society | Pursuit of efficiency and balance |
+| 2025-2033 | Autonomous Society | Respect for individuals and creativity |
+| 2033~ | Natural Society | True harmony |
+
+### The Limits of "Optimization" and the Arrival of AI
+
+For the past 20 years (2005-2025), we've been desperate about "optimization." While the internet made things convenient, we became overwhelmed with information, suffered mentally from pursuing efficiency too much, and felt the constraint of adapting ourselves to systems. This is the end-stage symptom of the "Optimization Society."
+
+But generative AI (LLMs) changed the rules.
+
+Previous IT required "humans to learn machine language (programming)," but today's AI "understands human language."
+
+This means **the era of "humans adapting to systems (optimization)" is ending, and the era of "systems adapting to humans (autonomy)" is beginning in 2025**.
+
+> 📖 For more details, visit Omron's official site: [SINIC Theory](https://www.omron.com/jp/ja/about/corporate/vision/sinic/theory.html)
+
+---
+
+## 2. The Engine: Why "Autonomy" Is Possible - The Answer Is "Zero Marginal Cost"
+
+Here's a question: Isn't "living autonomously" just idealism? Don't we need to belong to organizations and endure unpleasant work to survive?
+
+This connects to the **"Zero Marginal Cost Society"**—the economic revolution proposed by Jeremy Rifkin and accelerated by Sam Altman and others.
+
+If SINIC Theory shows "society's direction," the Zero Marginal Cost Society is the **"economic engine"** supporting that life. With AI and robotics evolution, three costs will collapse (approach zero), making "autonomy" possible.
+
+[image:cost-collapse-timeline]
+
+### ① Intelligence and Information Cost Collapse (2025-2030)
+
+Generative AI will dramatically reduce the cost of "intellectual labor"—education, expertise, translation, programming. With AI as everyone's "ultimate assistant," advanced work becomes possible without relying on organizations.
+
+### ② Physical Labor Cost Collapse (2030-2035)
+
+Humanoid robots and autonomous driving will spread, pushing manufacturing, logistics, and transportation costs toward zero. When costs for "food, clothing, shelter" and "transportation" plummet, we'll be freed from survival work.
+
+### ③ Energy Cost Collapse (2035-2050)
+
+Renewable energy like solar power has zero fuel costs once equipment is built. When energy costs drop, all production costs follow.
+
+In other words, **because "the cost of living drops to the extreme," we can stop being cogs (optimization) and live the way we want (autonomy)**.
+
+---
+
+## 3. How to Walk Through the "Autonomous Society" After 2030
+
+So how will our lives change after 2030, where these two theories intersect?
+
+### From "Ownership" to "Access"
+
+In a society overflowing with cheap goods, "accumulating (owning)" loses meaning. Cars, houses, clothes—just "access" them when needed. Status competition based on ownership will end.
+
+### From "Survival" to "Thriving"
+
+Human history has been a battle with "scarcity," and life's purpose was "survival." But in a future where AI and robots provide basic needs cheaply, life's purpose shifts to **"how to live humanly and spiritually rich (thriving)."**
+
+In the "Autonomous Society" SINIC Theory predicts, not efficiency or productivity, but **"creativity," "play," "philosophy," and "empathy"**—uniquely human activities AI cannot replace—will hold value.
+
+### Final Destination: Natural Society (2033~)
+
+Society will move toward "Natural Society" where technology and nature are in complete harmony. Technology becomes as transparent as air, and we simply pursue human joy. The 55-year-old theory describes such a utopian goal.
+
+---
+
+## Conclusion: Don't Fear AI—Start Being "Human"
+
+SINIC Theory and Zero Marginal Cost Society.
+
+What emerges from overlaying these is the truth: **"Technology evolves not to make humans unnecessary, but to free humans from 'labor' and restore our true 'humanity.'"**
+
+Fearing AI as "jobs being taken" means we're still trapped in the "Optimization Society (cog-in-the-machine values)."
+
+Switch to the "Autonomous Society" perspective, and AI appears as the ultimate partner breaking our chains.
+
+What I finally understood after 5 years:
+
+**"The future is not a place for pessimism, but a place to be autonomous and enjoy."**
+
+**2025—the turning point has already passed.**
+
+Won't you quit the old "optimization" game and enjoy a new "autonomous" life with AI?
+
+---
+
+## Postscript: My Personal Practice of "Autonomy"
+
+I live believing this theory.
+
+In daily work, I actively use AI and **thoroughly pursue efficiency**. Not just to save time—but to spend the time saved on **what truly matters: creativity and humanity**.
+
+[image:bjj-match]
+
+For me, one place to "reclaim humanity" is **Jiu-Jitsu**.
+
+On the mat, AI and technology don't matter. Just your body and mind facing your opponent. Sweating, gasping, laughing with friends. This is the primal experience of **"being human"** that we forget in the Optimization Society.
+
+[image:bjj-group1]
+
+The dojo gathers people of various ages, professions, and nationalities. The only common language is "jiu-jitsu." There's community for mutual growth, not competition. Isn't this a microcosm of the "Autonomous Society" SINIC Theory describes?
+
+[image:bjj-medal]
+
+Delegate to AI what AI can do, and pour everything into what only humans can do.
+
+That's how I walk through the "Autonomous Society."
+
+---
+
+## 🎵 Music and Me: Reclaiming Creativity
+
+I love music.
+
+Not just listening—making songs too. In the AI era, **creating**—that's the core of humanity.
+
+Let me introduce a song that fits this article's theme.
+
+### "Salt and Pixels"
+
+I made this song. Created the melody with [Suno](https://suno.ai/) and sang with my own voice.
+
+The lyrics are about "a world where reality and virtual reality intermingle." Digital and analog, efficiency and humanity—a metaphorical poem for us living in between.
+
+[play:shio-to-pixel]
+
+---
+
+## Finally
+
+My message is simple.
+
+**Sing, dance, do jiu-jitsu, be healthy, strong, kind, flexible, and live long!**
+
+That's the best way to walk through the "Autonomous Society" with AI.
+    `,
+    },
   },
   {
     slug: '2025-12-20',
-    title: 'JiuFlowを作った話：AI開発で変わるサービス開発の形',
-    excerpt: '柔術の動画共有サイト「JiuFlow」をAIで開発。20年のウェブ開発経験から見たAI開発の革命、月10万円超えのコスト、そしてオープンソースモデルによる同質化の課題について。',
-    content: `
+    featured: true,
+    image: '/images/blog-jiuflow.jpg',
+    ja: {
+      title: 'JiuFlowを作った話：AI開発で変わるサービス開発の形',
+      excerpt: '柔術の動画共有サイト「JiuFlow」をAIで開発。20年のウェブ開発経験から見たAI開発の革命、月10万円超えのコスト、そしてオープンソースモデルによる同質化の課題について。',
+      date: '2025年12月20日',
+      category: 'プロダクト開発',
+      content: `
 ## はじめに
 
 柔術の動画共有サイト「JiuFlow」を作りました。このサービスを通じて、AI開発の現状と可能性について共有したいと思います。
@@ -307,16 +488,145 @@ AIを使った開発に興味がある方、実際にサービスを作りたい
 
 **気になる方は、いいねをお願いします！**
     `,
-    date: '2025年12月20日',
-    category: 'プロダクト開発',
-    featured: true,
-    image: '/images/blog-jiuflow.jpg',
+    },
+    en: {
+      title: 'Building JiuFlow: How AI is Changing Service Development',
+      excerpt: 'I built JiuFlow, a jiu-jitsu video sharing site, using AI. From 20 years of web development experience, I share insights about the AI revolution, costs exceeding $700/month, and challenges of homogenization from open-source models.',
+      date: 'December 20, 2025',
+      category: 'Product Development',
+      content: `
+## Introduction
+
+I built JiuFlow, a jiu-jitsu video sharing site. Through this service, I want to share about the current state and possibilities of AI development.
+
+## The AI Revolution from 20 Years of Development Experience
+
+I've been building web services for about 20 years, but AI has dramatically changed how development works.
+
+### Traditional Development
+
+- Environment setup takes half a day to a full day
+- Frontend, backend, and infrastructure designed separately
+- Hard to join teams without specialized knowledge
+
+### AI-Powered Development
+
+- No environment setup needed
+- Just give instructions in natural language
+- Non-engineers can join the team
+
+## The Collaboration Revolution
+
+What's especially significant is how easy collaboration with non-engineers has become.
+
+With Lovable, business team members can directly edit screens. No need to ask engineers for small changes like "change this button color" or "fix this wording."
+
+This has enabled a state where **everyone can improve and build better services together**.
+
+## JiuFlow Development Flow
+
+Here's how actual development progresses:
+
+1. **API Integration**: Get APIs from various services
+2. **Screen Building**: Implement screens and features with Lovable
+3. **Deploy**: One-click publishing
+
+This process has become incredibly easy. Plus, **high design quality and very few mistakes**. In practical terms, I think it far exceeds traditional development.
+
+## The Reality of AI Costs
+
+### The $700+/Month World
+
+However, as widely discussed, AI resource consumption is no joke.
+
+As we keep improving the service and capabilities increase, **AI-related costs alone exceed $700/month**.
+
+### Cheap Models vs High-Quality Models
+
+Of course, you can use cheaper models to reduce costs. But even if costs drop to $200, **your own time changes**.
+
+Ultimately, I think the winning formula is **using expensive, good models to increase efficiency and build competitiveness**.
+
+## Current State of AI Development
+
+### Many Are Still Skeptical
+
+Currently, many people are still AI-skeptical.
+
+While more people are releasing services through this process, from what I hear, **surprisingly many still haven't done it**.
+
+### Those Actually Building Are the Minority
+
+The story that "you can build something with AI" has spread, but those releasing user-ready services are still a minority.
+
+## Open Source Models and Homogenization Challenges
+
+### Rise of Good OSS Models
+
+Recently, good open-source models have emerged. Llama, Mistral, Gemma—they've reached practical levels.
+
+Ideally, **building your own models creates more differentiation**.
+
+### The Homogenization Problem
+
+But now, since everyone is **using the same LLMs**, **similar sites are being created**.
+
+This is both a challenge and an opportunity. How to differentiate will be key going forward.
+
+## Check Out JiuFlow
+
+You can view the actual service here: [JiuFlow](https://jiuflow.art/)
+
+[image:jiuflow-hero]
+
+Learn jiu-jitsu efficiently with 4K overhead filming and systematic curriculum.
+
+[image:jiuflow-lesson]
+
+Here's the JiuFlow introduction video:
+
+[youtube:h982P-og66w]
+
+## The Heart Behind JiuFlow
+
+This project was born from a desire to spread truly good jiu-jitsu.
+
+What we consider "good jiu-jitsu" is **safe, strong, and logical**. By creating and spreading something truly good with our jiu-jitsu friends, we want to contribute to the jiu-jitsu industry and give back to the entire community.
+
+## 🎉 Special Campaign Running!
+
+**December 2025 only**: Lifetime access for $7 with 3 months free!
+
+If you're thinking of starting jiu-jitsu, please try registering. Even just watching, you'll see how much care and detailed explanation went into this. Highly recommended.
+
+### Coupon Code
+
+**MURATABJJ**
+
+⚠️ **Note**: It won't apply unless you enter the coupon code!
+
+👉 [Register for JiuFlow](https://jiuflow.art/)
+
+## Future Outlook
+
+I'll gradually share what kinds of prompts I use in actual development.
+
+If you're interested in AI development or want to build services, please follow this blog.
+
+**If you're interested, please give it a like!**
+    `,
+    },
   },
   {
     slug: '2025-12-19',
-    title: 'Lovable.devでyukihamada.jpをリニューアル：ノーコードAI開発の真価',
-    excerpt: 'Lovable.devを使ってサイトを完全リニューアル。Claude Codeよりもウェブに特化し、チームでの更新も簡単、環境設定不要でバックエンドも自動構築。本当に簡単になりました。',
-    content: `
+    featured: false,
+    image: '/images/blog-lovable.jpg',
+    ja: {
+      title: 'Lovable.devでyukihamada.jpをリニューアル：ノーコードAI開発の真価',
+      excerpt: 'Lovable.devを使ってサイトを完全リニューアル。Claude Codeよりもウェブに特化し、チームでの更新も簡単、環境設定不要でバックエンドも自動構築。本当に簡単になりました。',
+      date: '2025年12月19日',
+      category: '技術',
+      content: `
 ## はじめに
 
 今回、Lovable.devを使ってyukihamada.jpを完全にリニューアルしました。以前はClaude Codeを使っていましたが、Lovableに移行したことで、ウェブ開発の体験が劇的に向上しました。
@@ -392,16 +702,100 @@ AIによるウェブ開発は、Claude Codeの時点でも革命的でしたが�
 
 [Lovable.dev](https://lovable.dev/)
     `,
-    date: '2025年12月19日',
-    category: '技術',
-    featured: false,
-    image: '/images/blog-lovable.jpg',
+    },
+    en: {
+      title: 'Rebuilding yukihamada.jp with Lovable.dev: The True Value of No-Code AI Development',
+      excerpt: 'Complete site renewal using Lovable.dev. More web-focused than Claude Code, easy team updates, no environment setup, automatic backend building. It\'s become truly simple.',
+      date: 'December 19, 2025',
+      category: 'Technology',
+      content: `
+## Introduction
+
+This time, I completely renewed yukihamada.jp using Lovable.dev. I was previously using Claude Code, but migrating to Lovable dramatically improved the web development experience.
+
+## What is Lovable.dev
+
+Lovable.dev is a full-stack web application development platform powered by AI. Just give instructions in natural language, and it builds everything from frontend to backend.
+
+### Differences from Claude Code
+
+| Item | Claude Code | Lovable.dev |
+|------|------------|-------------|
+| Environment Setup | Required | Not Required |
+| Backend | Separate Setup | Auto-Built |
+| Team Collaboration | Difficult | Easy |
+| Real-time Preview | No | Yes |
+| Deploy | Manual | One-Click |
+
+## Main Features of Lovable.dev
+
+### 1. AI-Powered Full-Stack Development
+
+Just say "add blog functionality" or "implement user authentication" in natural language, and it automatically generates everything from frontend UI to backend database design.
+
+### 2. Real-time Preview
+
+While writing code, changes are reflected in real-time on the preview screen on the right. Fine design adjustments can be confirmed immediately, greatly improving development efficiency.
+
+### 3. Visual Edit Feature
+
+Without writing code, you can directly click and edit elements on screen. Text changes, color adjustments, font changes—all possible without code.
+
+### 4. Automatic Backend Building (Lovable Cloud)
+
+All backend features—database, authentication system, file storage, Edge Functions—are automatically built. Robust Supabase-based infrastructure without configuration.
+
+### 5. One-Click Deploy
+
+Just press the "Publish" button to deploy to production. Custom domain setup is also easy.
+
+### 6. Team Collaboration
+
+Workspace features allow inviting team members for collaborative editing. Permission management is flexibly configurable.
+
+### 7. AI Feature Integration
+
+AI models like OpenAI and Gemini are built-in, enabling AI features without API keys. Chatbots, summarization, image generation can be easily added.
+
+## Impressions from Actually Using It
+
+### Amazing Speed
+
+This site renewal was completed in a few hours. What previously took half a day just for environment setup and days for implementation can now be done conversationally.
+
+### Usable by Non-Engineers
+
+Without technical knowledge, you can build sites just by explaining what you want in your language. Perfect for startup MVP development or personal projects.
+
+### High Quality
+
+Generated code uses a modern stack—React + TypeScript + Tailwind CSS—production-ready quality.
+
+## Summary
+
+I feel Lovable.dev is a tool that democratizes web development.
+
+- **No Environment Setup**: Start development with just a browser
+- **Full-Stack Support**: Consistent building from front to back
+- **Team Ready**: Easy collaborative editing
+- **Instant Deploy**: One-click publishing
+
+AI web development was revolutionary even with Claude Code, but Lovable has evolved it further. Please give it a try.
+
+[Lovable.dev](https://lovable.dev/)
+    `,
+    },
   },
   {
     slug: '2025-06-12',
-    title: 'Claude Codeでyukihamada.jpを更新した話：AIによるウェブ開発の新時代',
-    excerpt: 'Claude Codeという革新的なツールを使ってyukihamada.jpを更新した体験について共有。マジで便利な時代になったなぁと心から感じています。',
-    content: `
+    featured: false,
+    image: '/images/blog-claude.jpg',
+    ja: {
+      title: 'Claude Codeでyukihamada.jpを更新した話：AIによるウェブ開発の新時代',
+      excerpt: 'Claude Codeという革新的なツールを使ってyukihamada.jpを更新した体験について共有。マジで便利な時代になったなぁと心から感じています。',
+      date: '2025年6月12日',
+      category: '技術',
+      content: `
 ## はじめに
 
 先日、Claude Codeという革新的なツールを使って、このyukihamada.jpを大幅に更新しました。今回はその体験について共有したいと思います。
@@ -430,16 +824,53 @@ AIによるウェブ開発は、まさに新時代に突入したと言えます
 
 皆さんもぜひ試してみてください！
     `,
-    date: '2025年6月12日',
-    category: '技術',
-    featured: false,
-    image: '/images/blog-claude.jpg',
+    },
+    en: {
+      title: 'Updating yukihamada.jp with Claude Code: A New Era of AI Web Development',
+      excerpt: 'Sharing my experience updating yukihamada.jp using the innovative Claude Code tool. I truly feel we\'ve entered a remarkably convenient era.',
+      date: 'June 12, 2025',
+      category: 'Technology',
+      content: `
+## Introduction
+
+Recently, I significantly updated this yukihamada.jp using the innovative Claude Code tool. I want to share that experience.
+
+## What is Claude Code
+
+Claude Code is an AI coding assistant developed by Anthropic. Just give instructions in natural language, and it writes code for you.
+
+## Actually Using It
+
+Honestly, I truly feel we've entered a remarkably convenient era. What used to take hours now finishes in minutes.
+
+### What Was Good
+
+1. **Speed**: Very short time from giving instructions to code generation
+2. **Quality**: Generated code quality is high and often usable as-is
+3. **Learning**: Helpful for learning new technologies and patterns
+
+### Improvements
+
+Of course, it's not perfect. Sometimes code that doesn't match intent is generated. But correcting instructions gets quick responses.
+
+## Summary
+
+AI web development has truly entered a new era. I want to continue actively using it.
+
+Please give it a try!
+    `,
+    },
   },
   {
     slug: '2024-10-16',
-    title: 'エコーチェンバーとフェイクニュースによる社会の分断',
-    excerpt: 'ノーベル経済学賞を受賞したダロン・アセモグル教授は「民主主義が危機に瀕している」との警鐘を鳴らしました。',
-    content: `
+    featured: false,
+    image: '/images/blog-echo-chamber.jpg',
+    ja: {
+      title: 'エコーチェンバーとフェイクニュースによる社会の分断',
+      excerpt: 'ノーベル経済学賞を受賞したダロン・アセモグル教授は「民主主義が危機に瀕している」との警鐘を鳴らしました。',
+      date: '2024年10月16日',
+      category: '社会問題',
+      content: `
 ## 民主主義の危機
 
 ノーベル経済学賞を受賞したダロン・アセモグル教授は「民主主義が危機に瀕している」との警鐘を鳴らしました。その背景には、SNSによるエコーチェンバー現象とフェイクニュースの蔓延があります。
@@ -468,16 +899,53 @@ SNSのアルゴリズムは、ユーザーが興味を持つコンテンツを�
 
 社会の分断を防ぐためには、一人ひとりがメディアリテラシーを高めることが重要です。
     `,
-    date: '2024年10月16日',
-    category: '社会問題',
-    featured: false,
-    image: '/images/blog-echo-chamber.jpg',
+    },
+    en: {
+      title: 'Social Division Through Echo Chambers and Fake News',
+      excerpt: 'Nobel Prize-winning economist Professor Daron Acemoglu warned that "democracy is in crisis."',
+      date: 'October 16, 2024',
+      category: 'Social Issues',
+      content: `
+## Democracy in Crisis
+
+Nobel Prize-winning economist Professor Daron Acemoglu warned that "democracy is in crisis." Behind this lies the echo chamber phenomenon and proliferation of fake news on social media.
+
+## What is an Echo Chamber
+
+An echo chamber is a phenomenon where interacting only with people who share your opinions and values makes you convinced your thinking is correct.
+
+Social media algorithms prioritize content users are interested in. This reduces opportunities to encounter different opinions, forming a "room" where your thoughts keep echoing back.
+
+## The Fake News Problem
+
+Fake news is intentionally created false information. When it spreads within echo chambers, many people believe it as truth.
+
+### Why Do People Believe Fake News
+
+1. **Confirmation Bias**: Tendency to believe information matching our beliefs
+2. **Social Proof**: Tendency to believe what many people share
+3. **Emotional Response**: Content provoking anger or fear spreads easily
+
+## What We Can Do
+
+- Verify information sources
+- Read media with different viewpoints
+- Pause and think before reacting emotionally
+
+To prevent social division, it's important for each person to improve media literacy.
+    `,
+    },
   },
   {
     slug: '2024-10-07',
-    title: '音声入力の未来：なぜ今こそ注目すべきか',
-    excerpt: '今回は音声入力の可能性について考えてみたいと思います。',
-    content: `
+    featured: false,
+    image: '/images/blog-voice.jpg',
+    ja: {
+      title: '音声入力の未来：なぜ今こそ注目すべきか',
+      excerpt: '今回は音声入力の可能性について考えてみたいと思います。',
+      date: '2024年10月7日',
+      category: 'テクノロジー',
+      content: `
 ## 音声入力の進化
 
 今回は音声入力の可能性について考えてみたいと思います。
@@ -508,16 +976,55 @@ SNSのアルゴリズムは、ユーザーが興味を持つコンテンツを�
 
 音声入力は、働き方を変える可能性を秘めています。ぜひ一度、試してみてください。
     `,
-    date: '2024年10月7日',
-    category: 'テクノロジー',
-    featured: false,
-    image: '/images/blog-voice.jpg',
+    },
+    en: {
+      title: 'The Future of Voice Input: Why We Should Pay Attention Now',
+      excerpt: 'This time, I want to think about the possibilities of voice input.',
+      date: 'October 7, 2024',
+      category: 'Technology',
+      content: `
+## The Evolution of Voice Input
+
+This time, I want to think about the possibilities of voice input.
+
+In recent years, speech recognition technology has made tremendous advances. As major tech companies like Google, Apple, and Amazon competed in development, we can now convert speech to text with everyday conversation-level accuracy.
+
+## Why Voice Input Now
+
+### 1. Productivity Improvement
+
+Speaking is obviously faster than typing. Average typing speed is 40 words per minute, while speaking is about 150 words per minute. More than 3 times difference.
+
+### 2. Accessibility
+
+You can input without using your hands. For those driving, cooking, or with physical constraints, voice input is a great help.
+
+### 3. Don't Interrupt Thought Flow
+
+The act of typing can interrupt the flow of thought. With voice input, you can directly verbalize what you think.
+
+## Challenges and Future Outlook
+
+Of course, there are challenges. It's hard to use with people around, and recognition accuracy for technical terms is still low.
+
+However, with AI evolution, these challenges will gradually be solved.
+
+## Summary
+
+Voice input has potential to change how we work. Please give it a try.
+    `,
+    },
   },
   {
     slug: '2024-09-19',
-    title: 'AIと人類の共存：問題解決と創造的思考の新時代',
-    excerpt: '「何を問題解決するか」をAIに問いかけることが非常に重要になってきています。',
-    content: `
+    featured: false,
+    image: '/images/blog-ai-human.jpg',
+    ja: {
+      title: 'AIと人類の共存：問題解決と創造的思考の新時代',
+      excerpt: '「何を問題解決するか」をAIに問いかけることが非常に重要になってきています。',
+      date: '2024年9月19日',
+      category: 'AI・未来社会',
+      content: `
 ## AIと人類の新しい関係
 
 「何を問題解決するか」をAIに問いかけることが非常に重要になってきています。
@@ -552,13 +1059,62 @@ AIに任せられることはAIに任せ、人間は人間にしかできない�
 
 一緒に、新しい時代を切り拓いていきましょう。
     `,
-    date: '2024年9月19日',
-    category: 'AI・未来社会',
-    featured: false,
-    image: '/images/blog-ai-human.jpg',
+    },
+    en: {
+      title: 'Coexistence of AI and Humanity: A New Era of Problem-Solving and Creative Thinking',
+      excerpt: 'Asking AI "what problems to solve" has become extremely important.',
+      date: 'September 19, 2024',
+      category: 'AI & Future Society',
+      content: `
+## A New Relationship Between AI and Humanity
+
+Asking AI "what problems to solve" has become extremely important.
+
+Traditionally, humans found problems, devised solutions, and executed them. But with AI's emergence, this flow is about to change significantly.
+
+## From Problem-Solving to Problem-Setting
+
+AI is good at solving given problems. But deciding "what problems to solve" is still a human role.
+
+This contains an important implication. That is, human value is shifting from "ability to solve problems" to "ability to find problems."
+
+## The Importance of Creative Thinking
+
+Creative thinking is a skill hard for AI to replace.
+
+### How to Cultivate Creative Thinking
+
+1. **Diverse Experiences**: New ideas emerge from combining knowledge from different fields
+2. **Habit of Questioning**: Always carry questions like "Why?" "What if?"
+3. **Don't Fear Failure**: Challenge new things and learn from failures
+
+## An Era of Coexistence
+
+It's important to see AI as a partner, not an enemy.
+
+Delegate to AI what AI can do, and humans focus on what only humans can do. This is what I consider the form of AI-human coexistence.
+
+## Conclusion
+
+Living in an era of change, we must constantly learn and adapt. But this is not a threat—it's also an opportunity.
+
+Let's pioneer the new era together.
+    `,
+    },
   },
 ];
 
 export const getBlogPostBySlug = (slug: string): BlogPost | undefined => {
   return blogPosts.find(post => post.slug === slug);
+};
+
+// Helper function to get localized blog post content
+export const getLocalizedBlogPost = (post: BlogPost, language: 'en' | 'ja') => {
+  const content = post[language];
+  return {
+    slug: post.slug,
+    featured: post.featured,
+    image: post.image,
+    ...content,
+  };
 };

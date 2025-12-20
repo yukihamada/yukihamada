@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,11 @@ const Navigation = () => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const { t } = useLanguage();
   const { isPlaying, analyzerData } = useMusicPlayer();
+  const location = useLocation();
+  
+  // Check if we're on a blog page (not the home page)
+  const isOnBlogPage = location.pathname.startsWith('/blog');
+  const isHomePage = location.pathname === '/';
 
   const navLinks = [
     { name: t.nav.enabler, href: '#enabler', icon: '◆' },
@@ -67,81 +73,130 @@ const Navigation = () => {
           layout
         >
           {/* Logo - Animated */}
-          <motion.a 
-            href="#" 
-            className="flex items-center gap-3 group"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <motion.div 
-              className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-primary via-primary/80 to-primary/60 flex items-center justify-center overflow-hidden"
-              whileHover={{ rotate: 5 }}
+          {isHomePage ? (
+            <motion.a 
+              href="#" 
+              className="flex items-center gap-3 group"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
-              <span className="text-primary-foreground font-bold text-lg z-10">Y</span>
               <motion.div 
-                className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent"
-                animate={{ y: ['100%', '-100%'] }}
-                transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-              />
-            </motion.div>
-            <div className="hidden sm:flex flex-col leading-none">
-              <span className="text-lg font-bold tracking-tight">
-                <span className="text-foreground">Yuki</span>
-                <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent ml-1">Hamada</span>
-              </span>
-              <span className="text-[9px] text-muted-foreground/70 tracking-[0.2em] font-medium">
-                濱田優貴
-              </span>
-            </div>
-            
-            {/* Mini Equalizer when music is playing */}
-            <AnimatePresence>
-              {isPlaying && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8, x: -10 }}
-                  animate={{ opacity: 1, scale: 1, x: 0 }}
-                  exit={{ opacity: 0, scale: 0.8, x: -10 }}
-                  className="hidden sm:flex items-center gap-2 ml-2 px-2 py-1 rounded-lg bg-primary/10 border border-primary/20"
-                >
-                  <MiniEqualizer />
-                  <span className="text-[10px] text-primary font-medium">♪</span>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.a>
+                className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-primary via-primary/80 to-primary/60 flex items-center justify-center overflow-hidden"
+                whileHover={{ rotate: 5 }}
+              >
+                <span className="text-primary-foreground font-bold text-lg z-10">Y</span>
+                <motion.div 
+                  className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent"
+                  animate={{ y: ['100%', '-100%'] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                />
+              </motion.div>
+              <div className="hidden sm:flex flex-col leading-none">
+                <span className="text-lg font-bold tracking-tight">
+                  <span className="text-foreground">Yuki</span>
+                  <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent ml-1">Hamada</span>
+                </span>
+                <span className="text-[9px] text-muted-foreground/70 tracking-[0.2em] font-medium">
+                  濱田優貴
+                </span>
+              </div>
+              
+              {/* Mini Equalizer when music is playing */}
+              <AnimatePresence>
+                {isPlaying && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8, x: -10 }}
+                    animate={{ opacity: 1, scale: 1, x: 0 }}
+                    exit={{ opacity: 0, scale: 0.8, x: -10 }}
+                    className="hidden sm:flex items-center gap-2 ml-2 px-2 py-1 rounded-lg bg-primary/10 border border-primary/20"
+                  >
+                    <MiniEqualizer />
+                    <span className="text-[10px] text-primary font-medium">♪</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.a>
+          ) : (
+            <Link 
+              to="/" 
+              className="flex items-center gap-3 group"
+            >
+              <motion.div 
+                className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-primary via-primary/80 to-primary/60 flex items-center justify-center overflow-hidden"
+                whileHover={{ rotate: 5, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <span className="text-primary-foreground font-bold text-lg z-10">Y</span>
+                <motion.div 
+                  className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent"
+                  animate={{ y: ['100%', '-100%'] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                />
+              </motion.div>
+              <div className="hidden sm:flex flex-col leading-none">
+                <span className="text-lg font-bold tracking-tight">
+                  <span className="text-foreground">Yuki</span>
+                  <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent ml-1">Hamada</span>
+                </span>
+                <span className="text-[9px] text-muted-foreground/70 tracking-[0.2em] font-medium">
+                  濱田優貴
+                </span>
+              </div>
+              
+              {/* Mini Equalizer when music is playing */}
+              <AnimatePresence>
+                {isPlaying && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8, x: -10 }}
+                    animate={{ opacity: 1, scale: 1, x: 0 }}
+                    exit={{ opacity: 0, scale: 0.8, x: -10 }}
+                    className="hidden sm:flex items-center gap-2 ml-2 px-2 py-1 rounded-lg bg-primary/10 border border-primary/20"
+                  >
+                    <MiniEqualizer />
+                    <span className="text-[10px] text-primary font-medium">♪</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </Link>
+          )}
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-1">
             <div className="flex items-center bg-secondary/30 backdrop-blur-sm rounded-full p-1 border border-border/30">
-              {navLinks.map((link, index) => (
-                <motion.a
-                  key={link.name}
-                  href={link.href}
-                  className="relative px-4 py-2 text-sm font-medium transition-colors rounded-full"
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.08 }}
-                  onMouseEnter={() => setHoveredIndex(index)}
-                  onMouseLeave={() => setHoveredIndex(null)}
-                >
-                  {hoveredIndex === index && (
-                    <motion.div
-                      className="absolute inset-0 bg-primary/10 rounded-full"
-                      layoutId="navHover"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                    />
-                  )}
-                  <span className={`relative z-10 flex items-center gap-1.5 ${
-                    hoveredIndex === index ? 'text-primary' : 'text-muted-foreground'
-                  }`}>
-                    <span className="text-[10px] opacity-60">{link.icon}</span>
-                    {link.name}
-                  </span>
-                </motion.a>
-              ))}
+              {navLinks.map((link, index) => {
+                // On blog pages, link to home page with hash
+                const href = isHomePage ? link.href : `/${link.href}`;
+                
+                return (
+                  <motion.a
+                    key={link.name}
+                    href={href}
+                    className="relative px-4 py-2 text-sm font-medium transition-colors rounded-full"
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.08 }}
+                    onMouseEnter={() => setHoveredIndex(index)}
+                    onMouseLeave={() => setHoveredIndex(null)}
+                  >
+                    {hoveredIndex === index && (
+                      <motion.div
+                        className="absolute inset-0 bg-primary/10 rounded-full"
+                        layoutId="navHover"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                      />
+                    )}
+                    <span className={`relative z-10 flex items-center gap-1.5 ${
+                      hoveredIndex === index ? 'text-primary' : 'text-muted-foreground'
+                    }`}>
+                      <span className="text-[10px] opacity-60">{link.icon}</span>
+                      {link.name}
+                    </span>
+                  </motion.a>
+                );
+              })}
             </div>
             
             <div className="flex items-center gap-2 ml-4">
@@ -222,31 +277,35 @@ const Navigation = () => {
           >
             <div className="container mx-auto px-6 pt-24 pb-8 h-full flex flex-col">
               <div className="flex-1 flex flex-col justify-center space-y-2">
-                {navLinks.map((link, index) => (
-                  <motion.a
-                    key={link.name}
-                    href={link.href}
-                    className="group flex items-center gap-4 py-4 border-b border-border/20"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    initial={{ opacity: 0, x: -40 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.08 + 0.2 }}
-                  >
-                    <span className="text-2xl text-primary/50 group-hover:text-primary transition-colors">
-                      {link.icon}
-                    </span>
-                    <span className="text-2xl font-medium text-foreground group-hover:text-primary transition-colors">
-                      {link.name}
-                    </span>
-                    <motion.span 
-                      className="ml-auto text-muted-foreground/30 text-sm"
-                      initial={{ x: 10, opacity: 0 }}
-                      whileHover={{ x: 0, opacity: 1 }}
+                {navLinks.map((link, index) => {
+                  const href = isHomePage ? link.href : `/${link.href}`;
+                  
+                  return (
+                    <motion.a
+                      key={link.name}
+                      href={href}
+                      className="group flex items-center gap-4 py-4 border-b border-border/20"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      initial={{ opacity: 0, x: -40 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.08 + 0.2 }}
                     >
-                      →
-                    </motion.span>
-                  </motion.a>
-                ))}
+                      <span className="text-2xl text-primary/50 group-hover:text-primary transition-colors">
+                        {link.icon}
+                      </span>
+                      <span className="text-2xl font-medium text-foreground group-hover:text-primary transition-colors">
+                        {link.name}
+                      </span>
+                      <motion.span 
+                        className="ml-auto text-muted-foreground/30 text-sm"
+                        initial={{ x: 10, opacity: 0 }}
+                        whileHover={{ x: 0, opacity: 1 }}
+                      >
+                        →
+                      </motion.span>
+                    </motion.a>
+                  );
+                })}
               </div>
               
               <motion.div

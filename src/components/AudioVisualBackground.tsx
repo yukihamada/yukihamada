@@ -2,7 +2,7 @@ import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const AudioVisualBackground = () => {
-  const { isPlaying, analyzerData } = useMusicPlayer();
+  const { isPlaying, analyzerData, currentColor } = useMusicPlayer();
 
   if (!isPlaying) return null;
 
@@ -23,7 +23,10 @@ const AudioVisualBackground = () => {
           {analyzerData.slice(0, 16).map((value, index) => (
             <motion.div
               key={`left-${index}`}
-              className="h-1 rounded-r-full bg-gradient-to-r from-primary via-primary/60 to-transparent"
+              className="h-1 rounded-r-full"
+              style={{
+                background: `linear-gradient(to right, ${currentColor}, ${currentColor}99, transparent)`,
+              }}
               animate={{
                 width: `${Math.max(20, value * 200)}px`,
               }}
@@ -37,7 +40,10 @@ const AudioVisualBackground = () => {
           {analyzerData.slice(0, 16).map((value, index) => (
             <motion.div
               key={`right-${index}`}
-              className="h-1 rounded-l-full bg-gradient-to-l from-primary via-primary/60 to-transparent ml-auto"
+              className="h-1 rounded-l-full ml-auto"
+              style={{
+                background: `linear-gradient(to left, ${currentColor}, ${currentColor}99, transparent)`,
+              }}
               animate={{
                 width: `${Math.max(20, value * 200)}px`,
               }}
@@ -51,7 +57,10 @@ const AudioVisualBackground = () => {
           {analyzerData.map((value, index) => (
             <motion.div
               key={`bottom-${index}`}
-              className="flex-1 max-w-3 rounded-t-full bg-gradient-to-t from-primary/50 via-primary/30 to-transparent"
+              className="flex-1 max-w-3 rounded-t-full"
+              style={{
+                background: `linear-gradient(to top, ${currentColor}80, ${currentColor}4d, transparent)`,
+              }}
               animate={{
                 height: `${Math.max(4, value * 150)}px`,
               }}
@@ -73,7 +82,7 @@ const AudioVisualBackground = () => {
               style={{
                 left: `${15 + index * 18}%`,
                 top: `${20 + (index % 3) * 25}%`,
-                background: `radial-gradient(circle, hsl(var(--primary) / ${0.1 + avgValue * 0.3}) 0%, transparent 70%)`,
+                background: `radial-gradient(circle, ${currentColor}${Math.round((0.1 + avgValue * 0.3) * 255).toString(16).padStart(2, '0')} 0%, transparent 70%)`,
               }}
               animate={{
                 width: `${100 + avgValue * 200}px`,
@@ -87,7 +96,8 @@ const AudioVisualBackground = () => {
 
         {/* Center pulsing ring */}
         <motion.div
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-primary/20"
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+          style={{ borderColor: `${currentColor}33`, borderWidth: '2px' }}
           animate={{
             width: [200, 300, 200],
             height: [200, 300, 200],
@@ -100,7 +110,8 @@ const AudioVisualBackground = () => {
           }}
         />
         <motion.div
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-primary/10"
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+          style={{ borderColor: `${currentColor}1a`, borderWidth: '1px' }}
           animate={{
             width: [300, 450, 300],
             height: [300, 450, 300],

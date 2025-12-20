@@ -4,6 +4,7 @@ import { MessageCircle, Send, Minus, Maximize2, Minimize2, Loader2, GripHorizont
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { getVisitorSupabaseClient } from '@/lib/visitorSupabaseClient';
 import { useChat } from '@/contexts/ChatContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import yukiProfile from '@/assets/yuki-profile.jpg';
@@ -205,6 +206,7 @@ export const AIChatSection = () => {
   const dragControls = useDragControls();
   const constraintsRef = useRef<HTMLDivElement>(null);
   const greetingInProgressRef = useRef(false);
+  const visitorIdRef = useRef<string>(getVisitorId());
 
   // Detect when user scrolls to bottom of page
   useEffect(() => {
@@ -523,33 +525,37 @@ export const AIChatSection = () => {
   // Create or get conversation
   const ensureConversation = async () => {
     if (conversationId) return conversationId;
-    
-    const visitorId = getVisitorId();
-    const { data, error } = await supabase
+
+    const visitorId = visitorIdRef.current;
+    const visitorSupabase = getVisitorSupabaseClient(visitorId);
+
+    const { data, error } = await visitorSupabase
       .from('chat_conversations')
       .insert({ visitor_id: visitorId })
       .select('id')
       .single();
-    
+
     if (error) {
       console.error('Error creating conversation:', error);
       return null;
     }
-    
+
     setConversationId(data.id);
     return data.id;
   };
 
   // Save message to database
   const saveMessage = async (convId: string, role: 'user' | 'assistant', content: string) => {
-    const { error } = await supabase
+    const visitorSupabase = getVisitorSupabaseClient(visitorIdRef.current);
+
+    const { error } = await visitorSupabase
       .from('chat_messages')
       .insert({
         conversation_id: convId,
         role,
-        content
+        content,
       });
-    
+
     if (error) {
       console.error('Error saving message:', error);
     }

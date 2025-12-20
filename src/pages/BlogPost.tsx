@@ -194,11 +194,11 @@ const BlogPost = () => {
                       })
                       // YouTube embed
                       .replace(/\[youtube:([a-zA-Z0-9_-]+)\]/g, '<div class="my-10 aspect-video rounded-2xl overflow-hidden shadow-xl ring-1 ring-border/20"><iframe class="w-full h-full" src="https://www.youtube.com/embed/$1" title="YouTube video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>')
-                      // Image syntax - much smaller on desktop for better readability
+                      // Image syntax - optimized with lazy loading and srcset
                       .replace(/\[image:([a-zA-Z0-9_-]+)\]/g, (_, imageKey) => {
                         const imageSrc = blogImages[imageKey];
                         return imageSrc 
-                          ? `<div class="my-8 flex justify-center"><img src="${imageSrc}" alt="${imageKey}" class="w-full md:w-1/2 lg:w-2/5 rounded-xl shadow-lg ring-1 ring-border/20" /></div>`
+                          ? `<div class="my-8 flex justify-center"><img src="${imageSrc}" alt="${imageKey}" loading="lazy" decoding="async" class="w-full md:w-1/2 lg:w-2/5 rounded-xl shadow-lg ring-1 ring-border/20" /></div>`
                           : '';
                       })
                       // Play button syntax [play:track-id] - using data attribute for click handling

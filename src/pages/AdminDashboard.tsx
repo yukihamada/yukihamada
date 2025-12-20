@@ -12,6 +12,7 @@ import {
   Plus, Edit, Trash2, Save, X, ChevronRight, User, Bot,
   Shield, LogOut, Settings
 } from 'lucide-react';
+import MarkdownPreview from '@/components/MarkdownPreview';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -126,6 +127,8 @@ const AdminDashboard = () => {
   const [posts, setPosts] = useState<BlogPostDB[]>([]);
   const [editingPost, setEditingPost] = useState<Partial<BlogPostDB> | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewLang, setPreviewLang] = useState<'ja' | 'en'>('ja');
 
   // Chat state
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -585,12 +588,19 @@ const AdminDashboard = () => {
                     <CardTitle className="flex items-center justify-between">
                       {isCreating ? '新規記事作成' : '記事編集'}
                   <div className="flex gap-2">
+                        <Button 
+                          variant={showPreview ? "default" : "outline"} 
+                          onClick={() => setShowPreview(!showPreview)}
+                        >
+                          <Eye className="mr-2 h-4 w-4" />
+                          {showPreview ? 'エディタ' : 'プレビュー'}
+                        </Button>
                         {editingPost?.slug && (
                           <Button variant="secondary" onClick={() => window.open(`/blog/${editingPost.slug}`, '_blank')}>
-                            <Eye className="mr-2 h-4 w-4" />プレビュー
+                            外部プレビュー
                           </Button>
                         )}
-                        <Button variant="outline" onClick={() => { setEditingPost(null); setIsCreating(false); }}>
+                        <Button variant="outline" onClick={() => { setEditingPost(null); setIsCreating(false); setShowPreview(false); }}>
                           <X className="mr-2 h-4 w-4" />キャンセル
                         </Button>
                         <Button onClick={handleSavePost}>
@@ -600,6 +610,34 @@ const AdminDashboard = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
+                    {showPreview ? (
+                      <div className="space-y-4">
+                        <div className="flex gap-2">
+                          <Button 
+                            size="sm" 
+                            variant={previewLang === 'ja' ? 'default' : 'outline'}
+                            onClick={() => setPreviewLang('ja')}
+                          >
+                            日本語
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant={previewLang === 'en' ? 'default' : 'outline'}
+                            onClick={() => setPreviewLang('en')}
+                          >
+                            English
+                          </Button>
+                        </div>
+                        <div className="min-h-[600px] max-h-[800px] overflow-y-auto">
+                          <MarkdownPreview 
+                            content={previewLang === 'ja' ? editingPost.content_ja || '' : editingPost.content_en || ''}
+                            title={previewLang === 'ja' ? editingPost.title_ja : editingPost.title_en}
+                            excerpt={previewLang === 'ja' ? editingPost.excerpt_ja : editingPost.excerpt_en}
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label>スラグ</Label>
@@ -715,6 +753,8 @@ const AdminDashboard = () => {
                         </div>
                       </TabsContent>
                     </Tabs>
+                      </>
+                    )}
                   </CardContent>
                 </Card>
               ) : (

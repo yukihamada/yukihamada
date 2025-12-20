@@ -13,6 +13,7 @@ const Navigation = () => {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [activeSection, setActiveSection] = useState<string>('');
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { t, language } = useLanguage();
   const { isPlaying, analyzerData } = useMusicPlayer();
@@ -47,17 +48,33 @@ const Navigation = () => {
     { name: t.nav.blog, href: '#blog', icon: BookOpen },
   ];
 
+  // Track scroll and active section
   useEffect(() => {
+    const sections = ['enabler', 'career', 'investments', 'blog', 'hobbies'];
+    
     const handleScroll = () => {
       const scrollY = window.scrollY;
       setIsScrolled(scrollY > 50);
-      // Calculate scroll progress (0 to 1) over first 200px
       setScrollProgress(Math.min(scrollY / 200, 1));
+      
+      // Find active section
+      if (isHomePage) {
+        for (const section of sections) {
+          const element = document.getElementById(section);
+          if (element) {
+            const rect = element.getBoundingClientRect();
+            if (rect.top <= 150 && rect.bottom >= 150) {
+              setActiveSection(section);
+              break;
+            }
+          }
+        }
+      }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [isHomePage]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -214,15 +231,22 @@ const Navigation = () => {
                   onMouseEnter={() => setActiveDropdown(key)}
                   onMouseLeave={() => setActiveDropdown(null)}
                 >
-                  <button
-                    className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-full transition-colors ${
-                      activeDropdown === key ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    <group.icon className="h-3.5 w-3.5" />
-                    <span>{group.label}</span>
-                    <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${activeDropdown === key ? 'rotate-180' : ''}`} />
-                  </button>
+                  {(() => {
+                    const groupSectionIds = group.items.map(i => i.href.replace('#', ''));
+                    const isGroupActive = groupSectionIds.includes(activeSection);
+                    return (
+                      <button
+                        className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-full transition-colors ${
+                          isGroupActive ? 'bg-primary/15 text-primary' : 
+                          activeDropdown === key ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                      >
+                        <group.icon className="h-3.5 w-3.5" />
+                        <span>{group.label}</span>
+                        <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${activeDropdown === key ? 'rotate-180' : ''}`} />
+                      </button>
+                    );
+                  })()}
                   
                   <AnimatePresence>
                     {activeDropdown === key && (
@@ -236,11 +260,15 @@ const Navigation = () => {
                         <div className="min-w-[140px] bg-popover border border-border rounded-xl shadow-lg overflow-hidden">
                           {group.items.map((item) => {
                             const href = isHomePage ? item.href : `/${item.href}`;
+                            const sectionId = item.href.replace('#', '');
+                            const isActive = activeSection === sectionId;
                             return (
                               <a
                                 key={item.name}
                                 href={href}
-                                className="block px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                                className={`block px-4 py-2.5 text-sm transition-colors ${
+                                  isActive ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                                }`}
                               >
                                 {item.name}
                               </a>
@@ -256,11 +284,15 @@ const Navigation = () => {
               {/* Single Links */}
               {singleLinks.map((link) => {
                 const href = isHomePage ? link.href : `/${link.href}`;
+                const sectionId = link.href.replace('#', '');
+                const isActive = activeSection === sectionId;
                 return (
                   <a
                     key={link.name}
                     href={href}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground rounded-full transition-colors"
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-full transition-colors ${
+                      isActive ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:text-foreground'
+                    }`}
                   >
                     <link.icon className="h-3.5 w-3.5" />
                     <span>{link.name}</span>

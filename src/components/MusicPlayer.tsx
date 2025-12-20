@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Music, X, ChevronUp, Shuffle, Repeat, Repeat1, SlidersHorizontal, FileText, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 
 import albumFreeToChange from '@/assets/album-free-to-change.jpg';
 import albumHello2150 from '@/assets/album-hello-2150.jpg';
@@ -123,7 +124,8 @@ const savePlayCount = (trackId: number) => {
 };
 
 const MusicPlayer = () => {
-  const [isPlaying, setIsPlaying] = useState(false);
+  const { setIsPlaying: setGlobalIsPlaying, setAnalyzerData: setGlobalAnalyzerData } = useMusicPlayer();
+  const [isPlaying, setIsPlayingLocal] = useState(false);
   const [currentTrack, setCurrentTrack] = useState(() => Math.floor(Math.random() * tracks.length));
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -144,6 +146,12 @@ const MusicPlayer = () => {
   const [currentLyrics, setCurrentLyrics] = useState<string | null>(null);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [transcribeError, setTranscribeError] = useState<string | null>(null);
+
+  // Wrapper for setIsPlaying that also updates global state
+  const setIsPlaying = (playing: boolean) => {
+    setIsPlayingLocal(playing);
+    setGlobalIsPlaying(playing);
+  };
   
   const audioRef = useRef<HTMLAudioElement>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -193,9 +201,10 @@ const MusicPlayer = () => {
     
     const normalizedData = Array.from(dataArray).slice(0, 32).map(value => value / 255);
     setAnalyzerData(normalizedData);
+    setGlobalAnalyzerData(normalizedData);
 
     animationRef.current = requestAnimationFrame(updateVisualizer);
-  }, []);
+  }, [setGlobalAnalyzerData]);
 
   useEffect(() => {
     if (isPlaying) {
@@ -275,7 +284,7 @@ const MusicPlayer = () => {
         const newCounts = savePlayCount(trackId);
         setPlayCounts(newCounts);
       }
-      setIsPlaying(prev => !prev);
+      setIsPlaying(!isPlaying);
       setIsExpanded(true);
       setIsVisible(true);
     };

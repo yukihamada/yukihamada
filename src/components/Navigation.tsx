@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 const Navigation = () => {
@@ -10,6 +11,7 @@ const Navigation = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const { t } = useLanguage();
+  const { isPlaying, analyzerData } = useMusicPlayer();
 
   const navLinks = [
     { name: t.nav.enabler, href: '#enabler', icon: '◆' },
@@ -27,6 +29,22 @@ const Navigation = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Mini equalizer component for header
+  const MiniEqualizer = () => (
+    <div className="flex items-end justify-center gap-[2px] h-4">
+      {analyzerData.slice(0, 5).map((value, index) => (
+        <motion.div
+          key={index}
+          className="w-[3px] rounded-full bg-gradient-to-t from-primary to-primary/60"
+          animate={{
+            height: `${Math.max(4, value * 16)}px`,
+          }}
+          transition={{ duration: 0.05 }}
+        />
+      ))}
+    </div>
+  );
 
   return (
     <motion.nav
@@ -75,6 +93,21 @@ const Navigation = () => {
                 濱田優貴
               </span>
             </div>
+            
+            {/* Mini Equalizer when music is playing */}
+            <AnimatePresence>
+              {isPlaying && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8, x: -10 }}
+                  animate={{ opacity: 1, scale: 1, x: 0 }}
+                  exit={{ opacity: 0, scale: 0.8, x: -10 }}
+                  className="hidden sm:flex items-center gap-2 ml-2 px-2 py-1 rounded-lg bg-primary/10 border border-primary/20"
+                >
+                  <MiniEqualizer />
+                  <span className="text-[10px] text-primary font-medium">♪</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.a>
 
           {/* Desktop Navigation */}

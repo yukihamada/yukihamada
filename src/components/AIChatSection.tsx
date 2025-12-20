@@ -551,65 +551,41 @@ export const AIChatSection = () => {
     localStorage.removeItem(GREETED_KEY);
   };
 
+  // Chat size state
+  const [chatSize, setChatSize] = useState<'small' | 'medium' | 'large'>('small');
+  
+  const sizeConfig = {
+    small: { width: 'md:w-[320px] lg:w-[360px]', height: 'md:h-[420px]', button: 'w-12 h-12' },
+    medium: { width: 'md:w-[400px] lg:w-[440px]', height: 'md:h-[550px]', button: 'w-14 h-14' },
+    large: { width: 'md:w-[480px] lg:w-[520px]', height: 'md:h-[680px]', button: 'w-14 h-14' },
+  };
+  
+  const currentSize = sizeConfig[chatSize];
+
   return (
     <>
       {/* Drag constraints container */}
       <div ref={constraintsRef} className="fixed inset-0 pointer-events-none z-40" />
 
-      {/* Chat Toggle Button with Pulse Animation */}
+      {/* Chat Toggle Button */}
       <motion.button
-        className="fixed bottom-6 left-6 z-50 w-14 h-14 rounded-full bg-gradient-to-r from-primary to-accent shadow-lg flex items-center justify-center text-primary-foreground"
+        className={`fixed bottom-6 left-6 z-50 ${currentSize.button} rounded-full bg-gradient-to-r from-primary to-accent shadow-lg flex items-center justify-center text-primary-foreground`}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
         onClick={toggleChat}
         animate={!isOpen ? {
           boxShadow: [
-            '0 0 20px hsl(var(--primary) / 0.4), 0 0 40px hsl(var(--primary) / 0.2)',
-            '0 0 30px hsl(var(--primary) / 0.6), 0 0 60px hsl(var(--primary) / 0.4)',
-            '0 0 20px hsl(var(--primary) / 0.4), 0 0 40px hsl(var(--primary) / 0.2)',
+            '0 0 15px hsl(var(--primary) / 0.3)',
+            '0 0 25px hsl(var(--primary) / 0.5)',
+            '0 0 15px hsl(var(--primary) / 0.3)',
           ],
         } : {}}
-        transition={!isOpen ? {
-          duration: 2,
-          repeat: Infinity,
-          ease: "easeInOut",
-        } : {}}
+        transition={!isOpen ? { duration: 2, repeat: Infinity, ease: "easeInOut" } : {}}
       >
-        {isOpen ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
-        
-        {/* Pulse rings */}
-        {!isOpen && (
-          <>
-            <motion.span
-              className="absolute inset-0 rounded-full border-2 border-primary"
-              animate={{
-                scale: [1, 1.5, 2],
-                opacity: [0.6, 0.3, 0],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeOut",
-              }}
-            />
-            <motion.span
-              className="absolute inset-0 rounded-full border-2 border-primary"
-              animate={{
-                scale: [1, 1.5, 2],
-                opacity: [0.6, 0.3, 0],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeOut",
-                delay: 0.5,
-              }}
-            />
-          </>
-        )}
+        {isOpen ? <X className="w-5 h-5" /> : <MessageCircle className="w-5 h-5" />}
       </motion.button>
 
-      {/* Chat Window - Responsive Design */}
+      {/* Chat Window */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -622,40 +598,54 @@ export const AIChatSection = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed z-50 bg-background border border-border shadow-2xl flex flex-col overflow-hidden pointer-events-auto
-              bottom-0 left-0 right-0 h-[85vh] rounded-t-3xl
-              md:bottom-24 md:left-6 md:right-auto md:w-[400px] lg:w-[440px] md:h-[600px] md:rounded-2xl"
+            className={`fixed z-50 bg-background border border-border shadow-2xl flex flex-col overflow-hidden pointer-events-auto
+              bottom-0 left-0 right-0 h-[70vh] rounded-t-2xl
+              md:bottom-20 md:left-6 md:right-auto ${currentSize.width} ${currentSize.height} md:rounded-xl`}
           >
             {/* Header */}
             <div 
-              className="bg-card border-b border-border p-4 md:cursor-grab md:active:cursor-grabbing select-none"
+              className="bg-card border-b border-border p-3 md:cursor-grab md:active:cursor-grabbing select-none"
               onPointerDown={(e) => window.innerWidth >= 768 && dragControls.start(e)}
             >
               {/* Mobile drag indicator */}
-              <div className="md:hidden w-10 h-1 bg-muted-foreground/30 rounded-full mx-auto mb-3" />
+              <div className="md:hidden w-8 h-1 bg-muted-foreground/30 rounded-full mx-auto mb-2" />
               
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <div className="relative">
                   <img 
                     src={yukiProfile} 
                     alt="Yuki" 
-                    className="w-12 h-12 md:w-10 md:h-10 rounded-full object-cover ring-2 ring-primary/20"
+                    className="w-8 h-8 rounded-full object-cover ring-2 ring-primary/20"
                   />
-                  <span className="absolute bottom-0 right-0 w-3.5 h-3.5 md:w-3 md:h-3 bg-green-500 border-2 border-card rounded-full" />
+                  <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 border border-card rounded-full" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-foreground text-base md:text-sm truncate">{t.name}</h3>
-                  <p className="text-sm md:text-xs text-green-500 flex items-center gap-1.5">
-                    <span className="w-2 h-2 md:w-1.5 md:h-1.5 bg-green-500 rounded-full animate-pulse" />
+                  <h3 className="font-medium text-foreground text-sm truncate">{t.name}</h3>
+                  <p className="text-xs text-green-500 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
                     {t.online}
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
+                  {/* Size toggle - desktop only */}
+                  <div className="hidden md:flex items-center gap-0.5 bg-muted rounded-lg p-0.5">
+                    {(['small', 'medium', 'large'] as const).map((size) => (
+                      <button
+                        key={size}
+                        onClick={() => setChatSize(size)}
+                        className={`px-2 py-1 text-[10px] rounded-md transition-colors ${
+                          chatSize === size ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                      >
+                        {size === 'small' ? 'S' : size === 'medium' ? 'M' : 'L'}
+                      </button>
+                    ))}
+                  </div>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={handleNewChat}
-                    className="text-sm md:text-xs text-muted-foreground hover:text-foreground px-3"
+                    className="text-xs text-muted-foreground hover:text-foreground h-7 px-2"
                   >
                     {t.newChat}
                   </Button>
@@ -663,34 +653,34 @@ export const AIChatSection = () => {
                     variant="ghost"
                     size="icon"
                     onClick={toggleChat}
-                    className="md:hidden rounded-full"
+                    className="md:hidden rounded-full h-7 w-7"
                   >
-                    <X className="w-5 h-5" />
+                    <X className="w-4 h-4" />
                   </Button>
-                  <GripHorizontal className="w-4 h-4 text-muted-foreground hidden md:block" />
+                  <GripHorizontal className="w-3 h-3 text-muted-foreground hidden md:block" />
                 </div>
               </div>
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 md:p-4 space-y-4 md:space-y-3 bg-muted/20">
+            <div className="flex-1 overflow-y-auto p-3 space-y-2.5 bg-muted/20">
               {messages.length === 0 && (
-                <div className="flex flex-col items-center justify-center h-full text-center px-4">
+                <div className="flex flex-col items-center justify-center h-full text-center px-3">
                   <img 
                     src={yukiProfile} 
                     alt="Yuki" 
-                    className="w-24 h-24 md:w-20 md:h-20 rounded-full object-cover mb-4 ring-4 ring-primary/20"
+                    className="w-16 h-16 rounded-full object-cover mb-3 ring-2 ring-primary/20"
                   />
-                  <h4 className="font-semibold text-foreground text-lg md:text-base mb-1">{t.name}</h4>
-                  <p className="text-sm md:text-xs text-muted-foreground mb-6">
+                  <h4 className="font-medium text-foreground text-sm mb-0.5">{t.name}</h4>
+                  <p className="text-xs text-muted-foreground mb-4">
                     {t.title}
                   </p>
-                  <div className="space-y-2 w-full max-w-[320px] md:max-w-[280px]">
+                  <div className="space-y-1.5 w-full max-w-[260px]">
                     {t.suggestions.map((suggestion) => (
                       <button
                         key={suggestion}
                         onClick={() => setInput(suggestion)}
-                        className="block w-full text-base md:text-sm bg-card hover:bg-card/80 border border-border rounded-full px-4 py-3 md:py-2.5 transition-all hover:shadow-md text-left"
+                        className="block w-full text-xs bg-card hover:bg-card/80 border border-border rounded-lg px-3 py-2 transition-colors text-left"
                       >
                         {suggestion}
                       </button>
@@ -702,26 +692,26 @@ export const AIChatSection = () => {
               {messages.map((message, index) => (
                 <motion.div
                   key={index}
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className={`flex gap-3 md:gap-2 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  className={`flex gap-2 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   {message.role === 'assistant' && (
                     <img 
                       src={yukiProfile} 
                       alt="Yuki" 
-                      className="w-8 h-8 md:w-7 md:h-7 rounded-full object-cover flex-shrink-0 mt-1"
+                      className="w-6 h-6 rounded-full object-cover flex-shrink-0 mt-0.5"
                     />
                   )}
-                  <div className={`flex flex-col ${message.role === 'user' ? 'items-end' : 'items-start'} max-w-[85%] md:max-w-[75%]`}>
+                  <div className={`flex flex-col ${message.role === 'user' ? 'items-end' : 'items-start'} max-w-[80%]`}>
                     <div
-                      className={`rounded-2xl px-4 py-3 md:px-4 md:py-2.5 ${
+                      className={`rounded-xl px-3 py-2 ${
                         message.role === 'user'
-                          ? 'bg-primary text-primary-foreground rounded-br-md'
-                          : 'bg-card text-foreground border border-border rounded-bl-md shadow-sm'
+                          ? 'bg-primary text-primary-foreground rounded-br-sm'
+                          : 'bg-card text-foreground border border-border rounded-bl-sm shadow-sm'
                       }`}
                     >
-                      <p className="text-base md:text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                      <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
                     </div>
                     <div className="flex items-center gap-1 mt-1 px-1">
                       <span className="text-[10px] text-muted-foreground">

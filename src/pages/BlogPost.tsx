@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { getBlogPostBySlug, blogPosts } from '@/data/blogPosts';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
+import LikeButton from '@/components/LikeButton';
 
 const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -147,6 +148,11 @@ const BlogPost = () => {
                     .replace(/\n\n/g, '</p><p class="mb-4 text-muted-foreground">')
                 }}
               />
+            </div>
+
+            {/* Like Button */}
+            <div className="flex justify-center mt-8">
+              <LikeButton postSlug={post.slug} />
             </div>
           </motion.div>
 

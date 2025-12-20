@@ -208,40 +208,45 @@ const Navigation = () => {
             {/* Dropdown Groups */}
             <div className="flex items-center gap-1 bg-secondary/30 backdrop-blur-sm rounded-full p-1 border border-border/30">
               {Object.entries(navGroups).map(([key, group]) => (
-                <div key={key} className="relative">
+                <div 
+                  key={key} 
+                  className="relative"
+                  onMouseEnter={() => setActiveDropdown(key)}
+                  onMouseLeave={() => setActiveDropdown(null)}
+                >
                   <button
-                    onClick={() => setActiveDropdown(activeDropdown === key ? null : key)}
                     className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-full transition-colors ${
                       activeDropdown === key ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
                     <group.icon className="h-3.5 w-3.5" />
                     <span>{group.label}</span>
-                    <ChevronDown className={`h-3 w-3 transition-transform ${activeDropdown === key ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${activeDropdown === key ? 'rotate-180' : ''}`} />
                   </button>
                   
                   <AnimatePresence>
                     {activeDropdown === key && (
                       <motion.div
-                        initial={{ opacity: 0, y: 8, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                        transition={{ duration: 0.15 }}
-                        className="absolute top-full left-0 mt-2 min-w-[140px] bg-popover border border-border rounded-xl shadow-lg overflow-hidden z-50"
+                        initial={{ opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 4 }}
+                        transition={{ duration: 0.1 }}
+                        className="absolute top-full left-0 pt-1 z-50"
                       >
-                        {group.items.map((item) => {
-                          const href = isHomePage ? item.href : `/${item.href}`;
-                          return (
-                            <a
-                              key={item.name}
-                              href={href}
-                              onClick={() => setActiveDropdown(null)}
-                              className="block px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                            >
-                              {item.name}
-                            </a>
-                          );
-                        })}
+                        <div className="min-w-[140px] bg-popover border border-border rounded-xl shadow-lg overflow-hidden">
+                          {group.items.map((item) => {
+                            const href = isHomePage ? item.href : `/${item.href}`;
+                            return (
+                              <a
+                                key={item.name}
+                                href={href}
+                                className="block px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                              >
+                                {item.name}
+                              </a>
+                            );
+                          })}
+                        </div>
                       </motion.div>
                     )}
                   </AnimatePresence>

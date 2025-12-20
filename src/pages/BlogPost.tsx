@@ -1,6 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Calendar, Tag } from 'lucide-react';
+import { ArrowLeft, Calendar, Tag, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getBlogPostBySlug, blogPosts } from '@/data/blogPosts';
 import Navigation from '@/components/Navigation';
@@ -18,6 +18,30 @@ const blogImages: Record<string, string> = {
   'jiuflow-hero': jiuflowHero,
   'jiuflow-lesson': jiuflowLesson,
   'cost-collapse-timeline': '/images/blog-cost-collapse-timeline.jpg',
+  'bjj-medal': '/images/blog-bjj-medal.jpg',
+  'bjj-match': '/images/blog-bjj-match.jpg',
+  'bjj-group1': '/images/blog-bjj-group1.jpg',
+  'bjj-victory': '/images/blog-bjj-victory.jpg',
+};
+
+// Track name to index mapping for music player
+const trackMapping: Record<string, number> = {
+  'shio-to-pixel': 6, // Index of 塩とピクセル in the tracks array
+  'free-to-change': 0,
+  'hello-2150': 1,
+  'everybody-bjj': 2,
+  'i-love-you': 3,
+  'attention': 4,
+  'koi-jujutsu': 5,
+  'musubinaosu': 7,
+};
+
+// Function to dispatch custom event to play specific track
+const playTrack = (trackId: string) => {
+  const trackIndex = trackMapping[trackId];
+  if (trackIndex !== undefined) {
+    window.dispatchEvent(new CustomEvent('playSpecificTrack', { detail: { trackIndex } }));
+  }
 };
 
 const BlogPost = () => {
@@ -149,6 +173,10 @@ const BlogPost = () => {
                         return imageSrc 
                           ? `<div class="my-10"><img src="${imageSrc}" alt="${imageKey}" class="w-full rounded-2xl shadow-xl ring-1 ring-border/20" /></div>`
                           : '';
+                      })
+                      // Play button syntax [play:track-id]
+                      .replace(/\[play:([a-zA-Z0-9_-]+)\]/g, (_, trackId) => {
+                        return `<div class="my-10 flex justify-center"><button onclick="window.dispatchEvent(new CustomEvent('playSpecificTrack', { detail: { trackIndex: ${trackMapping[trackId] ?? 0} } }))" class="group flex items-center gap-4 px-8 py-5 rounded-2xl bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-semibold text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300"><span class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="ml-1"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></span><span>🎵 塩とピクセル を再生</span></button></div>`;
                       })
                       // Paragraphs
                       .replace(/\n\n/g, '</p><p class="mb-6 text-muted-foreground leading-relaxed text-lg">'),

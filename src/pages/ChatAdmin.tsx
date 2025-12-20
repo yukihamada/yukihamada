@@ -241,7 +241,7 @@ const ChatAdmin = () => {
 
   const getPostTitle = (slug: string) => {
     const post = blogPosts.find(p => p.slug === slug);
-    return post?.title || slug;
+    return post?.ja.title || slug;
   };
 
   const totalViews = blogAnalytics.reduce((sum, a) => sum + a.view_count, 0);

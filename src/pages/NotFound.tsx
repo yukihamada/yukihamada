@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useChat } from "@/contexts/ChatContext";
 
 interface HighScore {
   id: string;
@@ -542,6 +543,12 @@ const SnakeGame = () => {
 const NotFound = () => {
   const location = useLocation();
   const { language } = useLanguage();
+  const { setPageContext } = useChat();
+
+  useEffect(() => {
+    setPageContext('404');
+    return () => setPageContext('home');
+  }, [setPageContext]);
 
   const texts = {
     en: {

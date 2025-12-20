@@ -50,7 +50,19 @@ const BlogPost = () => {
   const post = slug ? getBlogPostBySlug(slug) : undefined;
   const contentRef = useRef<HTMLDivElement>(null);
   const { language } = useLanguage();
-  const { openChat } = useChat();
+  const { openChat, setPageContext, setCurrentBlogTitle } = useChat();
+
+  // Set page context for chat
+  useEffect(() => {
+    setPageContext('blog-post');
+    if (post) {
+      setCurrentBlogTitle(post[language].title);
+    }
+    return () => {
+      setPageContext('home');
+      setCurrentBlogTitle(undefined);
+    };
+  }, [post, language, setPageContext, setCurrentBlogTitle]);
 
   // Add click listeners for play buttons after content renders
   useEffect(() => {

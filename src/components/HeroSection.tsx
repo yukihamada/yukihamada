@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import MagneticButton from '@/components/MagneticButton';
 import profileImage from '@/assets/yuki-profile.jpg';
 import bichonFriseImage from '@/assets/bichon-frise.jpg';
-
+import { useAuth } from '@/hooks/useAuth';
 // Roles with intentional typos that will be corrected (typoAt: -1 means no typo)
 const rolesWithTypos = [
   { text: 'ポーカープレイヤー', typoAt: -1, wrong: '', correctChar: '', bgEmoji: '🃏', bgImage: 'https://images.unsplash.com/photo-1541278107931-e006523892df?w=800&auto=format&fit=crop&q=60' },
@@ -29,6 +29,7 @@ const HeroSection = ({ onMusicPlay }: HeroSectionProps) => {
   const [typingState, setTypingState] = useState<TypingState>('typing');
   const [isMusicHovered, setIsMusicHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { isAuthenticated } = useAuth();
   
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -399,18 +400,20 @@ const HeroSection = ({ onMusicPlay }: HeroSectionProps) => {
                 </motion.span>
               </Button>
             </MagneticButton>
-            <MagneticButton>
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-primary/50 text-foreground hover:bg-primary/10 px-8 py-6 text-lg"
-                asChild
-              >
-                <a href="https://www.patreon.com/paradisecreator/" target="_blank" rel="noopener noreferrer">
-                  Patreonに参加
-                </a>
-              </Button>
-            </MagneticButton>
+            {isAuthenticated && (
+              <MagneticButton>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-primary/50 text-foreground hover:bg-primary/10 px-8 py-6 text-lg"
+                  asChild
+                >
+                  <a href="https://www.patreon.com/paradisecreator/" target="_blank" rel="noopener noreferrer">
+                    Patreonに参加
+                  </a>
+                </Button>
+              </MagneticButton>
+            )}
           </motion.div>
         </motion.div>
       </motion.div>

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import MagneticButton from '@/components/MagneticButton';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useChat } from '@/contexts/ChatContext';
+import { useAuth } from '@/hooks/useAuth';
 
 const socialLinks = [
   { name: 'Twitter', icon: Twitter, href: 'https://twitter.com/yukihamada' },
@@ -15,6 +16,7 @@ const socialLinks = [
 const Footer = () => {
   const { t } = useLanguage();
   const { openChat } = useChat();
+  const { isAuthenticated } = useAuth();
 
   const quickLinks = [
     { name: t.nav.enabler, href: '#enabler' },
@@ -163,16 +165,18 @@ const Footer = () => {
               enablerhq.com
               <ExternalLink className="h-3 w-3" />
             </motion.a>
-            <motion.a
-              href="https://www.patreon.com/paradisecreator/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-muted-foreground hover:text-primary text-sm flex items-center gap-1 transition-colors"
-              whileHover={{ scale: 1.05 }}
-            >
-              Patreon
-              <ExternalLink className="h-3 w-3" />
-            </motion.a>
+            {isAuthenticated && (
+              <motion.a
+                href="https://www.patreon.com/paradisecreator/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-primary text-sm flex items-center gap-1 transition-colors"
+                whileHover={{ scale: 1.05 }}
+              >
+                Patreon
+                <ExternalLink className="h-3 w-3" />
+              </motion.a>
+            )}
           </div>
         </motion.div>
       </div>

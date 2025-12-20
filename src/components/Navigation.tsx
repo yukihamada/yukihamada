@@ -237,29 +237,31 @@ const Navigation = () => {
                 </Button>
               )}
               
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.5 }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Button
-                  size="sm"
-                  className="relative overflow-hidden bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 rounded-full px-5"
-                  asChild
+              {isAuthenticated && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.5 }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  <a href="https://www.patreon.com/paradisecreator/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
-                    <Sparkles className="h-3.5 w-3.5" />
-                    <span>Patreon</span>
-                    <motion.div 
-                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                      animate={{ x: ['-200%', '200%'] }}
-                      transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
-                    />
-                  </a>
-                </Button>
-              </motion.div>
+                  <Button
+                    size="sm"
+                    className="relative overflow-hidden bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 rounded-full px-5"
+                    asChild
+                  >
+                    <a href="https://www.patreon.com/paradisecreator/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+                      <Sparkles className="h-3.5 w-3.5" />
+                      <span>Patreon</span>
+                      <motion.div 
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                        animate={{ x: ['-200%', '200%'] }}
+                        transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+                      />
+                    </a>
+                  </Button>
+                </motion.div>
+              )}
             </div>
           </div>
 
@@ -379,15 +381,17 @@ const Navigation = () => {
                   </Button>
                 )}
                 
-                <Button
-                  className="w-full h-14 text-lg bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-2xl"
-                  asChild
-                >
-                  <a href="https://www.patreon.com/paradisecreator/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-3">
-                    <Sparkles className="h-5 w-5" />
-                    Support on Patreon
-                  </a>
-                </Button>
+                {isAuthenticated && (
+                  <Button
+                    className="w-full h-14 text-lg bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-2xl"
+                    asChild
+                  >
+                    <a href="https://www.patreon.com/paradisecreator/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-3">
+                      <Sparkles className="h-5 w-5" />
+                      Support on Patreon
+                    </a>
+                  </Button>
+                )}
               </motion.div>
             </div>
           </motion.div>

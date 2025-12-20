@@ -10,7 +10,7 @@ import {
   LayoutDashboard, FileText, MessageCircle, Users, MessageSquare,
   BarChart3, Eye, Heart, TrendingUp, RefreshCw, ArrowLeft,
   Plus, Edit, Trash2, Save, X, ChevronRight, User, Bot,
-  Shield, LogOut, Settings
+  Shield, LogOut, Settings, Columns2, PanelLeft
 } from 'lucide-react';
 import MarkdownPreview from '@/components/MarkdownPreview';
 import { Button } from '@/components/ui/button';
@@ -127,7 +127,7 @@ const AdminDashboard = () => {
   const [posts, setPosts] = useState<BlogPostDB[]>([]);
   const [editingPost, setEditingPost] = useState<Partial<BlogPostDB> | null>(null);
   const [isCreating, setIsCreating] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
+  const [viewMode, setViewMode] = useState<'editor' | 'preview' | 'split'>('editor');
   const [previewLang, setPreviewLang] = useState<'ja' | 'en'>('ja');
 
   // Chat state
@@ -585,50 +585,159 @@ const AdminDashboard = () => {
               {editingPost ? (
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
+                    <CardTitle className="flex items-center justify-between flex-wrap gap-2">
                       {isCreating ? '新規記事作成' : '記事編集'}
-                  <div className="flex gap-2">
-                        <Button 
-                          variant={showPreview ? "default" : "outline"} 
-                          onClick={() => setShowPreview(!showPreview)}
-                        >
-                          <Eye className="mr-2 h-4 w-4" />
-                          {showPreview ? 'エディタ' : 'プレビュー'}
-                        </Button>
+                      <div className="flex gap-2 flex-wrap">
+                        {/* View mode buttons */}
+                        <div className="flex border rounded-md overflow-hidden">
+                          <Button 
+                            variant={viewMode === 'editor' ? "default" : "ghost"} 
+                            size="sm"
+                            onClick={() => setViewMode('editor')}
+                            className="rounded-none"
+                          >
+                            <PanelLeft className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant={viewMode === 'split' ? "default" : "ghost"} 
+                            size="sm"
+                            onClick={() => setViewMode('split')}
+                            className="rounded-none border-x"
+                          >
+                            <Columns2 className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant={viewMode === 'preview' ? "default" : "ghost"} 
+                            size="sm"
+                            onClick={() => setViewMode('preview')}
+                            className="rounded-none"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </div>
                         {editingPost?.slug && (
-                          <Button variant="secondary" onClick={() => window.open(`/blog/${editingPost.slug}`, '_blank')}>
+                          <Button variant="secondary" size="sm" onClick={() => window.open(`/blog/${editingPost.slug}`, '_blank')}>
                             外部プレビュー
                           </Button>
                         )}
-                        <Button variant="outline" onClick={() => { setEditingPost(null); setIsCreating(false); setShowPreview(false); }}>
+                        <Button variant="outline" size="sm" onClick={() => { setEditingPost(null); setIsCreating(false); setViewMode('editor'); }}>
                           <X className="mr-2 h-4 w-4" />キャンセル
                         </Button>
-                        <Button onClick={handleSavePost}>
+                        <Button size="sm" onClick={handleSavePost}>
                           <Save className="mr-2 h-4 w-4" />保存
                         </Button>
                       </div>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {showPreview ? (
-                      <div className="space-y-4">
-                        <div className="flex gap-2">
-                          <Button 
-                            size="sm" 
-                            variant={previewLang === 'ja' ? 'default' : 'outline'}
-                            onClick={() => setPreviewLang('ja')}
-                          >
-                            日本語
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant={previewLang === 'en' ? 'default' : 'outline'}
-                            onClick={() => setPreviewLang('en')}
-                          >
-                            English
-                          </Button>
+                    {/* Language selector for preview */}
+                    {(viewMode === 'preview' || viewMode === 'split') && (
+                      <div className="flex gap-2">
+                        <Button 
+                          size="sm" 
+                          variant={previewLang === 'ja' ? 'default' : 'outline'}
+                          onClick={() => setPreviewLang('ja')}
+                        >
+                          日本語
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant={previewLang === 'en' ? 'default' : 'outline'}
+                          onClick={() => setPreviewLang('en')}
+                        >
+                          English
+                        </Button>
+                      </div>
+                    )}
+
+                    {/* Split view */}
+                    {viewMode === 'split' ? (
+                      <div className="grid grid-cols-2 gap-4">
+                        {/* Editor side */}
+                        <div className="space-y-4 border-r pr-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <Label>スラグ</Label>
+                              <Input
+                                value={editingPost.slug || ''}
+                                onChange={(e) => setEditingPost({ ...editingPost, slug: e.target.value })}
+                                placeholder="2025-01-01-example"
+                              />
+                            </div>
+                            <div>
+                              <Label>画像パス</Label>
+                              <Input
+                                value={editingPost.image || ''}
+                                onChange={(e) => setEditingPost({ ...editingPost, image: e.target.value })}
+                                placeholder="/images/blog-example.jpg"
+                              />
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Switch
+                              checked={editingPost.featured || false}
+                              onCheckedChange={(checked) => setEditingPost({ ...editingPost, featured: checked })}
+                            />
+                            <Label>注目記事</Label>
+                          </div>
+                          <div>
+                            <Label>{previewLang === 'ja' ? 'タイトル' : 'Title'}</Label>
+                            <Input
+                              value={previewLang === 'ja' ? (editingPost.title_ja || '') : (editingPost.title_en || '')}
+                              onChange={(e) => setEditingPost({ 
+                                ...editingPost, 
+                                [previewLang === 'ja' ? 'title_ja' : 'title_en']: e.target.value 
+                              })}
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <Label>{previewLang === 'ja' ? '日付' : 'Date'}</Label>
+                              <Input
+                                value={previewLang === 'ja' ? (editingPost.date_ja || '') : (editingPost.date_en || '')}
+                                onChange={(e) => setEditingPost({ 
+                                  ...editingPost, 
+                                  [previewLang === 'ja' ? 'date_ja' : 'date_en']: e.target.value 
+                                })}
+                              />
+                            </div>
+                            <div>
+                              <Label>{previewLang === 'ja' ? 'カテゴリ' : 'Category'}</Label>
+                              <Input
+                                value={previewLang === 'ja' ? (editingPost.category_ja || '') : (editingPost.category_en || '')}
+                                onChange={(e) => setEditingPost({ 
+                                  ...editingPost, 
+                                  [previewLang === 'ja' ? 'category_ja' : 'category_en']: e.target.value 
+                                })}
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <Label>{previewLang === 'ja' ? '概要' : 'Excerpt'}</Label>
+                            <Textarea
+                              value={previewLang === 'ja' ? (editingPost.excerpt_ja || '') : (editingPost.excerpt_en || '')}
+                              onChange={(e) => setEditingPost({ 
+                                ...editingPost, 
+                                [previewLang === 'ja' ? 'excerpt_ja' : 'excerpt_en']: e.target.value 
+                              })}
+                              rows={2}
+                            />
+                          </div>
+                          <div>
+                            <Label>{previewLang === 'ja' ? '本文' : 'Content'}</Label>
+                            <Textarea
+                              value={previewLang === 'ja' ? (editingPost.content_ja || '') : (editingPost.content_en || '')}
+                              onChange={(e) => setEditingPost({ 
+                                ...editingPost, 
+                                [previewLang === 'ja' ? 'content_ja' : 'content_en']: e.target.value 
+                              })}
+                              rows={20}
+                              className="font-mono text-sm"
+                            />
+                          </div>
                         </div>
-                        <div className="min-h-[600px] max-h-[800px] overflow-y-auto">
+                        {/* Preview side */}
+                        <div className="max-h-[800px] overflow-y-auto">
                           <MarkdownPreview 
                             content={previewLang === 'ja' ? editingPost.content_ja || '' : editingPost.content_en || ''}
                             title={previewLang === 'ja' ? editingPost.title_ja : editingPost.title_en}
@@ -636,123 +745,131 @@ const AdminDashboard = () => {
                           />
                         </div>
                       </div>
+                    ) : viewMode === 'preview' ? (
+                      <div className="min-h-[600px] max-h-[800px] overflow-y-auto">
+                        <MarkdownPreview 
+                          content={previewLang === 'ja' ? editingPost.content_ja || '' : editingPost.content_en || ''}
+                          title={previewLang === 'ja' ? editingPost.title_ja : editingPost.title_en}
+                          excerpt={previewLang === 'ja' ? editingPost.excerpt_ja : editingPost.excerpt_en}
+                        />
+                      </div>
                     ) : (
                       <>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label>スラグ</Label>
-                        <Input
-                          value={editingPost.slug || ''}
-                          onChange={(e) => setEditingPost({ ...editingPost, slug: e.target.value })}
-                          placeholder="2025-01-01-example"
-                        />
-                      </div>
-                      <div>
-                        <Label>画像パス</Label>
-                        <Input
-                          value={editingPost.image || ''}
-                          onChange={(e) => setEditingPost({ ...editingPost, image: e.target.value })}
-                          placeholder="/images/blog-example.jpg"
-                        />
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        checked={editingPost.featured || false}
-                        onCheckedChange={(checked) => setEditingPost({ ...editingPost, featured: checked })}
-                      />
-                      <Label>注目記事</Label>
-                    </div>
-                    <Tabs defaultValue="ja">
-                      <TabsList>
-                        <TabsTrigger value="ja">日本語</TabsTrigger>
-                        <TabsTrigger value="en">English</TabsTrigger>
-                      </TabsList>
-                      <TabsContent value="ja" className="space-y-4 mt-4">
-                        <div>
-                          <Label>タイトル</Label>
-                          <Input
-                            value={editingPost.title_ja || ''}
-                            onChange={(e) => setEditingPost({ ...editingPost, title_ja: e.target.value })}
-                          />
-                        </div>
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <Label>日付</Label>
+                            <Label>スラグ</Label>
                             <Input
-                              value={editingPost.date_ja || ''}
-                              onChange={(e) => setEditingPost({ ...editingPost, date_ja: e.target.value })}
+                              value={editingPost.slug || ''}
+                              onChange={(e) => setEditingPost({ ...editingPost, slug: e.target.value })}
+                              placeholder="2025-01-01-example"
                             />
                           </div>
                           <div>
-                            <Label>カテゴリ</Label>
+                            <Label>画像パス</Label>
                             <Input
-                              value={editingPost.category_ja || ''}
-                              onChange={(e) => setEditingPost({ ...editingPost, category_ja: e.target.value })}
+                              value={editingPost.image || ''}
+                              onChange={(e) => setEditingPost({ ...editingPost, image: e.target.value })}
+                              placeholder="/images/blog-example.jpg"
                             />
                           </div>
                         </div>
-                        <div>
-                          <Label>概要</Label>
-                          <Textarea
-                            value={editingPost.excerpt_ja || ''}
-                            onChange={(e) => setEditingPost({ ...editingPost, excerpt_ja: e.target.value })}
-                            rows={2}
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            checked={editingPost.featured || false}
+                            onCheckedChange={(checked) => setEditingPost({ ...editingPost, featured: checked })}
                           />
+                          <Label>注目記事</Label>
                         </div>
-                        <div>
-                          <Label>本文</Label>
-                          <Textarea
-                            value={editingPost.content_ja || ''}
-                            onChange={(e) => setEditingPost({ ...editingPost, content_ja: e.target.value })}
-                            rows={15}
-                            className="font-mono text-sm"
-                          />
-                        </div>
-                      </TabsContent>
-                      <TabsContent value="en" className="space-y-4 mt-4">
-                        <div>
-                          <Label>Title</Label>
-                          <Input
-                            value={editingPost.title_en || ''}
-                            onChange={(e) => setEditingPost({ ...editingPost, title_en: e.target.value })}
-                          />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <Label>Date</Label>
-                            <Input
-                              value={editingPost.date_en || ''}
-                              onChange={(e) => setEditingPost({ ...editingPost, date_en: e.target.value })}
-                            />
-                          </div>
-                          <div>
-                            <Label>Category</Label>
-                            <Input
-                              value={editingPost.category_en || ''}
-                              onChange={(e) => setEditingPost({ ...editingPost, category_en: e.target.value })}
-                            />
-                          </div>
-                        </div>
-                        <div>
-                          <Label>Excerpt</Label>
-                          <Textarea
-                            value={editingPost.excerpt_en || ''}
-                            onChange={(e) => setEditingPost({ ...editingPost, excerpt_en: e.target.value })}
-                            rows={2}
-                          />
-                        </div>
-                        <div>
-                          <Label>Content</Label>
-                          <Textarea
-                            value={editingPost.content_en || ''}
-                            onChange={(e) => setEditingPost({ ...editingPost, content_en: e.target.value })}
-                            rows={15}
-                            className="font-mono text-sm"
-                          />
-                        </div>
-                      </TabsContent>
-                    </Tabs>
+                        <Tabs defaultValue="ja">
+                          <TabsList>
+                            <TabsTrigger value="ja">日本語</TabsTrigger>
+                            <TabsTrigger value="en">English</TabsTrigger>
+                          </TabsList>
+                          <TabsContent value="ja" className="space-y-4 mt-4">
+                            <div>
+                              <Label>タイトル</Label>
+                              <Input
+                                value={editingPost.title_ja || ''}
+                                onChange={(e) => setEditingPost({ ...editingPost, title_ja: e.target.value })}
+                              />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <Label>日付</Label>
+                                <Input
+                                  value={editingPost.date_ja || ''}
+                                  onChange={(e) => setEditingPost({ ...editingPost, date_ja: e.target.value })}
+                                />
+                              </div>
+                              <div>
+                                <Label>カテゴリ</Label>
+                                <Input
+                                  value={editingPost.category_ja || ''}
+                                  onChange={(e) => setEditingPost({ ...editingPost, category_ja: e.target.value })}
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <Label>概要</Label>
+                              <Textarea
+                                value={editingPost.excerpt_ja || ''}
+                                onChange={(e) => setEditingPost({ ...editingPost, excerpt_ja: e.target.value })}
+                                rows={2}
+                              />
+                            </div>
+                            <div>
+                              <Label>本文</Label>
+                              <Textarea
+                                value={editingPost.content_ja || ''}
+                                onChange={(e) => setEditingPost({ ...editingPost, content_ja: e.target.value })}
+                                rows={15}
+                                className="font-mono text-sm"
+                              />
+                            </div>
+                          </TabsContent>
+                          <TabsContent value="en" className="space-y-4 mt-4">
+                            <div>
+                              <Label>Title</Label>
+                              <Input
+                                value={editingPost.title_en || ''}
+                                onChange={(e) => setEditingPost({ ...editingPost, title_en: e.target.value })}
+                              />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <Label>Date</Label>
+                                <Input
+                                  value={editingPost.date_en || ''}
+                                  onChange={(e) => setEditingPost({ ...editingPost, date_en: e.target.value })}
+                                />
+                              </div>
+                              <div>
+                                <Label>Category</Label>
+                                <Input
+                                  value={editingPost.category_en || ''}
+                                  onChange={(e) => setEditingPost({ ...editingPost, category_en: e.target.value })}
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <Label>Excerpt</Label>
+                              <Textarea
+                                value={editingPost.excerpt_en || ''}
+                                onChange={(e) => setEditingPost({ ...editingPost, excerpt_en: e.target.value })}
+                                rows={2}
+                              />
+                            </div>
+                            <div>
+                              <Label>Content</Label>
+                              <Textarea
+                                value={editingPost.content_en || ''}
+                                onChange={(e) => setEditingPost({ ...editingPost, content_en: e.target.value })}
+                                rows={15}
+                                className="font-mono text-sm"
+                              />
+                            </div>
+                          </TabsContent>
+                        </Tabs>
                       </>
                     )}
                   </CardContent>

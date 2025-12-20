@@ -145,6 +145,8 @@ const BlogPost = () => {
                     .replace(/^\d\. \*\*(.+?)\*\*: (.+)$/gm, '<li class="mb-2"><strong class="text-foreground">$1</strong>: $2</li>')
                     .replace(/^- (.+)$/gm, '<li class="mb-2 text-muted-foreground">$1</li>')
                     .replace(/\*\*(.+?)\*\*/g, '<strong class="text-foreground">$1</strong>')
+                    // Convert markdown links to HTML links
+                    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary hover:text-primary/80 underline underline-offset-4 transition-colors">$1</a>')
                     .replace(/\n\n/g, '</p><p class="mb-4 text-muted-foreground">')
                 }}
               />

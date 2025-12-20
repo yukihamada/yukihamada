@@ -15,7 +15,49 @@ interface Particle {
   xOffset: number;
   yOffset: number;
   rotationSpeed: number;
+  colorOffset: number; // For color variation
 }
+
+interface Lightning {
+  id: number;
+  x: number;
+  path: string;
+}
+
+// Generate rainbow color based on offset and base color
+const getParticleColor = (baseColor: string, offset: number, energy: number): string => {
+  // Create color variations based on offset
+  const colors = [
+    baseColor,
+    '#ff6b6b', // Red
+    '#ffd93d', // Yellow
+    '#6bcb77', // Green
+    '#4d96ff', // Blue
+    '#9b59b6', // Purple
+    '#ff85a2', // Pink
+    '#00d4ff', // Cyan
+  ];
+  const index = Math.floor(offset * colors.length) % colors.length;
+  return colors[index];
+};
+
+// Generate random lightning path
+const generateLightningPath = (startX: number): string => {
+  let path = `M ${startX} 0`;
+  let x = startX;
+  let y = 0;
+  const segments = 8 + Math.floor(Math.random() * 6);
+  
+  for (let i = 0; i < segments; i++) {
+    const newX = x + (Math.random() - 0.5) * 100;
+    const newY = y + (Math.random() * 80 + 40);
+    path += ` L ${newX} ${newY}`;
+    x = newX;
+    y = newY;
+  }
+  
+  return path;
+};
 
 // Generate random particles with different shapes
 const generateParticles = (count: number): Particle[] => {
@@ -31,6 +73,7 @@ const generateParticles = (count: number): Particle[] => {
     xOffset: (Math.random() - 0.5) * 100,
     yOffset: Math.random() * 40 + 20,
     rotationSpeed: (Math.random() - 0.5) * 720,
+    colorOffset: Math.random(),
   }));
 };
 
@@ -78,7 +121,9 @@ const getShapePath = (shape: ParticleShape, size: number): JSX.Element => {
 const AudioVisualBackground = () => {
   const { isPlaying, analyzerData, currentColor } = useMusicPlayer();
   const [beatFlash, setBeatFlash] = useState(false);
+  const [lightnings, setLightnings] = useState<Lightning[]>([]);
   const prevBassRef = useRef(0);
+  const prevHighRef = useRef(0);
   
   const particles = useMemo(() => generateParticles(70), []);
   const floatingOrbs = useMemo(() => generateParticles(8), []);
@@ -100,6 +145,24 @@ const AudioVisualBackground = () => {
     }
     prevBassRef.current = bassEnergy;
   }, [bassEnergy]);
+
+  // Lightning effect on high frequency spikes
+  useEffect(() => {
+    if (highEnergy > 0.5 && prevHighRef.current < 0.35) {
+      const newLightning: Lightning = {
+        id: Date.now(),
+        x: Math.random() * 100,
+        path: generateLightningPath(Math.random() * 100),
+      };
+      setLightnings(prev => [...prev.slice(-3), newLightning]);
+      
+      const timer = setTimeout(() => {
+        setLightnings(prev => prev.filter(l => l.id !== newLightning.id));
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+    prevHighRef.current = highEnergy;
+  }, [highEnergy]);
 
   if (!isPlaying) return null;
 
@@ -139,43 +202,77 @@ const AudioVisualBackground = () => {
           transition={{ duration: 0.3 }}
         />
 
-        {/* Floating particles with different shapes and random movement */}
-        {particles.map((particle) => (
-          <motion.div
-            key={`particle-${particle.id}`}
-            className="absolute"
-            style={{
-              left: `${particle.x}%`,
-              color: currentColor,
-              filter: `drop-shadow(0 0 ${particle.size}px ${currentColor})`,
-            }}
-            animate={{
-              y: [
-                `${particle.y}vh`,
-                `${particle.y - particle.yOffset - avgEnergy * 15}vh`,
-                `${particle.y - particle.yOffset * 0.3}vh`,
-                `${particle.y}vh`,
-              ],
-              x: [
-                0,
-                particle.xOffset * (0.5 + avgEnergy),
-                -particle.xOffset * 0.5 * avgEnergy,
-                0,
-              ],
-              opacity: [0.2, 0.9 * (0.5 + avgEnergy), 0.6, 0.2],
-              scale: [1, 1.3 + avgEnergy * 0.8, 1.1, 1],
-              rotate: [0, particle.rotationSpeed * avgEnergy, particle.rotationSpeed * 0.5, 0],
-            }}
-            transition={{
-              duration: particle.duration,
-              delay: particle.delay,
-              repeat: Infinity,
-              ease: 'easeInOut',
-              times: [0, 0.4, 0.7, 1],
-            }}
+        {/* Floating particles with different shapes, colors and random movement */}
+        {particles.map((particle) => {
+          const particleColor = getParticleColor(currentColor, particle.colorOffset, avgEnergy);
+          return (
+            <motion.div
+              key={`particle-${particle.id}`}
+              className="absolute"
+              style={{
+                left: `${particle.x}%`,
+                color: particleColor,
+                filter: `drop-shadow(0 0 ${particle.size}px ${particleColor})`,
+              }}
+              animate={{
+                y: [
+                  `${particle.y}vh`,
+                  `${particle.y - particle.yOffset - avgEnergy * 15}vh`,
+                  `${particle.y - particle.yOffset * 0.3}vh`,
+                  `${particle.y}vh`,
+                ],
+                x: [
+                  0,
+                  particle.xOffset * (0.5 + avgEnergy),
+                  -particle.xOffset * 0.5 * avgEnergy,
+                  0,
+                ],
+                opacity: [0.2, 0.9 * (0.5 + avgEnergy), 0.6, 0.2],
+                scale: [1, 1.3 + avgEnergy * 0.8, 1.1, 1],
+                rotate: [0, particle.rotationSpeed * avgEnergy, particle.rotationSpeed * 0.5, 0],
+              }}
+              transition={{
+                duration: particle.duration,
+                delay: particle.delay,
+                repeat: Infinity,
+                ease: 'easeInOut',
+                times: [0, 0.4, 0.7, 1],
+              }}
+            >
+              {getShapePath(particle.shape, particle.size)}
+            </motion.div>
+          );
+        })}
+
+        {/* Lightning effects on high frequency */}
+        {lightnings.map((lightning) => (
+          <motion.svg
+            key={`lightning-${lightning.id}`}
+            className="absolute inset-0 w-full h-full pointer-events-none"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 1, 0.5, 0] }}
+            transition={{ duration: 0.2, times: [0, 0.1, 0.5, 1] }}
           >
-            {getShapePath(particle.shape, particle.size)}
-          </motion.div>
+            <motion.path
+              d={lightning.path}
+              stroke={currentColor}
+              strokeWidth="3"
+              fill="none"
+              filter={`drop-shadow(0 0 10px ${currentColor}) drop-shadow(0 0 20px ${currentColor})`}
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={{ duration: 0.1 }}
+            />
+            <motion.path
+              d={lightning.path}
+              stroke="white"
+              strokeWidth="1"
+              fill="none"
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={{ duration: 0.1 }}
+            />
+          </motion.svg>
         ))}
 
         {/* Left side wave bars - Enhanced */}

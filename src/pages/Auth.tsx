@@ -117,10 +117,13 @@ const Auth = () => {
   if (emailSent) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        {/* Overlay to ensure readability */}
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-0" />
+        
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-md"
+          className="w-full max-w-md relative z-10"
         >
           <div className="bg-card border border-border rounded-2xl p-8 shadow-xl text-center">
             <motion.div
@@ -174,10 +177,13 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      {/* Overlay to ensure readability over music player */}
+      <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-0" />
+      
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md"
+        className="w-full max-w-md relative z-10"
       >
         <div className="bg-card border border-border rounded-2xl p-8 shadow-xl">
           <div className="text-center mb-8">

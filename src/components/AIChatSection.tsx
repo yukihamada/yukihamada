@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
-import { MessageCircle, Send, X, Loader2, GripHorizontal, CheckCheck, Mic, MicOff } from 'lucide-react';
+import { MessageCircle, Send, Minus, Loader2, GripHorizontal, CheckCheck, Mic, MicOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -615,23 +615,31 @@ export const AIChatSection = () => {
       {/* Drag constraints container */}
       <div ref={constraintsRef} className="fixed inset-0 pointer-events-none z-40" />
 
-      {/* Chat Toggle Button */}
-      <motion.button
-        className="fixed bottom-6 left-6 z-50 w-12 h-12 rounded-full bg-gradient-to-r from-primary to-accent shadow-lg flex items-center justify-center text-primary-foreground"
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={toggleChat}
-        animate={!isOpen ? {
-          boxShadow: [
-            '0 0 15px hsl(var(--primary) / 0.3)',
-            '0 0 25px hsl(var(--primary) / 0.5)',
-            '0 0 15px hsl(var(--primary) / 0.3)',
-          ],
-        } : {}}
-        transition={!isOpen ? { duration: 2, repeat: Infinity, ease: "easeInOut" } : {}}
-      >
-        {isOpen ? <X className="w-5 h-5" /> : <MessageCircle className="w-5 h-5" />}
-      </motion.button>
+      {/* Chat Toggle Button - only show when closed */}
+      <AnimatePresence>
+        {!isOpen && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ 
+              opacity: 1, 
+              scale: 1,
+              boxShadow: [
+                '0 0 15px hsl(var(--primary) / 0.3)',
+                '0 0 25px hsl(var(--primary) / 0.5)',
+                '0 0 15px hsl(var(--primary) / 0.3)',
+              ],
+            }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            className="fixed bottom-6 left-6 z-50 w-12 h-12 rounded-full bg-gradient-to-r from-primary to-accent shadow-lg flex items-center justify-center text-primary-foreground"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={toggleChat}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <MessageCircle className="w-5 h-5" />
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       {/* Chat Window */}
       <AnimatePresence>
@@ -705,9 +713,10 @@ export const AIChatSection = () => {
                     variant="ghost"
                     size="icon"
                     onClick={toggleChat}
-                    className="md:hidden rounded-full h-7 w-7"
+                    className="rounded-full h-7 w-7 hover:bg-muted"
+                    title={language === 'ja' ? '最小化' : 'Minimize'}
                   >
-                    <X className="w-4 h-4" />
+                    <Minus className="w-4 h-4" />
                   </Button>
                   <GripHorizontal className="w-3 h-3 text-muted-foreground hidden md:block" />
                 </div>

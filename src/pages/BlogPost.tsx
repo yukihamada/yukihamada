@@ -121,13 +121,26 @@ const BlogPost = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <div className="glass rounded-3xl p-8 md:p-12">
+            <div className="glass rounded-3xl p-4 md:p-8 lg:p-12">
               <div 
                 className="blog-content text-foreground leading-relaxed"
                 dangerouslySetInnerHTML={{ 
                   __html: post.content
-                    .replace(/^## (.+)$/gm, '<h2 class="text-2xl font-bold mt-8 mb-4 text-foreground">$1</h2>')
-                    .replace(/^### (.+)$/gm, '<h3 class="text-xl font-semibold mt-6 mb-3 text-foreground">$1</h3>')
+                    .replace(/^## (.+)$/gm, '<h2 class="text-xl md:text-2xl font-bold mt-8 mb-4 text-foreground">$1</h2>')
+                    .replace(/^### (.+)$/gm, '<h3 class="text-lg md:text-xl font-semibold mt-6 mb-3 text-foreground">$1</h3>')
+                    // Convert markdown tables to HTML tables
+                    .replace(/\n\| (.+) \|\n\|[-| ]+\|\n((?:\| .+ \|\n?)+)/g, (match, header, body) => {
+                      const headers = header.split(' | ').map((h: string) => 
+                        `<th class="px-2 py-2 md:px-4 md:py-3 text-left text-xs md:text-sm font-semibold text-foreground bg-primary/10 first:rounded-tl-lg last:rounded-tr-lg">${h.trim()}</th>`
+                      ).join('');
+                      const rows = body.trim().split('\n').map((row: string) => {
+                        const cells = row.replace(/^\| /, '').replace(/ \|$/, '').split(' | ').map((cell: string, idx: number) => 
+                          `<td class="px-2 py-2 md:px-4 md:py-3 text-xs md:text-sm ${idx === 0 ? 'font-medium text-foreground' : 'text-muted-foreground'} border-b border-border/50">${cell.trim()}</td>`
+                        ).join('');
+                        return `<tr class="hover:bg-foreground/5 transition-colors">${cells}</tr>`;
+                      }).join('');
+                      return `<div class="overflow-x-auto my-6 -mx-2 md:mx-0"><table class="w-full min-w-[280px] border-collapse rounded-lg overflow-hidden shadow-sm border border-border/30"><thead><tr>${headers}</tr></thead><tbody>${rows}</tbody></table></div>`;
+                    })
                     .replace(/^\d\. \*\*(.+?)\*\*: (.+)$/gm, '<li class="mb-2"><strong class="text-foreground">$1</strong>: $2</li>')
                     .replace(/^- (.+)$/gm, '<li class="mb-2 text-muted-foreground">$1</li>')
                     .replace(/\*\*(.+?)\*\*/g, '<strong class="text-foreground">$1</strong>')

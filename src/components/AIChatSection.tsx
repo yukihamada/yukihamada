@@ -551,16 +551,43 @@ export const AIChatSection = () => {
     localStorage.removeItem(GREETED_KEY);
   };
 
-  // Chat size state
-  const [chatSize, setChatSize] = useState<'small' | 'medium' | 'large'>('small');
-  
-  const sizeConfig = {
-    small: { width: 'md:w-[320px] lg:w-[360px]', height: 'md:h-[420px]', button: 'w-12 h-12' },
-    medium: { width: 'md:w-[400px] lg:w-[440px]', height: 'md:h-[550px]', button: 'w-14 h-14' },
-    large: { width: 'md:w-[480px] lg:w-[520px]', height: 'md:h-[680px]', button: 'w-14 h-14' },
+  // Resizable chat dimensions
+  const [chatWidth, setChatWidth] = useState(360);
+  const [chatHeight, setChatHeight] = useState(450);
+  const isResizing = useRef(false);
+  const resizeDirection = useRef<'right' | 'bottom' | 'corner' | null>(null);
+  const startPos = useRef({ x: 0, y: 0, width: 0, height: 0 });
+
+  const handleResizeStart = (e: React.PointerEvent, direction: 'right' | 'bottom' | 'corner') => {
+    if (window.innerWidth < 768) return;
+    e.preventDefault();
+    e.stopPropagation();
+    isResizing.current = true;
+    resizeDirection.current = direction;
+    startPos.current = { x: e.clientX, y: e.clientY, width: chatWidth, height: chatHeight };
+    document.addEventListener('pointermove', handleResizeMove);
+    document.addEventListener('pointerup', handleResizeEnd);
   };
-  
-  const currentSize = sizeConfig[chatSize];
+
+  const handleResizeMove = (e: PointerEvent) => {
+    if (!isResizing.current) return;
+    const dx = e.clientX - startPos.current.x;
+    const dy = startPos.current.y - e.clientY; // Inverted because we resize upward
+    
+    if (resizeDirection.current === 'right' || resizeDirection.current === 'corner') {
+      setChatWidth(Math.max(280, Math.min(600, startPos.current.width + dx)));
+    }
+    if (resizeDirection.current === 'bottom' || resizeDirection.current === 'corner') {
+      setChatHeight(Math.max(300, Math.min(800, startPos.current.height + dy)));
+    }
+  };
+
+  const handleResizeEnd = () => {
+    isResizing.current = false;
+    resizeDirection.current = null;
+    document.removeEventListener('pointermove', handleResizeMove);
+    document.removeEventListener('pointerup', handleResizeEnd);
+  };
 
   return (
     <>
@@ -569,7 +596,7 @@ export const AIChatSection = () => {
 
       {/* Chat Toggle Button */}
       <motion.button
-        className={`fixed bottom-6 left-6 z-50 ${currentSize.button} rounded-full bg-gradient-to-r from-primary to-accent shadow-lg flex items-center justify-center text-primary-foreground`}
+        className="fixed bottom-6 left-6 z-50 w-12 h-12 rounded-full bg-gradient-to-r from-primary to-accent shadow-lg flex items-center justify-center text-primary-foreground"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
         onClick={toggleChat}
@@ -589,7 +616,7 @@ export const AIChatSection = () => {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            drag={window.innerWidth >= 768}
+            drag={window.innerWidth >= 768 && !isResizing.current}
             dragControls={dragControls}
             dragConstraints={constraintsRef}
             dragElastic={0.1}
@@ -598,14 +625,32 @@ export const AIChatSection = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className={`fixed z-50 bg-background border border-border shadow-2xl flex flex-col overflow-hidden pointer-events-auto
+            style={{ 
+              width: window.innerWidth >= 768 ? chatWidth : undefined,
+              height: window.innerWidth >= 768 ? chatHeight : undefined,
+            }}
+            className="fixed z-50 bg-background border border-border shadow-2xl flex flex-col overflow-hidden pointer-events-auto
               bottom-0 left-0 right-0 h-[70vh] rounded-t-2xl
-              md:bottom-20 md:left-6 md:right-auto ${currentSize.width} ${currentSize.height} md:rounded-xl`}
+              md:bottom-20 md:left-6 md:right-auto md:rounded-xl"
           >
+            {/* Resize handles - desktop only */}
+            <div 
+              className="hidden md:block absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-primary/20 transition-colors"
+              onPointerDown={(e) => handleResizeStart(e, 'right')}
+            />
+            <div 
+              className="hidden md:block absolute left-0 right-0 top-0 h-2 cursor-ns-resize hover:bg-primary/20 transition-colors"
+              onPointerDown={(e) => handleResizeStart(e, 'bottom')}
+            />
+            <div 
+              className="hidden md:block absolute right-0 top-0 w-4 h-4 cursor-nesw-resize hover:bg-primary/20 transition-colors"
+              onPointerDown={(e) => handleResizeStart(e, 'corner')}
+            />
+
             {/* Header */}
             <div 
               className="bg-card border-b border-border p-3 md:cursor-grab md:active:cursor-grabbing select-none"
-              onPointerDown={(e) => window.innerWidth >= 768 && dragControls.start(e)}
+              onPointerDown={(e) => window.innerWidth >= 768 && !isResizing.current && dragControls.start(e)}
             >
               {/* Mobile drag indicator */}
               <div className="md:hidden w-8 h-1 bg-muted-foreground/30 rounded-full mx-auto mb-2" />
@@ -627,20 +672,6 @@ export const AIChatSection = () => {
                   </p>
                 </div>
                 <div className="flex items-center gap-1">
-                  {/* Size toggle - desktop only */}
-                  <div className="hidden md:flex items-center gap-0.5 bg-muted rounded-lg p-0.5">
-                    {(['small', 'medium', 'large'] as const).map((size) => (
-                      <button
-                        key={size}
-                        onClick={() => setChatSize(size)}
-                        className={`px-2 py-1 text-[10px] rounded-md transition-colors ${
-                          chatSize === size ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-                        }`}
-                      >
-                        {size === 'small' ? 'S' : size === 'medium' ? 'M' : 'L'}
-                      </button>
-                    ))}
-                  </div>
                   <Button
                     variant="ghost"
                     size="sm"

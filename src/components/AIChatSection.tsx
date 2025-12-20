@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { MessageCircle, Send, X, Loader2, GripHorizontal, CheckCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -15,7 +15,17 @@ type Message = {
   status?: 'sending' | 'sent' | 'delivered';
 };
 
+type StoredMessage = {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
+  status?: 'sending' | 'sent' | 'delivered';
+};
+
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-with-yuki`;
+const STORAGE_KEY = 'yuki_chat_history';
+const CONVERSATION_ID_KEY = 'yuki_chat_conversation_id';
+const GREETED_KEY = 'yuki_chat_greeted';
 
 // Get or create visitor ID
 const getVisitorId = () => {
@@ -27,19 +37,57 @@ const getVisitorId = () => {
   return visitorId;
 };
 
+// Save messages to localStorage
+const saveMessagesToStorage = (messages: Message[]) => {
+  const storedMessages: StoredMessage[] = messages.map(m => ({
+    ...m,
+    timestamp: m.timestamp.toISOString(),
+  }));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(storedMessages));
+};
+
+// Load messages from localStorage
+const loadMessagesFromStorage = (): Message[] => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (!stored) return [];
+    const parsed: StoredMessage[] = JSON.parse(stored);
+    return parsed.map(m => ({
+      ...m,
+      timestamp: new Date(m.timestamp),
+    }));
+  } catch {
+    return [];
+  }
+};
+
+// Load conversation ID from localStorage
+const loadConversationId = (): string | null => {
+  return localStorage.getItem(CONVERSATION_ID_KEY);
+};
+
+// Save conversation ID to localStorage
+const saveConversationId = (id: string) => {
+  localStorage.setItem(CONVERSATION_ID_KEY, id);
+};
+
 export const AIChatSection = () => {
   const { toast } = useToast();
-  const { isOpen, toggleChat } = useChat();
+  const { isOpen, toggleChat, pageContext, currentBlogTitle } = useChat();
   const { language } = useLanguage();
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>(() => loadMessagesFromStorage());
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [conversationId, setConversationId] = useState<string | null>(() => loadConversationId());
   const [isTyping, setIsTyping] = useState(false);
+  const [hasGreeted, setHasGreeted] = useState(() => {
+    return localStorage.getItem(GREETED_KEY) === 'true';
+  });
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const dragControls = useDragControls();
   const constraintsRef = useRef<HTMLDivElement>(null);
+  const greetingInProgressRef = useRef(false);
 
   const texts = {
     en: {
@@ -56,6 +104,13 @@ export const AIChatSection = () => {
         'What kind of music do you make?',
         'Can I work with you?',
       ],
+      greetings: {
+        home: "Hi! I'm Yuki. Welcome to my portfolio site. Feel free to ask me anything about my work, investments, BJJ, or music!",
+        blog: "Hi! I see you're browsing my blog. Want to discuss any of the topics I've written about?",
+        'blog-post': (title?: string) => `Hi! I see you're reading "${title || 'my article'}". Feel free to ask me any questions about this topic!`,
+        '404': "Oops! Looks like you found a broken link. While you're here playing, feel free to chat with me!",
+        other: "Hi! I'm Yuki. How can I help you today?",
+      },
     },
     ja: {
       name: '濱田 優貴',
@@ -71,10 +126,31 @@ export const AIChatSection = () => {
         'どんな音楽を作ってる？',
         '一緒に仕事できる？',
       ],
+      greetings: {
+        home: 'こんにちは！濱田優貴です。ポートフォリオサイトへようこそ。仕事、投資、柔術、音楽など、なんでも聞いてください！',
+        blog: 'こんにちは！ブログを見てくれてありがとう。気になる記事について話しましょうか？',
+        'blog-post': (title?: string) => `こんにちは！「${title || 'この記事'}」を読んでくれてありがとう！質問があれば気軽に聞いてね。`,
+        '404': 'おっと！迷子になっちゃったみたいだね。ゲームで遊びながら、よかったらチャットしよう！',
+        other: 'こんにちは！濱田優貴です。何かお手伝いできることはありますか？',
+      },
     },
   };
 
   const t = texts[language];
+
+  // Save messages to localStorage whenever they change
+  useEffect(() => {
+    if (messages.length > 0) {
+      saveMessagesToStorage(messages);
+    }
+  }, [messages]);
+
+  // Save conversation ID whenever it changes
+  useEffect(() => {
+    if (conversationId) {
+      saveConversationId(conversationId);
+    }
+  }, [conversationId]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -83,6 +159,54 @@ export const AIChatSection = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Auto-greeting based on page context
+  const sendAutoGreeting = useCallback(() => {
+    if (hasGreeted || greetingInProgressRef.current || messages.length > 0) return;
+    
+    greetingInProgressRef.current = true;
+    
+    let greeting: string;
+    const greetings = t.greetings;
+    
+    switch (pageContext) {
+      case 'blog-post':
+        greeting = typeof greetings['blog-post'] === 'function' 
+          ? greetings['blog-post'](currentBlogTitle)
+          : greetings['blog-post'];
+        break;
+      case 'blog':
+        greeting = greetings.blog;
+        break;
+      case '404':
+        greeting = greetings['404'];
+        break;
+      case 'home':
+        greeting = greetings.home;
+        break;
+      default:
+        greeting = greetings.other;
+    }
+
+    const greetingMessage: Message = {
+      role: 'assistant',
+      content: greeting,
+      timestamp: new Date(),
+      status: 'delivered',
+    };
+
+    setMessages([greetingMessage]);
+    setHasGreeted(true);
+    localStorage.setItem(GREETED_KEY, 'true');
+    greetingInProgressRef.current = false;
+  }, [hasGreeted, messages.length, pageContext, currentBlogTitle, t.greetings]);
+
+  // Send greeting when chat opens for the first time
+  useEffect(() => {
+    if (isOpen && !hasGreeted && messages.length === 0) {
+      sendAutoGreeting();
+    }
+  }, [isOpen, hasGreeted, messages.length, sendAutoGreeting]);
 
   // Create or get conversation
   const ensureConversation = async () => {
@@ -170,12 +294,12 @@ export const AIChatSection = () => {
             assistantContent += content;
             setMessages(prev => {
               const last = prev[prev.length - 1];
-              if (last?.role === "assistant") {
+              if (last?.role === "assistant" && last.status !== 'delivered') {
                 return prev.map((m, i) => 
                   i === prev.length - 1 ? { ...m, content: assistantContent } : m
                 );
               }
-              return [...prev, { role: "assistant", content: assistantContent, timestamp: new Date(), status: 'delivered' }];
+              return [...prev, { role: "assistant", content: assistantContent, timestamp: new Date(), status: 'sending' }];
             });
           }
         } catch {
@@ -186,6 +310,11 @@ export const AIChatSection = () => {
     }
 
     setIsTyping(false);
+    
+    // Update final message status
+    setMessages(prev => prev.map((m, i) => 
+      i === prev.length - 1 && m.role === 'assistant' ? { ...m, status: 'delivered' } : m
+    ));
     
     // Save assistant message to database
     if (assistantContent) {
@@ -234,7 +363,7 @@ export const AIChatSection = () => {
     } catch (error) {
       console.error('Chat error:', error);
       toast({
-        title: "エラー",
+        title: t.errorTitle,
         description: error instanceof Error ? error.message : "メッセージの送信に失敗しました",
         variant: "destructive",
       });
@@ -257,6 +386,10 @@ export const AIChatSection = () => {
   const handleNewChat = () => {
     setMessages([]);
     setConversationId(null);
+    setHasGreeted(false);
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(CONVERSATION_ID_KEY);
+    localStorage.removeItem(GREETED_KEY);
   };
 
   return (

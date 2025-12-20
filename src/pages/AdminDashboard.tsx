@@ -41,6 +41,7 @@ interface BlogPostDB {
   content_en: string;
   date_en: string;
   category_en: string;
+  status: 'draft' | 'published';
   created_at: string;
   updated_at: string;
 }
@@ -114,6 +115,7 @@ const emptyPost: Omit<BlogPostDB, 'id' | 'created_at' | 'updated_at'> = {
   content_en: '',
   date_en: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
   category_en: '',
+  status: 'draft',
 };
 
 const AdminDashboard = () => {
@@ -190,7 +192,10 @@ const AdminDashboard = () => {
       .order('created_at', { ascending: false });
 
     if (!error && data) {
-      setPosts(data);
+      setPosts(data.map(post => ({
+        ...post,
+        status: (post.status as 'draft' | 'published') || 'published',
+      })));
     }
   };
 
@@ -211,6 +216,7 @@ const AdminDashboard = () => {
       content_en: editingPost.content_en,
       date_en: editingPost.date_en,
       category_en: editingPost.category_en,
+      status: editingPost.status || 'draft',
     };
 
     if (isCreating) {
@@ -673,12 +679,28 @@ const AdminDashboard = () => {
                               />
                             </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Switch
-                              checked={editingPost.featured || false}
-                              onCheckedChange={(checked) => setEditingPost({ ...editingPost, featured: checked })}
-                            />
-                            <Label>注目記事</Label>
+                          <div className="flex items-center gap-4 flex-wrap">
+                            <div className="flex items-center gap-2">
+                              <Switch
+                                checked={editingPost.featured || false}
+                                onCheckedChange={(checked) => setEditingPost({ ...editingPost, featured: checked })}
+                              />
+                              <Label>注目</Label>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Select
+                                value={editingPost.status || 'draft'}
+                                onValueChange={(value: 'draft' | 'published') => setEditingPost({ ...editingPost, status: value })}
+                              >
+                                <SelectTrigger className="w-24 h-8">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="draft">下書き</SelectItem>
+                                  <SelectItem value="published">公開</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
                           </div>
                           <div>
                             <Label>{previewLang === 'ja' ? 'タイトル' : 'Title'}</Label>
@@ -773,12 +795,29 @@ const AdminDashboard = () => {
                             />
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Switch
-                            checked={editingPost.featured || false}
-                            onCheckedChange={(checked) => setEditingPost({ ...editingPost, featured: checked })}
-                          />
-                          <Label>注目記事</Label>
+                        <div className="flex items-center gap-6">
+                          <div className="flex items-center gap-2">
+                            <Switch
+                              checked={editingPost.featured || false}
+                              onCheckedChange={(checked) => setEditingPost({ ...editingPost, featured: checked })}
+                            />
+                            <Label>注目記事</Label>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Label>ステータス:</Label>
+                            <Select
+                              value={editingPost.status || 'draft'}
+                              onValueChange={(value: 'draft' | 'published') => setEditingPost({ ...editingPost, status: value })}
+                            >
+                              <SelectTrigger className="w-32">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="draft">下書き</SelectItem>
+                                <SelectItem value="published">公開</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
                         </div>
                         <Tabs defaultValue="ja">
                           <TabsList>
@@ -896,6 +935,11 @@ const AdminDashboard = () => {
                             <div className="flex items-center justify-between">
                               <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-1">
+                                  {post.status === 'draft' ? (
+                                    <Badge variant="outline" className="text-muted-foreground">下書き</Badge>
+                                  ) : (
+                                    <Badge variant="default" className="bg-green-600">公開</Badge>
+                                  )}
                                   {post.featured && <Badge variant="secondary">注目</Badge>}
                                   <span className="text-xs text-muted-foreground">{post.category_ja}</span>
                                 </div>

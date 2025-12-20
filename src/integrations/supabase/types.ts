@@ -50,6 +50,7 @@ export type Database = {
           id: string
           image: string | null
           slug: string
+          status: string
           title_en: string
           title_ja: string
           updated_at: string
@@ -68,6 +69,7 @@ export type Database = {
           id?: string
           image?: string | null
           slug: string
+          status?: string
           title_en: string
           title_ja: string
           updated_at?: string
@@ -86,6 +88,7 @@ export type Database = {
           id?: string
           image?: string | null
           slug?: string
+          status?: string
           title_en?: string
           title_ja?: string
           updated_at?: string

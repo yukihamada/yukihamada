@@ -17,6 +17,7 @@ interface BlogPostDB {
   content_en: string;
   date_en: string;
   category_en: string;
+  status: string;
   created_at: string;
   updated_at: string;
 }
@@ -53,6 +54,7 @@ export const useBlogPosts = () => {
         const { data, error } = await supabase
           .from('blog_posts')
           .select('*')
+          .eq('status', 'published')
           .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -93,6 +95,7 @@ export const useBlogPost = (slug: string | undefined) => {
           .from('blog_posts')
           .select('*')
           .eq('slug', slug)
+          .eq('status', 'published')
           .maybeSingle();
 
         if (error) throw error;

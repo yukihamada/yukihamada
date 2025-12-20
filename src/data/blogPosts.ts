@@ -94,7 +94,7 @@ Lovableを使えば、ビジネスサイドのメンバーも直接画面を編�
 
 ## JiuFlowを見てみる
 
-実際のサービスはこちらからご覧いただけます：[JiuFlow](https://jiuflow.com/)
+実際のサービスはこちらからご覧いただけます：[JiuFlow](https://jiuflow.art/)
 
 こちらがJiuFlowの紹介動画です：
 

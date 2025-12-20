@@ -609,11 +609,11 @@ export const AIChatSection = () => {
         )}
       </motion.button>
 
-      {/* Chat Window - Messenger Style */}
+      {/* Chat Window - Responsive Design */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            drag
+            drag={window.innerWidth >= 768}
             dragControls={dragControls}
             dragConstraints={constraintsRef}
             dragElastic={0.1}
@@ -622,62 +622,75 @@ export const AIChatSection = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-24 left-6 z-50 w-[380px] sm:w-[420px] h-[600px] bg-background border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden pointer-events-auto"
+            className="fixed z-50 bg-background border border-border shadow-2xl flex flex-col overflow-hidden pointer-events-auto
+              bottom-0 left-0 right-0 h-[85vh] rounded-t-3xl
+              md:bottom-24 md:left-6 md:right-auto md:w-[400px] lg:w-[440px] md:h-[600px] md:rounded-2xl"
           >
-            {/* Messenger Style Header */}
+            {/* Header */}
             <div 
-              className="bg-card border-b border-border p-3 cursor-grab active:cursor-grabbing select-none"
-              onPointerDown={(e) => dragControls.start(e)}
+              className="bg-card border-b border-border p-4 md:cursor-grab md:active:cursor-grabbing select-none"
+              onPointerDown={(e) => window.innerWidth >= 768 && dragControls.start(e)}
             >
+              {/* Mobile drag indicator */}
+              <div className="md:hidden w-10 h-1 bg-muted-foreground/30 rounded-full mx-auto mb-3" />
+              
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <img 
                     src={yukiProfile} 
                     alt="Yuki" 
-                    className="w-10 h-10 rounded-full object-cover"
+                    className="w-12 h-12 md:w-10 md:h-10 rounded-full object-cover ring-2 ring-primary/20"
                   />
-                  <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-card rounded-full" />
+                  <span className="absolute bottom-0 right-0 w-3.5 h-3.5 md:w-3 md:h-3 bg-green-500 border-2 border-card rounded-full" />
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-foreground text-sm">{t.name}</h3>
-                  <p className="text-xs text-green-500 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-foreground text-base md:text-sm truncate">{t.name}</h3>
+                  <p className="text-sm md:text-xs text-green-500 flex items-center gap-1.5">
+                    <span className="w-2 h-2 md:w-1.5 md:h-1.5 bg-green-500 rounded-full animate-pulse" />
                     {t.online}
                   </p>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-2">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={handleNewChat}
-                    className="text-xs text-muted-foreground hover:text-foreground"
+                    className="text-sm md:text-xs text-muted-foreground hover:text-foreground px-3"
                   >
                     {t.newChat}
                   </Button>
-                  <GripHorizontal className="w-4 h-4 text-muted-foreground" />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={toggleChat}
+                    className="md:hidden rounded-full"
+                  >
+                    <X className="w-5 h-5" />
+                  </Button>
+                  <GripHorizontal className="w-4 h-4 text-muted-foreground hidden md:block" />
                 </div>
               </div>
             </div>
 
-            {/* Messages - Messenger Style */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-muted/30">
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto p-4 md:p-4 space-y-4 md:space-y-3 bg-muted/20">
               {messages.length === 0 && (
                 <div className="flex flex-col items-center justify-center h-full text-center px-4">
                   <img 
                     src={yukiProfile} 
                     alt="Yuki" 
-                    className="w-20 h-20 rounded-full object-cover mb-4 ring-4 ring-primary/20"
+                    className="w-24 h-24 md:w-20 md:h-20 rounded-full object-cover mb-4 ring-4 ring-primary/20"
                   />
-                  <h4 className="font-semibold text-foreground mb-1">{t.name}</h4>
-                  <p className="text-xs text-muted-foreground mb-6">
+                  <h4 className="font-semibold text-foreground text-lg md:text-base mb-1">{t.name}</h4>
+                  <p className="text-sm md:text-xs text-muted-foreground mb-6">
                     {t.title}
                   </p>
-                  <div className="space-y-2 w-full max-w-[280px]">
+                  <div className="space-y-2 w-full max-w-[320px] md:max-w-[280px]">
                     {t.suggestions.map((suggestion) => (
                       <button
                         key={suggestion}
                         onClick={() => setInput(suggestion)}
-                        className="block w-full text-sm bg-card hover:bg-card/80 border border-border rounded-full px-4 py-2.5 transition-all hover:shadow-md"
+                        className="block w-full text-base md:text-sm bg-card hover:bg-card/80 border border-border rounded-full px-4 py-3 md:py-2.5 transition-all hover:shadow-md text-left"
                       >
                         {suggestion}
                       </button>
@@ -691,24 +704,24 @@ export const AIChatSection = () => {
                   key={index}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className={`flex gap-2 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  className={`flex gap-3 md:gap-2 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   {message.role === 'assistant' && (
                     <img 
                       src={yukiProfile} 
                       alt="Yuki" 
-                      className="w-7 h-7 rounded-full object-cover flex-shrink-0 mt-1"
+                      className="w-8 h-8 md:w-7 md:h-7 rounded-full object-cover flex-shrink-0 mt-1"
                     />
                   )}
-                  <div className={`flex flex-col ${message.role === 'user' ? 'items-end' : 'items-start'}`}>
+                  <div className={`flex flex-col ${message.role === 'user' ? 'items-end' : 'items-start'} max-w-[85%] md:max-w-[75%]`}>
                     <div
-                      className={`max-w-[260px] rounded-2xl px-4 py-2.5 ${
+                      className={`rounded-2xl px-4 py-3 md:px-4 md:py-2.5 ${
                         message.role === 'user'
                           ? 'bg-primary text-primary-foreground rounded-br-md'
                           : 'bg-card text-foreground border border-border rounded-bl-md shadow-sm'
                       }`}
                     >
-                      <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
+                      <p className="text-base md:text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
                     </div>
                     <div className="flex items-center gap-1 mt-1 px-1">
                       <span className="text-[10px] text-muted-foreground">
@@ -769,8 +782,8 @@ export const AIChatSection = () => {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input - Messenger Style with Voice */}
-            <div className="p-3 border-t border-border bg-card">
+            {/* Input */}
+            <div className="p-4 md:p-3 border-t border-border bg-card safe-area-inset-bottom">
               <div className="flex gap-2 items-end">
                 <VoiceInputButton 
                   onTranscript={(text) => setInput(prev => prev + text)}
@@ -786,20 +799,20 @@ export const AIChatSection = () => {
                     placeholder={t.placeholder}
                     disabled={isLoading}
                     rows={1}
-                    className="w-full resize-none rounded-full border border-border bg-muted/50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50 max-h-32"
-                    style={{ minHeight: '42px' }}
+                    className="w-full resize-none rounded-2xl border border-border bg-muted/50 px-4 py-3 md:py-2.5 text-base md:text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50 max-h-32"
+                    style={{ minHeight: '48px' }}
                   />
                 </div>
                 <Button
                   onClick={handleSend}
                   disabled={!input.trim() || isLoading}
                   size="icon"
-                  className="rounded-full w-10 h-10 bg-primary hover:bg-primary/90 flex-shrink-0"
+                  className="rounded-full w-12 h-12 md:w-10 md:h-10 bg-primary hover:bg-primary/90 flex-shrink-0"
                 >
                   {isLoading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-5 h-5 md:w-4 md:h-4 animate-spin" />
                   ) : (
-                    <Send className="w-4 h-4" />
+                    <Send className="w-5 h-5 md:w-4 md:h-4" />
                   )}
                 </Button>
               </div>

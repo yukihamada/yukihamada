@@ -10,6 +10,7 @@ import LikeButton from '@/components/LikeButton';
 import BlogViewStats from '@/components/BlogViewStats';
 import BlogOGP from '@/components/BlogOGP';
 import ShareButtons from '@/components/ShareButtons';
+import { BlogComments } from '@/components/BlogComments';
 import DOMPurify from 'dompurify';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useChat } from '@/contexts/ChatContext';
@@ -266,6 +267,9 @@ const BlogPost = () => {
                   </Button>
                 </div>
               </motion.div>
+
+              {/* Blog Comments */}
+              <BlogComments blogSlug={post.slug} />
             </div>
           </motion.div>
 

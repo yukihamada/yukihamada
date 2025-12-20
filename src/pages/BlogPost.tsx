@@ -22,6 +22,7 @@ const blogImages: Record<string, string> = {
   'bjj-match': '/images/blog-bjj-match.jpg',
   'bjj-group1': '/images/blog-bjj-group1.jpg',
   'bjj-victory': '/images/blog-bjj-victory.jpg',
+  'sinic-diagram': '/images/sinic-theory-diagram.svg',
 };
 
 // Track name to index mapping for music player
@@ -167,11 +168,11 @@ const BlogPost = () => {
                       })
                       // YouTube embed
                       .replace(/\[youtube:([a-zA-Z0-9_-]+)\]/g, '<div class="my-10 aspect-video rounded-2xl overflow-hidden shadow-xl ring-1 ring-border/20"><iframe class="w-full h-full" src="https://www.youtube.com/embed/$1" title="YouTube video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>')
-                      // Image syntax - smaller on desktop
+                      // Image syntax - much smaller on desktop for better readability
                       .replace(/\[image:([a-zA-Z0-9_-]+)\]/g, (_, imageKey) => {
                         const imageSrc = blogImages[imageKey];
                         return imageSrc 
-                          ? `<div class="my-10 flex justify-center"><img src="${imageSrc}" alt="${imageKey}" class="w-full md:w-3/4 lg:w-2/3 rounded-2xl shadow-xl ring-1 ring-border/20" /></div>`
+                          ? `<div class="my-8 flex justify-center"><img src="${imageSrc}" alt="${imageKey}" class="w-full md:w-1/2 lg:w-2/5 rounded-xl shadow-lg ring-1 ring-border/20" /></div>`
                           : '';
                       })
                       // Play button syntax [play:track-id]

@@ -6,6 +6,7 @@ export interface BlogPost {
   date: string;
   category: string;
   featured: boolean;
+  image?: string;
 }
 
 export const blogPosts: BlogPost[] = [
@@ -137,6 +138,7 @@ AIを使った開発に興味がある方、実際にサービスを作りたい
     date: '2025年12月20日',
     category: 'プロダクト開発',
     featured: true,
+    image: '/images/blog-jiuflow.jpg',
   },
   {
     slug: '2025-12-19',
@@ -221,6 +223,7 @@ AIによるウェブ開発は、Claude Codeの時点でも革命的でしたが�
     date: '2025年12月19日',
     category: '技術',
     featured: false,
+    image: '/images/blog-lovable.jpg',
   },
   {
     slug: '2025-06-12',
@@ -258,6 +261,7 @@ AIによるウェブ開発は、まさに新時代に突入したと言えます
     date: '2025年6月12日',
     category: '技術',
     featured: false,
+    image: '/images/blog-claude.jpg',
   },
   {
     slug: '2024-10-16',
@@ -295,6 +299,7 @@ SNSのアルゴリズムは、ユーザーが興味を持つコンテンツを�
     date: '2024年10月16日',
     category: '社会問題',
     featured: false,
+    image: '/images/blog-echo-chamber.jpg',
   },
   {
     slug: '2024-10-07',
@@ -334,6 +339,7 @@ SNSのアルゴリズムは、ユーザーが興味を持つコンテンツを�
     date: '2024年10月7日',
     category: 'テクノロジー',
     featured: false,
+    image: '/images/blog-voice.jpg',
   },
   {
     slug: '2024-09-19',
@@ -377,6 +383,7 @@ AIに任せられることはAIに任せ、人間は人間にしかできない�
     date: '2024年9月19日',
     category: 'AI・未来社会',
     featured: false,
+    image: '/images/blog-ai-human.jpg',
   },
 ];
 

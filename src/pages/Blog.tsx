@@ -88,7 +88,7 @@ const Blog = () => {
             {blogPosts.map((post) => (
               <Link key={post.slug} to={`/blog/${post.slug}`}>
                 <motion.article
-                  className="group glass rounded-2xl p-6 h-full flex flex-col"
+                  className="group glass rounded-2xl overflow-hidden h-full flex flex-col"
                   variants={cardVariants}
                   whileHover={{ 
                     scale: 1.02, 
@@ -97,44 +97,57 @@ const Blog = () => {
                   }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
-                  <div className="flex items-center gap-2 mb-3 flex-wrap">
-                    {post.featured && (
-                      <span className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-xs font-medium">
-                        Featured
-                      </span>
-                    )}
-                    <span className="flex items-center gap-1 text-primary text-xs font-medium">
-                      <Tag className="h-3 w-3" />
-                      {post.category}
-                    </span>
-                  </div>
+                  {/* Image */}
+                  {post.image && (
+                    <div className="aspect-video overflow-hidden">
+                      <img 
+                        src={post.image} 
+                        alt={post.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+                  )}
                   
-                  <h2 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors mb-3">
-                    {post.title}
-                  </h2>
-                  
-                  <p className="text-muted-foreground text-sm line-clamp-3 mb-4 flex-grow">
-                    {post.excerpt}
-                  </p>
-                  
-                  <div className="flex items-center justify-between pt-4 border-t border-border mt-auto">
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {post.date}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Eye className="h-3 w-3" />
-                        {viewCounts[post.slug] || 0}
+                  <div className="p-6 flex flex-col flex-grow">
+                    <div className="flex items-center gap-2 mb-3 flex-wrap">
+                      {post.featured && (
+                        <span className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-xs font-medium">
+                          Featured
+                        </span>
+                      )}
+                      <span className="flex items-center gap-1 text-primary text-xs font-medium">
+                        <Tag className="h-3 w-3" />
+                        {post.category}
                       </span>
                     </div>
-                    <motion.span 
-                      className="text-primary flex items-center gap-1 text-sm"
-                      whileHover={{ x: 5 }}
-                    >
-                      {language === 'ja' ? '読む' : 'Read'}
-                      <ArrowRight className="h-3 w-3" />
-                    </motion.span>
+                    
+                    <h2 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors mb-3">
+                      {post.title}
+                    </h2>
+                    
+                    <p className="text-muted-foreground text-sm line-clamp-3 mb-4 flex-grow">
+                      {post.excerpt}
+                    </p>
+                    
+                    <div className="flex items-center justify-between pt-4 border-t border-border mt-auto">
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {post.date}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Eye className="h-3 w-3" />
+                          {viewCounts[post.slug] || 0}
+                        </span>
+                      </div>
+                      <motion.span 
+                        className="text-primary flex items-center gap-1 text-sm"
+                        whileHover={{ x: 5 }}
+                      >
+                        {language === 'ja' ? '読む' : 'Read'}
+                        <ArrowRight className="h-3 w-3" />
+                      </motion.span>
+                    </div>
                   </div>
                 </motion.article>
               </Link>

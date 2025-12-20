@@ -17,6 +17,7 @@ import jiuflowLesson from '@/assets/jiuflow-lesson.png';
 const blogImages: Record<string, string> = {
   'jiuflow-hero': jiuflowHero,
   'jiuflow-lesson': jiuflowLesson,
+  'cost-collapse-timeline': '/images/blog-cost-collapse-timeline.jpg',
 };
 
 const BlogPost = () => {

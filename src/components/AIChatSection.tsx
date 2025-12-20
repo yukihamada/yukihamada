@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
-import { MessageCircle, Send, X, Loader2, GripHorizontal, CheckCheck } from 'lucide-react';
+import { MessageCircle, Send, X, Loader2, GripHorizontal, CheckCheck, Mic, MicOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -71,6 +71,119 @@ const saveConversationId = (id: string) => {
   localStorage.setItem(CONVERSATION_ID_KEY, id);
 };
 
+// Voice Input Button Component
+interface VoiceInputProps {
+  onTranscript: (text: string) => void;
+  isDisabled: boolean;
+  texts: { voiceStart: string; voiceStop: string; voiceNotSupported: string };
+}
+
+// Extend Window interface for Speech Recognition
+declare global {
+  interface Window {
+    SpeechRecognition: new () => SpeechRecognition;
+    webkitSpeechRecognition: new () => SpeechRecognition;
+  }
+}
+
+interface SpeechRecognition extends EventTarget {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  onresult: ((event: SpeechRecognitionEvent) => void) | null;
+  onerror: ((event: Event) => void) | null;
+  onend: (() => void) | null;
+  start(): void;
+  stop(): void;
+}
+
+interface SpeechRecognitionEvent extends Event {
+  results: SpeechRecognitionResultList;
+}
+
+interface SpeechRecognitionResultList {
+  length: number;
+  [index: number]: SpeechRecognitionResult;
+}
+
+interface SpeechRecognitionResult {
+  [index: number]: SpeechRecognitionAlternative;
+}
+
+interface SpeechRecognitionAlternative {
+  transcript: string;
+  confidence: number;
+}
+
+const VoiceInputButton = ({ onTranscript, isDisabled, texts }: VoiceInputProps) => {
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const { toast } = useToast();
+
+  const startListening = () => {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      toast({
+        description: texts.voiceNotSupported,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const SpeechRecognitionClass = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognitionRef.current = new SpeechRecognitionClass();
+    recognitionRef.current.lang = document.documentElement.lang === 'ja' ? 'ja-JP' : 'en-US';
+    recognitionRef.current.continuous = true;
+    recognitionRef.current.interimResults = false;
+
+    recognitionRef.current.onresult = (event) => {
+      const last = event.results.length - 1;
+      const transcript = event.results[last][0].transcript;
+      onTranscript(transcript);
+    };
+
+    recognitionRef.current.onerror = () => {
+      setIsListening(false);
+    };
+
+    recognitionRef.current.onend = () => {
+      setIsListening(false);
+    };
+
+    recognitionRef.current.start();
+    setIsListening(true);
+  };
+
+  const stopListening = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+    setIsListening(false);
+  };
+
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="icon"
+      onClick={isListening ? stopListening : startListening}
+      disabled={isDisabled}
+      className={`rounded-full w-10 h-10 flex-shrink-0 ${isListening ? 'bg-red-500/20 text-red-500' : ''}`}
+      title={isListening ? texts.voiceStop : texts.voiceStart}
+    >
+      {isListening ? (
+        <motion.div
+          animate={{ scale: [1, 1.2, 1] }}
+          transition={{ duration: 0.5, repeat: Infinity }}
+        >
+          <MicOff className="w-4 h-4" />
+        </motion.div>
+      ) : (
+        <Mic className="w-4 h-4" />
+      )}
+    </Button>
+  );
+};
+
 export const AIChatSection = () => {
   const { toast } = useToast();
   const { isOpen, toggleChat, pageContext, currentBlogTitle } = useChat();
@@ -89,6 +202,30 @@ export const AIChatSection = () => {
   const constraintsRef = useRef<HTMLDivElement>(null);
   const greetingInProgressRef = useRef(false);
 
+  // Get time-based greeting prefix
+  const getTimeGreeting = (lang: 'en' | 'ja') => {
+    const hour = new Date().getHours();
+    if (lang === 'ja') {
+      if (hour >= 5 && hour < 12) return 'おはよう！';
+      if (hour >= 12 && hour < 17) return 'こんにちは！';
+      return 'こんばんは！';
+    } else {
+      if (hour >= 5 && hour < 12) return 'Good morning!';
+      if (hour >= 12 && hour < 17) return 'Good afternoon!';
+      return 'Good evening!';
+    }
+  };
+
+  // Get visit count
+  const getVisitCount = () => {
+    const count = parseInt(localStorage.getItem('yuki_visit_count') || '0', 10);
+    localStorage.setItem('yuki_visit_count', String(count + 1));
+    return count;
+  };
+
+  const visitCount = getVisitCount();
+  const isReturningVisitor = visitCount > 0;
+
   const texts = {
     en: {
       name: 'Yuki Hamada',
@@ -98,6 +235,9 @@ export const AIChatSection = () => {
       placeholder: 'Type a message...',
       errorTitle: 'Error',
       errorConversation: 'Failed to start conversation',
+      voiceStart: 'Start voice input',
+      voiceStop: 'Stop recording',
+      voiceNotSupported: 'Voice input is not supported in this browser',
       suggestions: [
         'Tell me about your career',
         'What are your BJJ achievements?',
@@ -105,11 +245,19 @@ export const AIChatSection = () => {
         'Can I work with you?',
       ],
       greetings: {
-        home: "Hi! I'm Yuki. Welcome to my portfolio site. Feel free to ask me anything about my work, investments, BJJ, or music!",
-        blog: "Hi! I see you're browsing my blog. Want to discuss any of the topics I've written about?",
-        'blog-post': (title?: string) => `Hi! I see you're reading "${title || 'my article'}". Feel free to ask me any questions about this topic!`,
-        '404': "Oops! Looks like you found a broken link. While you're here playing, feel free to chat with me!",
-        other: "Hi! I'm Yuki. How can I help you today?",
+        home: isReturningVisitor 
+          ? `${getTimeGreeting('en')} Welcome back! Great to see you again. What would you like to explore today?`
+          : `${getTimeGreeting('en')} I'm Yuki. Welcome to my portfolio site! Feel free to ask me anything about my work, investments, BJJ, or music!`,
+        blog: isReturningVisitor
+          ? `${getTimeGreeting('en')} Welcome back to my blog! Found anything interesting to read?`
+          : `${getTimeGreeting('en')} I see you're browsing my blog. Want to discuss any of the topics I've written about?`,
+        'blog-post': (title?: string) => isReturningVisitor
+          ? `${getTimeGreeting('en')} Good to see you! Enjoying "${title || 'this article'}"? I'm happy to dive deeper into any part of it!`
+          : `${getTimeGreeting('en')} I see you're reading "${title || 'my article'}". Feel free to ask me any questions about this topic!`,
+        '404': `${getTimeGreeting('en')} Oops! Looks like you found a broken link. While you're here, feel free to chat with me about anything!`,
+        other: isReturningVisitor
+          ? `${getTimeGreeting('en')} Welcome back! How can I help you today?`
+          : `${getTimeGreeting('en')} I'm Yuki. How can I help you today?`,
       },
     },
     ja: {
@@ -120,6 +268,9 @@ export const AIChatSection = () => {
       placeholder: 'メッセージを入力...',
       errorTitle: 'エラー',
       errorConversation: '会話の開始に失敗しました',
+      voiceStart: '音声入力を開始',
+      voiceStop: '録音を停止',
+      voiceNotSupported: 'このブラウザでは音声入力がサポートされていません',
       suggestions: [
         '経歴について教えて',
         '柔術の実績は？',
@@ -127,11 +278,19 @@ export const AIChatSection = () => {
         '一緒に仕事できる？',
       ],
       greetings: {
-        home: 'こんにちは！濱田優貴です。ポートフォリオサイトへようこそ。仕事、投資、柔術、音楽など、なんでも聞いてください！',
-        blog: 'こんにちは！ブログを見てくれてありがとう。気になる記事について話しましょうか？',
-        'blog-post': (title?: string) => `こんにちは！「${title || 'この記事'}」を読んでくれてありがとう！質問があれば気軽に聞いてね。`,
-        '404': 'おっと！迷子になっちゃったみたいだね。ゲームで遊びながら、よかったらチャットしよう！',
-        other: 'こんにちは！濱田優貴です。何かお手伝いできることはありますか？',
+        home: isReturningVisitor 
+          ? `${getTimeGreeting('ja')}また来てくれたんだね！今日は何について話そうか？`
+          : `${getTimeGreeting('ja')}濱田優貴です。ポートフォリオサイトへようこそ！仕事、投資、柔術、音楽など、なんでも聞いてね！`,
+        blog: isReturningVisitor
+          ? `${getTimeGreeting('ja')}ブログにまた来てくれてありがとう！気になる記事は見つかった？`
+          : `${getTimeGreeting('ja')}ブログを見てくれてありがとう。気になる記事について話しましょうか？`,
+        'blog-post': (title?: string) => isReturningVisitor
+          ? `${getTimeGreeting('ja')}また来てくれたね！「${title || 'この記事'}」について、もっと深く話したいことはある？`
+          : `${getTimeGreeting('ja')}「${title || 'この記事'}」を読んでくれてありがとう！質問があれば気軽に聞いてね。`,
+        '404': `${getTimeGreeting('ja')}おっと！迷子になっちゃったみたいだね。よかったらなんでもチャットしよう！`,
+        other: isReturningVisitor
+          ? `${getTimeGreeting('ja')}また来てくれてありがとう！今日は何かお手伝いできることはある？`
+          : `${getTimeGreeting('ja')}濱田優貴です。何かお手伝いできることはありますか？`,
       },
     },
   };
@@ -610,9 +769,14 @@ export const AIChatSection = () => {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input - Messenger Style */}
+            {/* Input - Messenger Style with Voice */}
             <div className="p-3 border-t border-border bg-card">
               <div className="flex gap-2 items-end">
+                <VoiceInputButton 
+                  onTranscript={(text) => setInput(prev => prev + text)}
+                  isDisabled={isLoading}
+                  texts={t}
+                />
                 <div className="flex-1 relative">
                   <textarea
                     ref={inputRef}

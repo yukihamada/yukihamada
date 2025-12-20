@@ -17,6 +17,7 @@ import ChatAdmin from "./pages/ChatAdmin";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import Community from "./pages/Community";
+import BlogAdmin from "./pages/BlogAdmin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ const App = () => (
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/community" element={<Community />} />
                 <Route path="/admin/chat" element={<ChatAdmin />} />
+                <Route path="/admin/blog" element={<BlogAdmin />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

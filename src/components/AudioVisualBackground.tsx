@@ -21,12 +21,11 @@ interface Particle {
 interface Lightning {
   id: number;
   x: number;
-  path: string;
+  paths: string[]; // Multiple paths for branching
 }
 
 // Generate rainbow color based on offset and base color
 const getParticleColor = (baseColor: string, offset: number, energy: number): string => {
-  // Create color variations based on offset
   const colors = [
     baseColor,
     '#ff6b6b', // Red
@@ -41,23 +40,46 @@ const getParticleColor = (baseColor: string, offset: number, energy: number): st
   return colors[index];
 };
 
-// Generate random lightning path
-const generateLightningPath = (startX: number): string => {
-  let path = `M ${startX} 0`;
+// Generate branching lightning paths
+const generateBranchingLightning = (startX: number, startY: number = 0, depth: number = 0): string[] => {
+  const paths: string[] = [];
+  let mainPath = `M ${startX} ${startY}`;
   let x = startX;
-  let y = 0;
-  const segments = 8 + Math.floor(Math.random() * 6);
+  let y = startY;
+  const segments = 6 + Math.floor(Math.random() * 4);
   
   for (let i = 0; i < segments; i++) {
-    const newX = x + (Math.random() - 0.5) * 100;
-    const newY = y + (Math.random() * 80 + 40);
-    path += ` L ${newX} ${newY}`;
+    const newX = x + (Math.random() - 0.5) * 80;
+    const newY = y + (Math.random() * 60 + 30);
+    mainPath += ` L ${newX} ${newY}`;
+    
+    // Create branches at random points (more likely in middle segments)
+    if (depth < 2 && i > 1 && i < segments - 1 && Math.random() > 0.5) {
+      const branchAngle = (Math.random() - 0.5) * 120;
+      const branchPaths = generateBranchingLightning(
+        newX + branchAngle, 
+        newY, 
+        depth + 1
+      );
+      paths.push(...branchPaths);
+    }
+    
     x = newX;
     y = newY;
   }
   
-  return path;
+  paths.unshift(mainPath);
+  return paths;
 };
+
+// Background color animation colors
+const bgColors = [
+  { from: '#1a1a2e', via: '#16213e', to: '#0f0f23' },
+  { from: '#2d1b4e', via: '#1a1a3e', to: '#0f0f23' },
+  { from: '#1b3a4b', via: '#1a2a3e', to: '#0f0f23' },
+  { from: '#2e1a1a', via: '#2a1a2a', to: '#0f0f23' },
+  { from: '#1a2e1a', via: '#1a2a2a', to: '#0f0f23' },
+];
 
 // Generate random particles with different shapes
 const generateParticles = (count: number): Particle[] => {
@@ -124,6 +146,7 @@ const AudioVisualBackground = () => {
   const [lightnings, setLightnings] = useState<Lightning[]>([]);
   const prevBassRef = useRef(0);
   const prevHighRef = useRef(0);
+  const [colorIndex, setColorIndex] = useState(0);
   
   const particles = useMemo(() => generateParticles(70), []);
   const floatingOrbs = useMemo(() => generateParticles(8), []);
@@ -135,6 +158,15 @@ const AudioVisualBackground = () => {
   const bassEnergy = analyzerData.slice(0, 8).reduce((a, b) => a + b, 0) / 8;
   const midEnergy = analyzerData.slice(8, 24).reduce((a, b) => a + b, 0) / 16;
   const highEnergy = analyzerData.slice(24, 48).reduce((a, b) => a + b, 0) / 24;
+
+  // Slow background color shift
+  useEffect(() => {
+    if (!isPlaying) return;
+    const interval = setInterval(() => {
+      setColorIndex(prev => (prev + 1) % bgColors.length);
+    }, 8000);
+    return () => clearInterval(interval);
+  }, [isPlaying]);
 
   // Beat detection for flash effect
   useEffect(() => {
@@ -149,16 +181,17 @@ const AudioVisualBackground = () => {
   // Lightning effect on high frequency spikes
   useEffect(() => {
     if (highEnergy > 0.5 && prevHighRef.current < 0.35) {
+      const startX = Math.random() * 100;
       const newLightning: Lightning = {
         id: Date.now(),
-        x: Math.random() * 100,
-        path: generateLightningPath(Math.random() * 100),
+        x: startX,
+        paths: generateBranchingLightning(startX),
       };
-      setLightnings(prev => [...prev.slice(-3), newLightning]);
+      setLightnings(prev => [...prev.slice(-2), newLightning]);
       
       const timer = setTimeout(() => {
         setLightnings(prev => prev.filter(l => l.id !== newLightning.id));
-      }, 200);
+      }, 300);
       return () => clearTimeout(timer);
     }
     prevHighRef.current = highEnergy;
@@ -191,13 +224,23 @@ const AudioVisualBackground = () => {
           )}
         </AnimatePresence>
 
-        {/* Dynamic gradient background */}
+        {/* Animated background color shift */}
         <motion.div
           className="absolute inset-0"
           animate={{
-            background: `radial-gradient(ellipse at 50% 50%, ${currentColor}15 0%, transparent 50%), 
-                        radial-gradient(ellipse at 20% 80%, ${currentColor}10 0%, transparent 40%),
-                        radial-gradient(ellipse at 80% 20%, ${currentColor}10 0%, transparent 40%)`,
+            background: `linear-gradient(135deg, ${bgColors[colorIndex].from} 0%, ${bgColors[colorIndex].via} 50%, ${bgColors[colorIndex].to} 100%)`,
+          }}
+          transition={{ duration: 4, ease: 'easeInOut' }}
+          style={{ opacity: 0.4 }}
+        />
+
+        {/* Dynamic gradient background with current color */}
+        <motion.div
+          className="absolute inset-0"
+          animate={{
+            background: `radial-gradient(ellipse at 50% 50%, ${currentColor}20 0%, transparent 50%), 
+                        radial-gradient(ellipse at 20% 80%, ${currentColor}15 0%, transparent 40%),
+                        radial-gradient(ellipse at 80% 20%, ${currentColor}15 0%, transparent 40%)`,
           }}
           transition={{ duration: 0.3 }}
         />
@@ -244,34 +287,42 @@ const AudioVisualBackground = () => {
           );
         })}
 
-        {/* Lightning effects on high frequency */}
+        {/* Lightning effects with branching */}
         {lightnings.map((lightning) => (
           <motion.svg
             key={`lightning-${lightning.id}`}
             className="absolute inset-0 w-full h-full pointer-events-none"
             initial={{ opacity: 0 }}
-            animate={{ opacity: [0, 1, 0.5, 0] }}
-            transition={{ duration: 0.2, times: [0, 0.1, 0.5, 1] }}
+            animate={{ opacity: [0, 1, 0.8, 0.3, 0] }}
+            transition={{ duration: 0.3, times: [0, 0.05, 0.2, 0.6, 1] }}
           >
-            <motion.path
-              d={lightning.path}
-              stroke={currentColor}
-              strokeWidth="3"
-              fill="none"
-              filter={`drop-shadow(0 0 10px ${currentColor}) drop-shadow(0 0 20px ${currentColor})`}
-              initial={{ pathLength: 0 }}
-              animate={{ pathLength: 1 }}
-              transition={{ duration: 0.1 }}
-            />
-            <motion.path
-              d={lightning.path}
-              stroke="white"
-              strokeWidth="1"
-              fill="none"
-              initial={{ pathLength: 0 }}
-              animate={{ pathLength: 1 }}
-              transition={{ duration: 0.1 }}
-            />
+            {lightning.paths.map((path, pathIndex) => (
+              <g key={`branch-${pathIndex}`}>
+                {/* Glow layer */}
+                <motion.path
+                  d={path}
+                  stroke={currentColor}
+                  strokeWidth={pathIndex === 0 ? 4 : 2}
+                  fill="none"
+                  opacity={pathIndex === 0 ? 1 : 0.7}
+                  filter={`drop-shadow(0 0 15px ${currentColor}) drop-shadow(0 0 30px ${currentColor})`}
+                  initial={{ pathLength: 0 }}
+                  animate={{ pathLength: 1 }}
+                  transition={{ duration: 0.1, delay: pathIndex * 0.02 }}
+                />
+                {/* Core bright layer */}
+                <motion.path
+                  d={path}
+                  stroke="white"
+                  strokeWidth={pathIndex === 0 ? 2 : 1}
+                  fill="none"
+                  opacity={pathIndex === 0 ? 1 : 0.6}
+                  initial={{ pathLength: 0 }}
+                  animate={{ pathLength: 1 }}
+                  transition={{ duration: 0.1, delay: pathIndex * 0.02 }}
+                />
+              </g>
+            ))}
           </motion.svg>
         ))}
 

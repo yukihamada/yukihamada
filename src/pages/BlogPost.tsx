@@ -139,39 +139,49 @@ const BlogPost = () => {
           >
             <div className="glass rounded-3xl p-4 md:p-8 lg:p-12">
               <div 
-                className="blog-content text-foreground leading-relaxed"
+                className="blog-content prose prose-lg dark:prose-invert max-w-none"
                 dangerouslySetInnerHTML={{ 
                   __html: post.content
-                    .replace(/^## (.+)$/gm, '<h2 class="text-xl md:text-2xl font-bold mt-8 mb-4 text-foreground">$1</h2>')
-                    .replace(/^### (.+)$/gm, '<h3 class="text-lg md:text-xl font-semibold mt-6 mb-3 text-foreground">$1</h3>')
+                    // Headings with nice styling
+                    .replace(/^## (.+)$/gm, '<h2 class="text-2xl md:text-3xl font-bold mt-12 mb-6 text-foreground border-l-4 border-primary pl-4">$1</h2>')
+                    .replace(/^### (.+)$/gm, '<h3 class="text-xl md:text-2xl font-semibold mt-8 mb-4 text-foreground">$1</h3>')
                     // Convert markdown tables to HTML tables
                     .replace(/\n\| (.+) \|\n\|[-| ]+\|\n((?:\| .+ \|\n?)+)/g, (match, header, body) => {
                       const headers = header.split(' | ').map((h: string) => 
-                        `<th class="px-2 py-2 md:px-4 md:py-3 text-left text-xs md:text-sm font-semibold text-foreground bg-primary/10 first:rounded-tl-lg last:rounded-tr-lg">${h.trim()}</th>`
+                        `<th class="px-3 py-3 md:px-5 md:py-4 text-left text-xs md:text-sm font-semibold text-foreground bg-primary/10 first:rounded-tl-xl last:rounded-tr-xl">${h.trim()}</th>`
                       ).join('');
                       const rows = body.trim().split('\n').map((row: string) => {
                         const cells = row.replace(/^\| /, '').replace(/ \|$/, '').split(' | ').map((cell: string, idx: number) => 
-                          `<td class="px-2 py-2 md:px-4 md:py-3 text-xs md:text-sm ${idx === 0 ? 'font-medium text-foreground' : 'text-muted-foreground'} border-b border-border/50">${cell.trim()}</td>`
+                          `<td class="px-3 py-3 md:px-5 md:py-4 text-sm ${idx === 0 ? 'font-medium text-foreground' : 'text-muted-foreground'} border-b border-border/30">${cell.trim()}</td>`
                         ).join('');
-                        return `<tr class="hover:bg-foreground/5 transition-colors">${cells}</tr>`;
+                        return `<tr class="hover:bg-primary/5 transition-colors">${cells}</tr>`;
                       }).join('');
-                      return `<div class="overflow-x-auto my-6 -mx-2 md:mx-0"><table class="w-full min-w-[280px] border-collapse rounded-lg overflow-hidden shadow-sm border border-border/30"><thead><tr>${headers}</tr></thead><tbody>${rows}</tbody></table></div>`;
+                      return `<div class="overflow-x-auto my-8 -mx-2 md:mx-0"><table class="w-full min-w-[320px] border-collapse rounded-xl overflow-hidden shadow-md border border-border/20 bg-card/50"><thead><tr>${headers}</tr></thead><tbody>${rows}</tbody></table></div>`;
                     })
-                    .replace(/^\d\. \*\*(.+?)\*\*: (.+)$/gm, '<li class="mb-2"><strong class="text-foreground">$1</strong>: $2</li>')
-                    .replace(/^- (.+)$/gm, '<li class="mb-2 text-muted-foreground">$1</li>')
-                    .replace(/\*\*(.+?)\*\*/g, '<strong class="text-foreground">$1</strong>')
+                    // Numbered lists with bold items
+                    .replace(/^(\d+)\. \*\*(.+?)\*\*: (.+)$/gm, '<div class="flex gap-3 mb-4 p-4 rounded-xl bg-foreground/5 hover:bg-foreground/10 transition-colors"><span class="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 text-primary font-bold flex items-center justify-center text-sm">$1</span><div><strong class="text-foreground font-semibold">$2</strong><span class="text-muted-foreground">: $3</span></div></div>')
+                    // Bullet lists - wrap in ul and style nicely
+                    .replace(/^- (.+)$/gm, '<li class="flex items-start gap-3 mb-3"><span class="flex-shrink-0 w-2 h-2 rounded-full bg-primary mt-2.5"></span><span class="text-muted-foreground leading-relaxed">$1</span></li>')
+                    // Bold text
+                    .replace(/\*\*(.+?)\*\*/g, '<strong class="text-foreground font-semibold">$1</strong>')
                     // Convert markdown links to HTML links
-                    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary hover:text-primary/80 underline underline-offset-4 transition-colors">$1</a>')
-                    // Convert YouTube embed syntax to iframe
-                    .replace(/\[youtube:([a-zA-Z0-9_-]+)\]/g, '<div class="my-8 aspect-video rounded-2xl overflow-hidden shadow-lg"><iframe class="w-full h-full" src="https://www.youtube.com/embed/$1" title="YouTube video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>')
-                    // Convert image syntax to img tags
+                    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary hover:text-primary/80 underline underline-offset-4 decoration-primary/50 hover:decoration-primary transition-all font-medium">$1</a>')
+                    // Emoji callouts (⚠️, 👉, 🎉)
+                    .replace(/^(⚠️|👉|🎉) (.+)$/gm, (_, emoji, text) => {
+                      const bgColor = emoji === '⚠️' ? 'bg-amber-500/10 border-amber-500/30' : emoji === '🎉' ? 'bg-green-500/10 border-green-500/30' : 'bg-primary/10 border-primary/30';
+                      return `<div class="flex items-start gap-3 p-4 my-4 rounded-xl ${bgColor} border"><span class="text-2xl">${emoji}</span><span class="text-foreground leading-relaxed">${text}</span></div>`;
+                    })
+                    // YouTube embed
+                    .replace(/\[youtube:([a-zA-Z0-9_-]+)\]/g, '<div class="my-10 aspect-video rounded-2xl overflow-hidden shadow-xl ring-1 ring-border/20"><iframe class="w-full h-full" src="https://www.youtube.com/embed/$1" title="YouTube video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>')
+                    // Image syntax
                     .replace(/\[image:([a-zA-Z0-9_-]+)\]/g, (_, imageKey) => {
                       const imageSrc = blogImages[imageKey];
                       return imageSrc 
-                        ? `<div class="my-8"><img src="${imageSrc}" alt="${imageKey}" class="w-full rounded-2xl shadow-lg" /></div>`
+                        ? `<div class="my-10"><img src="${imageSrc}" alt="${imageKey}" class="w-full rounded-2xl shadow-xl ring-1 ring-border/20" /></div>`
                         : '';
                     })
-                    .replace(/\n\n/g, '</p><p class="mb-4 text-muted-foreground">')
+                    // Paragraphs
+                    .replace(/\n\n/g, '</p><p class="mb-6 text-muted-foreground leading-relaxed text-lg">')
                 }}
               />
             </div>

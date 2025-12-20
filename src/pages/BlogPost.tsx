@@ -7,6 +7,7 @@ import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import LikeButton from '@/components/LikeButton';
 import BlogViewStats from '@/components/BlogViewStats';
+import BlogOGP from '@/components/BlogOGP';
 
 // Blog post images
 import jiuflowHero from '@/assets/jiuflow-hero.png';
@@ -42,6 +43,7 @@ const BlogPost = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <BlogOGP post={post} />
       <Navigation />
       
       <main className="pt-24 pb-20">

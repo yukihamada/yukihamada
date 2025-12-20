@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
-import { User, Save, Loader2, ArrowLeft, LogOut } from 'lucide-react';
+import { User, Save, Loader2, ArrowLeft, LogOut, Camera, Upload } from 'lucide-react';
 
 const Profile = () => {
   const [displayName, setDisplayName] = useState('');
@@ -19,6 +19,8 @@ const Profile = () => {
   const [avatarUrl, setAvatarUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { user, profile, isAuthenticated, isLoading: authLoading, signOut, refreshProfile } = useAuth();
   const { toast } = useToast();
@@ -31,12 +33,15 @@ const Profile = () => {
       displayName: 'Display Name',
       bio: 'Bio',
       avatarUrl: 'Avatar URL',
+      uploadPhoto: 'Upload Photo',
       save: 'Save Changes',
       saving: 'Saving...',
       logout: 'Logout',
       back: 'Back',
       success: 'Profile updated successfully!',
       error: 'Failed to update profile',
+      uploadError: 'Failed to upload image',
+      uploadSuccess: 'Image uploaded!',
       loginRequired: 'Please login to view your profile',
     },
     ja: {
@@ -44,12 +49,15 @@ const Profile = () => {
       displayName: '表示名',
       bio: '自己紹介',
       avatarUrl: 'アバターURL',
+      uploadPhoto: '写真をアップロード',
       save: '変更を保存',
       saving: '保存中...',
       logout: 'ログアウト',
       back: '戻る',
       success: 'プロフィールを更新しました！',
       error: 'プロフィールの更新に失敗しました',
+      uploadError: '画像のアップロードに失敗しました',
+      uploadSuccess: '画像をアップロードしました！',
       loginRequired: 'プロフィールを見るにはログインしてください',
     },
   };
@@ -69,6 +77,56 @@ const Profile = () => {
       setAvatarUrl(profile.avatar_url || '');
     }
   }, [profile]);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({ title: t.error, description: 'Please select an image file', variant: 'destructive' });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: t.error, description: 'Image must be less than 5MB', variant: 'destructive' });
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/avatar.${fileExt}`;
+
+      // Delete old avatar if exists
+      await supabase.storage.from('avatars').remove([fileName]);
+
+      // Upload new avatar
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+
+      // Add cache-busting query param
+      const urlWithCacheBust = `${publicUrl}?t=${Date.now()}`;
+      setAvatarUrl(urlWithCacheBust);
+
+      toast({ title: t.uploadSuccess });
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast({ title: t.uploadError, variant: 'destructive' });
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const handleSave = async () => {
     if (!user) return;
@@ -122,16 +180,47 @@ const Profile = () => {
 
             <div className="bg-card border border-border rounded-2xl p-6 md:p-8">
               <div className="flex items-center gap-4 mb-8">
-                <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden">
-                  {avatarUrl ? (
-                    <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-                  ) : (
-                    <User className="w-8 h-8 text-primary" />
-                  )}
+                {/* Avatar with upload */}
+                <div className="relative group">
+                  <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden ring-2 ring-border">
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      <User className="w-10 h-10 text-primary" />
+                    )}
+                  </div>
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="absolute inset-0 rounded-full bg-background/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                  >
+                    {isUploading ? (
+                      <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                    ) : (
+                      <Camera className="w-6 h-6 text-primary" />
+                    )}
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
                 </div>
-                <div>
+                <div className="flex-1">
                   <h1 className="text-2xl font-bold text-foreground">{t.title}</h1>
                   <p className="text-sm text-muted-foreground">{user?.email}</p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="mt-1 h-7 px-2 text-xs text-primary"
+                  >
+                    <Upload className="w-3 h-3 mr-1" />
+                    {t.uploadPhoto}
+                  </Button>
                 </div>
               </div>
 
@@ -143,17 +232,6 @@ const Profile = () => {
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
                     placeholder="Yuki"
-                    className="bg-muted/50"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="avatarUrl">{t.avatarUrl}</Label>
-                  <Input
-                    id="avatarUrl"
-                    value={avatarUrl}
-                    onChange={(e) => setAvatarUrl(e.target.value)}
-                    placeholder="https://example.com/avatar.jpg"
                     className="bg-muted/50"
                   />
                 </div>

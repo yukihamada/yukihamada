@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import Navigation from '@/components/Navigation';
 import HeroSection from '@/components/HeroSection';
 import EnablerSection from '@/components/EnablerSection';
@@ -8,11 +8,8 @@ import BlogSection from '@/components/BlogSection';
 import HobbiesSection from '@/components/HobbiesSection';
 import Footer from '@/components/Footer';
 import OrganicBackground from '@/components/OrganicBackground';
-import MusicPlayer from '@/components/MusicPlayer';
-import { AIChatSection } from '@/components/AIChatSection';
 
 const Index = () => {
-  const musicPlayerRef = useRef<{ togglePlay: () => void } | null>(null);
 
   useEffect(() => {
     // Enable dark mode by default
@@ -37,8 +34,6 @@ const Index = () => {
         <HobbiesSection />
       </main>
       <Footer />
-      <MusicPlayer />
-      <AIChatSection />
     </div>
   );
 };

@@ -146,12 +146,17 @@ export type Database = {
           view_count: number
         }[]
       }
+      get_blog_like_count: { Args: { p_post_slug: string }; Returns: number }
       get_blog_view_count: { Args: { p_post_slug: string }; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      has_visitor_liked: {
+        Args: { p_post_slug: string; p_visitor_id: string }
         Returns: boolean
       }
     }

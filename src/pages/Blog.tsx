@@ -17,11 +17,9 @@ const Blog = () => {
     const fetchViewCounts = async () => {
       const counts: Record<string, number> = {};
       for (const post of blogPosts) {
-        const { count } = await supabase
-          .from('blog_views')
-          .select('*', { count: 'exact', head: true })
-          .eq('post_slug', post.slug);
-        counts[post.slug] = count || 0;
+        const { data } = await supabase
+          .rpc('get_blog_view_count', { p_post_slug: post.slug });
+        counts[post.slug] = data || 0;
       }
       setViewCounts(counts);
     };

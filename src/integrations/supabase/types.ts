@@ -61,7 +61,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_blog_view_count: { Args: { p_post_slug: string }; Returns: number }
     }
     Enums: {
       [_ in never]: never

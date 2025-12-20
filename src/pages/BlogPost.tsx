@@ -11,6 +11,7 @@ import BlogViewStats from '@/components/BlogViewStats';
 import BlogOGP from '@/components/BlogOGP';
 import ShareButtons from '@/components/ShareButtons';
 import DOMPurify from 'dompurify';
+import { useLanguage } from '@/contexts/LanguageContext';
 // Blog post images
 import jiuflowHero from '@/assets/jiuflow-hero.png';
 import jiuflowLesson from '@/assets/jiuflow-lesson.png';
@@ -47,6 +48,7 @@ const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
   const post = slug ? getBlogPostBySlug(slug) : undefined;
   const contentRef = useRef<HTMLDivElement>(null);
+  const { language } = useLanguage();
 
   // Add click listeners for play buttons after content renders
   useEffect(() => {
@@ -69,25 +71,33 @@ const BlogPost = () => {
         }
       });
     };
-  }, [post]);
+  }, [post, language]);
 
   if (!post) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-4xl font-bold text-foreground mb-4">記事が見つかりません</h1>
-          <p className="text-muted-foreground mb-8">お探しのブログ記事は存在しないか、削除された可能性があります。</p>
+          <h1 className="text-4xl font-bold text-foreground mb-4">
+            {language === 'ja' ? '記事が見つかりません' : 'Article Not Found'}
+          </h1>
+          <p className="text-muted-foreground mb-8">
+            {language === 'ja' 
+              ? 'お探しのブログ記事は存在しないか、削除された可能性があります。' 
+              : 'The blog post you are looking for does not exist or may have been deleted.'}
+          </p>
           <Button asChild>
-            <Link to="/#blog">ブログ一覧に戻る</Link>
+            <Link to="/#blog">{language === 'ja' ? 'ブログ一覧に戻る' : 'Back to Blog'}</Link>
           </Button>
         </div>
       </div>
     );
   }
 
+  const content = post[language];
+
   // Get related posts (same category, excluding current)
   const relatedPosts = blogPosts
-    .filter(p => p.category === post.category && p.slug !== post.slug)
+    .filter(p => p[language].category === content.category && p.slug !== post.slug)
     .slice(0, 2);
 
   return (
@@ -106,7 +116,7 @@ const BlogPost = () => {
             <Button variant="ghost" asChild className="mb-8 text-muted-foreground hover:text-foreground">
               <Link to="/#blog">
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                ブログに戻る
+                {language === 'ja' ? 'ブログに戻る' : 'Back to Blog'}
               </Link>
             </Button>
           </motion.div>
@@ -121,11 +131,11 @@ const BlogPost = () => {
             <div className="flex flex-wrap items-center gap-3 mb-4">
               <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-primary/20 text-primary text-sm font-medium">
                 <Tag className="h-3 w-3" />
-                {post.category}
+                {content.category}
               </span>
               <span className="flex items-center gap-1 text-muted-foreground text-sm">
                 <Calendar className="h-4 w-4" />
-                {post.date}
+                {content.date}
               </span>
             </div>
 
@@ -135,15 +145,15 @@ const BlogPost = () => {
             </div>
 
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight mb-6">
-              {post.title}
+              {content.title}
             </h1>
 
             <p className="text-xl text-muted-foreground leading-relaxed mb-6">
-              {post.excerpt}
+              {content.excerpt}
             </p>
 
             {/* Share Buttons */}
-            <ShareButtons title={post.title} url={window.location.href} />
+            <ShareButtons title={content.title} url={window.location.href} />
           </motion.header>
 
           {/* Content */}
@@ -159,7 +169,7 @@ const BlogPost = () => {
                 className="blog-content prose prose-lg dark:prose-invert max-w-none"
                 dangerouslySetInnerHTML={{ 
                   __html: DOMPurify.sanitize(
-                    post.content
+                    content.content
                       // Headings with nice styling
                       .replace(/^## (.+)$/gm, '<h2 class="text-2xl md:text-3xl font-bold mt-12 mb-6 text-foreground border-l-4 border-primary pl-4">$1</h2>')
                       .replace(/^### (.+)$/gm, '<h3 class="text-xl md:text-2xl font-semibold mt-8 mb-4 text-foreground">$1</h3>')
@@ -204,7 +214,8 @@ const BlogPost = () => {
                       // Play button syntax [play:track-id] - using data attribute for click handling
                       .replace(/\[play:([a-zA-Z0-9_-]+)\]/g, (_, trackId) => {
                         const trackIndex = trackMapping[trackId] ?? 0;
-                        return `<div class="my-10 flex justify-center"><button data-play-track="${trackIndex}" class="group flex items-center gap-4 px-8 py-5 rounded-2xl bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-semibold text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer"><span class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="ml-1"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></span><span>🎵 塩とピクセル を再生</span></button></div>`;
+                        const buttonText = language === 'ja' ? '🎵 塩とピクセル を再生' : '🎵 Play Salt and Pixels';
+                        return `<div class="my-10 flex justify-center"><button data-play-track="${trackIndex}" class="group flex items-center gap-4 px-8 py-5 rounded-2xl bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-semibold text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer"><span class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="ml-1"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></span><span>${buttonText}</span></button></div>`;
                       })
                       // Paragraphs
                       .replace(/\n\n/g, '</p><p class="mb-6 text-muted-foreground leading-relaxed text-lg">'),
@@ -217,7 +228,7 @@ const BlogPost = () => {
             {/* Like Button and Share Buttons */}
             <div className="flex flex-col items-center gap-6 mt-8">
               <LikeButton postSlug={post.slug} />
-              <ShareButtons title={post.title} url={window.location.href} />
+              <ShareButtons title={content.title} url={window.location.href} />
             </div>
           </motion.div>
 
@@ -229,23 +240,28 @@ const BlogPost = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
             >
-              <h2 className="text-2xl font-bold text-foreground mb-8">関連記事</h2>
+              <h2 className="text-2xl font-bold text-foreground mb-8">
+                {language === 'ja' ? '関連記事' : 'Related Posts'}
+              </h2>
               <div className="grid md:grid-cols-2 gap-6">
-                {relatedPosts.map((relatedPost) => (
-                  <Link
-                    key={relatedPost.slug}
-                    to={`/blog/${relatedPost.slug}`}
-                    className="group glass rounded-2xl p-6 hover:scale-[1.02] transition-transform"
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-primary text-xs font-medium">{relatedPost.category}</span>
-                      <span className="text-muted-foreground text-xs">{relatedPost.date}</span>
-                    </div>
-                    <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
-                      {relatedPost.title}
-                    </h3>
-                  </Link>
-                ))}
+                {relatedPosts.map((relatedPost) => {
+                  const relatedContent = relatedPost[language];
+                  return (
+                    <Link
+                      key={relatedPost.slug}
+                      to={`/blog/${relatedPost.slug}`}
+                      className="group glass rounded-2xl p-6 hover:scale-[1.02] transition-transform"
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-primary text-xs font-medium">{relatedContent.category}</span>
+                        <span className="text-muted-foreground text-xs">{relatedContent.date}</span>
+                      </div>
+                      <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
+                        {relatedContent.title}
+                      </h3>
+                    </Link>
+                  );
+                })}
               </div>
             </motion.section>
           )}
@@ -259,7 +275,7 @@ const BlogPost = () => {
           >
             <Button variant="outline" asChild>
               <Link to="/#blog">
-                すべての記事を見る
+                {language === 'ja' ? 'すべての記事を見る' : 'View All Posts'}
               </Link>
             </Button>
           </motion.div>

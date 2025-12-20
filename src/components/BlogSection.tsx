@@ -3,8 +3,10 @@ import { ArrowRight, Calendar, Tag } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { blogPosts } from '@/data/blogPosts';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const BlogSection = () => {
+  const { language } = useLanguage();
   const featuredPost = blogPosts.find((post) => post.featured);
   const otherPosts = blogPosts.filter((post) => !post.featured);
 
@@ -63,7 +65,7 @@ const BlogSection = () => {
               viewport={{ once: true }}
               transition={{ delay: 0.1 }}
             >
-              ブログ<span className="gradient-text">& 発信</span>
+              {language === 'ja' ? 'ブログ' : 'Blog'}<span className="gradient-text">{language === 'ja' ? '& 発信' : '& Thoughts'}</span>
             </motion.h2>
           </div>
           <motion.div
@@ -75,7 +77,7 @@ const BlogSection = () => {
           >
             <Button variant="ghost" className="mt-4 md:mt-0 text-primary hover:text-primary/80" asChild>
               <Link to="/blog">
-                すべての記事を見る
+                {language === 'ja' ? 'すべての記事を見る' : 'View All Posts'}
                 <motion.span
                   className="ml-2"
                   animate={{ x: [0, 5, 0] }}
@@ -122,28 +124,28 @@ const BlogSection = () => {
                   </motion.span>
                   <span className="flex items-center gap-1 text-muted-foreground text-sm">
                     <Tag className="h-3 w-3" />
-                    {featuredPost.category}
+                    {featuredPost[language].category}
                   </span>
                 </div>
                 
                 <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-4 group-hover:text-primary transition-colors">
-                  {featuredPost.title}
+                  {featuredPost[language].title}
                 </h3>
                 
                 <p className="text-muted-foreground leading-relaxed mb-6">
-                  {featuredPost.excerpt}
+                  {featuredPost[language].excerpt}
                 </p>
                 
                 <div className="flex items-center justify-between mt-auto pt-6 border-t border-border">
                   <span className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Calendar className="h-4 w-4" />
-                    {featuredPost.date}
+                    {featuredPost[language].date}
                   </span>
                   <motion.span 
                     className="text-primary flex items-center gap-1"
                     whileHover={{ x: 5 }}
                   >
-                    続きを読む
+                    {language === 'ja' ? '続きを読む' : 'Read More'}
                     <ArrowRight className="h-4 w-4" />
                   </motion.span>
                 </div>
@@ -168,18 +170,18 @@ const BlogSection = () => {
                   <div className="flex items-center gap-2 mb-2">
                     <span className="flex items-center gap-1 text-primary text-xs font-medium">
                       <Tag className="h-3 w-3" />
-                      {post.category}
+                      {post[language].category}
                     </span>
                     <span className="text-muted-foreground text-xs">•</span>
-                    <span className="text-muted-foreground text-xs">{post.date}</span>
+                    <span className="text-muted-foreground text-xs">{post[language].date}</span>
                   </div>
                   
                   <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors mb-2">
-                    {post.title}
+                    {post[language].title}
                   </h3>
                   
                   <p className="text-muted-foreground text-sm line-clamp-2">
-                    {post.excerpt}
+                    {post[language].excerpt}
                   </p>
                 </motion.div>
               </Link>

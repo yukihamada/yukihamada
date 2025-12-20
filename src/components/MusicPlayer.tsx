@@ -514,155 +514,182 @@ const MusicPlayer = () => {
           {isExpanded ? (
             <motion.div
               key="expanded"
-              className="glass rounded-3xl p-4 w-72 shadow-2xl max-h-[80vh] overflow-y-auto"
+              className="rounded-[2rem] w-80 shadow-2xl max-h-[85vh] overflow-y-auto overflow-x-hidden"
+              style={{
+                background: `linear-gradient(145deg, ${track.color}15 0%, hsl(var(--background)) 50%, ${track.color}10 100%)`,
+                backdropFilter: 'blur(20px)',
+                border: `1px solid ${track.color}30`,
+                boxShadow: `0 25px 50px -12px ${track.color}40, 0 0 0 1px ${track.color}10`,
+              }}
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
             >
-              {/* Header */}
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-sm font-medium text-foreground">Music Player</span>
-                <motion.button
-                  onClick={() => setIsExpanded(false)}
-                  className="p-2 rounded-full hover:bg-secondary transition-colors"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  <ChevronUp className="h-4 w-4 text-muted-foreground rotate-180" />
-                </motion.button>
+              {/* Header with glassmorphism */}
+              <div className="relative px-5 pt-4 pb-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <motion.div 
+                      className="w-2 h-2 rounded-full"
+                      style={{ backgroundColor: track.color }}
+                      animate={isPlaying ? { scale: [1, 1.3, 1], opacity: [1, 0.7, 1] } : {}}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                    />
+                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Now Playing</span>
+                  </div>
+                  <motion.button
+                    onClick={() => setIsExpanded(false)}
+                    className="p-2 rounded-full hover:bg-white/10 transition-colors"
+                    whileHover={{ scale: 1.1, rotate: 180 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                  </motion.button>
+                </div>
               </div>
 
-              {/* Turntable with Vinyl Record */}
-              <div className="text-center mb-3">
-                <div className="relative w-40 h-40 mx-auto mb-3">
-                  {/* Turntable base */}
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-zinc-800 via-zinc-900 to-black shadow-2xl border border-zinc-700/30" />
+              {/* Album Art with Glow */}
+              <div className="px-5 py-4">
+                <div className="relative mx-auto w-48 h-48">
+                  {/* Glow background */}
+                  <motion.div
+                    className="absolute inset-0 rounded-3xl blur-2xl"
+                    style={{ backgroundColor: track.color }}
+                    animate={isPlaying ? { 
+                      opacity: [0.3, 0.5, 0.3],
+                      scale: [1, 1.1, 1],
+                    } : { opacity: 0.2 }}
+                    transition={{ duration: 3, repeat: Infinity }}
+                  />
                   
-                  {/* Platter */}
-                  <div className="absolute inset-4 rounded-full bg-gradient-to-br from-zinc-700 to-zinc-900 shadow-inner" />
-                  
-                  {/* Vinyl record with swap animation */}
+                  {/* Album art container */}
                   <AnimatePresence mode="wait">
                     <motion.div
                       key={displayedTrack}
-                      className="absolute inset-4 rounded-full bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900"
-                      initial={{ y: -100, opacity: 0, scale: 0.8 }}
-                      animate={{ 
-                        y: 0, 
-                        opacity: 1, 
-                        scale: 1,
-                        rotate: isPlaying && !isChangingTrack ? 360 : 0 
+                      className="relative w-full h-full rounded-3xl overflow-hidden shadow-2xl"
+                      initial={{ rotateY: 90, opacity: 0 }}
+                      animate={{ rotateY: 0, opacity: 1 }}
+                      exit={{ rotateY: -90, opacity: 0 }}
+                      transition={{ duration: 0.4 }}
+                      style={{
+                        boxShadow: `0 20px 40px -15px ${track.color}60`,
                       }}
-                      exit={{ y: 100, opacity: 0, scale: 0.8 }}
-                      transition={
-                        isPlaying && !isChangingTrack 
-                          ? { rotate: { duration: 3, repeat: Infinity, ease: "linear" }, default: { duration: 0.3 } }
-                          : { duration: 0.3 }
-                      }
-                      style={{ boxShadow: "0 4px 20px rgba(0,0,0,0.5)" }}
                     >
-                      {/* Vinyl grooves */}
-                      <div className="absolute inset-2 rounded-full border border-zinc-700/50" />
-                      <div className="absolute inset-4 rounded-full border border-zinc-700/30" />
-                      <div className="absolute inset-6 rounded-full border border-zinc-700/50" />
-                      <div className="absolute inset-8 rounded-full border border-zinc-700/30" />
-                      <div className="absolute inset-10 rounded-full border border-zinc-700/50" />
+                      <img 
+                        src={tracks[displayedTrack].artwork} 
+                        alt={tracks[displayedTrack].title}
+                        className="w-full h-full object-cover"
+                      />
                       
-                      {/* Center label with album art */}
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-zinc-700 shadow-inner">
-                          <img 
-                            src={tracks[displayedTrack].artwork} 
-                            alt={tracks[displayedTrack].title}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      </div>
-                      
-                      {/* Center hole */}
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-2 h-2 rounded-full bg-zinc-900 border border-zinc-600" />
-                      </div>
-                      
-                      {/* Shine effect */}
-                      <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-transparent via-white/5 to-transparent" />
+                      {/* Vinyl overlay when playing */}
+                      {isPlaying && (
+                        <motion.div
+                          className="absolute inset-0 bg-gradient-to-br from-black/20 via-transparent to-black/30"
+                          animate={{ opacity: [0.3, 0.5, 0.3] }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                        />
+                      )}
                     </motion.div>
                   </AnimatePresence>
                   
-                  {/* Tonearm */}
-                  <motion.div
-                    className="absolute top-1 right-1 origin-top-right scale-75"
-                    animate={{ rotate: isPlaying ? 25 : 0 }}
-                    transition={{ duration: 0.5, ease: "easeInOut" }}
-                  >
-                    {/* Tonearm base */}
-                    <div className="absolute top-0 right-0 w-5 h-5 rounded-full bg-gradient-to-br from-zinc-500 to-zinc-700 shadow-lg border border-zinc-400/30" />
-                    
-                    {/* Tonearm arm */}
-                    <div className="absolute top-2 right-2 w-1 h-20 bg-gradient-to-b from-zinc-400 to-zinc-600 rounded-full origin-top transform -rotate-12 shadow-md" />
-                    
-                    {/* Headshell */}
-                    <motion.div 
-                      className="absolute top-[5rem] right-0.5 transform -rotate-12"
-                      animate={isPlaying ? { y: [0, 0.5, 0] } : {}}
-                      transition={{ duration: 0.5, repeat: Infinity }}
-                    >
-                      <div className="w-2 h-4 bg-gradient-to-b from-zinc-400 to-zinc-500 rounded-sm shadow-md" />
-                      {/* Stylus */}
-                      <div className="w-0.5 h-1 bg-zinc-300 mx-auto mt-0.5" />
-                    </motion.div>
-                  </motion.div>
-                  
-                  {/* Glow effect when playing */}
+                  {/* Spinning vinyl peek */}
                   {isPlaying && (
                     <motion.div
-                      className="absolute inset-4 rounded-full pointer-events-none"
-                      animate={{
-                        boxShadow: [
-                          "0 0 20px hsl(var(--primary) / 0.3)",
-                          "0 0 40px hsl(var(--primary) / 0.5)",
-                          "0 0 20px hsl(var(--primary) / 0.3)",
-                        ]
-                      }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                    />
+                      className="absolute -right-3 top-1/2 -translate-y-1/2 w-12 h-24 overflow-hidden"
+                      initial={{ x: 20, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                    >
+                      <motion.div
+                        className="w-24 h-24 rounded-full bg-gradient-to-br from-zinc-900 via-zinc-800 to-black"
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                      >
+                        <div className="absolute inset-2 rounded-full border border-zinc-700/30" />
+                        <div className="absolute inset-4 rounded-full border border-zinc-700/50" />
+                        <div className="absolute inset-6 rounded-full border border-zinc-700/30" />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="w-4 h-4 rounded-full bg-zinc-700" />
+                        </div>
+                      </motion.div>
+                    </motion.div>
                   )}
                 </div>
-                
-                {/* Visualizer below vinyl */}
-                {isPlaying && (
-                  <div className="mb-3">
-                    <Visualizer />
-                  </div>
-                )}
-                
-                <h3 className="text-lg font-bold text-foreground truncate">{track.title}</h3>
-                <p className="text-sm text-muted-foreground">{track.artist}</p>
               </div>
 
-              {/* Progress Bar */}
-              <div className="mb-4">
-                <input
-                  type="range"
-                  min="0"
-                  max={duration || 0}
-                  value={currentTime}
-                  onChange={handleSeek}
-                  className="w-full h-1 rounded-full bg-secondary appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary"
-                />
-                <div className="flex justify-between text-xs text-muted-foreground mt-1">
+              {/* Track Info */}
+              <div className="px-5 text-center mb-4">
+                <motion.h3 
+                  className="text-xl font-bold text-foreground truncate mb-1"
+                  key={track.title}
+                  initial={{ y: 10, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                >
+                  {track.title}
+                </motion.h3>
+                <motion.p 
+                  className="text-sm text-muted-foreground"
+                  initial={{ y: 5, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.1 }}
+                >
+                  {track.artist}
+                </motion.p>
+              </div>
+
+              {/* Waveform Visualizer */}
+              {isPlaying && (
+                <div className="px-5 mb-4">
+                  <div className="flex items-center justify-center gap-[2px] h-8">
+                    {analyzerData.slice(0, 32).map((value, index) => (
+                      <motion.div
+                        key={index}
+                        className="w-1 rounded-full"
+                        style={{
+                          background: `linear-gradient(to top, ${track.color}, ${track.color}80)`,
+                        }}
+                        animate={{
+                          height: `${Math.max(4, value * 32)}px`,
+                        }}
+                        transition={{ duration: 0.05 }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Progress Bar - Modern Style */}
+              <div className="px-5 mb-4">
+                <div className="relative h-1.5 bg-white/10 rounded-full overflow-hidden">
+                  <motion.div
+                    className="absolute inset-y-0 left-0 rounded-full"
+                    style={{ 
+                      background: `linear-gradient(90deg, ${track.color}, ${track.color}cc)`,
+                      width: `${(currentTime / (duration || 1)) * 100}%`,
+                    }}
+                  />
+                  <input
+                    type="range"
+                    min="0"
+                    max={duration || 0}
+                    value={currentTime}
+                    onChange={handleSeek}
+                    className="absolute inset-0 w-full opacity-0 cursor-pointer"
+                  />
+                </div>
+                <div className="flex justify-between text-[10px] text-muted-foreground mt-2 font-mono">
                   <span>{formatTime(currentTime)}</span>
                   <span>{formatTime(duration)}</span>
                 </div>
               </div>
 
-              {/* Controls */}
-              <div className="flex items-center justify-center gap-2 mb-4">
+              {/* Controls - Modern circular layout */}
+              <div className="px-5 flex items-center justify-center gap-3 mb-5">
                 <motion.button
                   onClick={() => setIsShuffle(!isShuffle)}
-                  className={`p-2 rounded-full transition-colors ${isShuffle ? 'bg-primary/20 text-primary' : 'hover:bg-secondary text-muted-foreground'}`}
-                  whileHover={{ scale: 1.1 }}
+                  className={`p-2.5 rounded-full transition-all ${isShuffle ? 'text-white' : 'text-muted-foreground hover:text-foreground'}`}
+                  style={isShuffle ? { backgroundColor: `${track.color}30` } : {}}
+                  whileHover={{ scale: 1.15 }}
                   whileTap={{ scale: 0.9 }}
                 >
                   <Shuffle className="h-4 w-4" />
@@ -670,7 +697,7 @@ const MusicPlayer = () => {
                 
                 <motion.button
                   onClick={handlePrevTrack}
-                  className="p-2 rounded-full hover:bg-secondary transition-colors"
+                  className="p-3 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                 >
@@ -679,20 +706,30 @@ const MusicPlayer = () => {
                 
                 <motion.button
                   onClick={togglePlay}
-                  className="w-14 h-14 rounded-full gradient-bg flex items-center justify-center shadow-lg"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
+                  className="w-16 h-16 rounded-full flex items-center justify-center shadow-lg relative overflow-hidden"
+                  style={{
+                    background: `linear-gradient(135deg, ${track.color}, ${track.color}cc)`,
+                    boxShadow: `0 10px 30px -10px ${track.color}80`,
+                  }}
+                  whileHover={{ scale: 1.1, boxShadow: `0 15px 40px -10px ${track.color}` }}
+                  whileTap={{ scale: 0.95 }}
                 >
+                  <motion.div
+                    className="absolute inset-0 bg-white/20"
+                    initial={false}
+                    animate={isPlaying ? { scale: [1, 1.5], opacity: [0.3, 0] } : {}}
+                    transition={{ duration: 1, repeat: Infinity }}
+                  />
                   {isPlaying ? (
-                    <Pause className="h-6 w-6 text-primary-foreground" />
+                    <Pause className="h-7 w-7 text-white relative z-10" />
                   ) : (
-                    <Play className="h-6 w-6 text-primary-foreground ml-1" />
+                    <Play className="h-7 w-7 text-white ml-1 relative z-10" />
                   )}
                 </motion.button>
                 
                 <motion.button
                   onClick={handleNextTrack}
-                  className="p-2 rounded-full hover:bg-secondary transition-colors"
+                  className="p-3 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                 >
@@ -701,8 +738,9 @@ const MusicPlayer = () => {
 
                 <motion.button
                   onClick={toggleRepeat}
-                  className={`p-2 rounded-full transition-colors ${repeatMode !== 'off' ? 'bg-primary/20 text-primary' : 'hover:bg-secondary text-muted-foreground'}`}
-                  whileHover={{ scale: 1.1 }}
+                  className={`p-2.5 rounded-full transition-all ${repeatMode !== 'off' ? 'text-white' : 'text-muted-foreground hover:text-foreground'}`}
+                  style={repeatMode !== 'off' ? { backgroundColor: `${track.color}30` } : {}}
+                  whileHover={{ scale: 1.15 }}
                   whileTap={{ scale: 0.9 }}
                 >
                   {repeatMode === 'one' ? (
@@ -713,53 +751,69 @@ const MusicPlayer = () => {
                 </motion.button>
               </div>
 
-              {/* Volume & EQ Toggle */}
-              <div className="flex items-center gap-2 mb-4">
-                <motion.button
-                  onClick={() => setIsMuted(!isMuted)}
-                  className="p-1"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  {isMuted ? (
-                    <VolumeX className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <Volume2 className="h-4 w-4 text-muted-foreground" />
-                  )}
-                </motion.button>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.01"
-                  value={isMuted ? 0 : volume}
-                  onChange={(e) => {
-                    setVolume(Number(e.target.value));
-                    setIsMuted(false);
-                  }}
-                  className="flex-1 h-1 rounded-full bg-secondary appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary"
-                />
-                <motion.button
-                  onClick={() => setShowEqualizer(!showEqualizer)}
-                  className={`p-1.5 rounded-full transition-colors ${showEqualizer ? 'bg-primary/20 text-primary' : 'hover:bg-secondary text-muted-foreground'}`}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  <SlidersHorizontal className="h-4 w-4" />
-                </motion.button>
-                <motion.button
-                  onClick={transcribeLyrics}
-                  disabled={isTranscribing}
-                  className={`p-1.5 rounded-full transition-colors ${showLyrics ? 'bg-primary/20 text-primary' : 'hover:bg-secondary text-muted-foreground'}`}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  {isTranscribing ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <FileText className="h-4 w-4" />
-                  )}
-                </motion.button>
+              {/* Volume & Controls Row - Minimal style */}
+              <div className="px-5 flex items-center justify-center gap-4 mb-4">
+                <div className="flex items-center gap-2 flex-1">
+                  <motion.button
+                    onClick={() => setIsMuted(!isMuted)}
+                    className="p-1.5 rounded-full hover:bg-white/10 transition-colors"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    {isMuted ? (
+                      <VolumeX className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <Volume2 className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </motion.button>
+                  <div className="relative flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
+                    <motion.div
+                      className="absolute inset-y-0 left-0 rounded-full"
+                      style={{ 
+                        backgroundColor: track.color,
+                        width: `${(isMuted ? 0 : volume) * 100}%`,
+                      }}
+                    />
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.01"
+                      value={isMuted ? 0 : volume}
+                      onChange={(e) => {
+                        setVolume(Number(e.target.value));
+                        setIsMuted(false);
+                      }}
+                      className="absolute inset-0 w-full opacity-0 cursor-pointer"
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-1">
+                  <motion.button
+                    onClick={() => setShowEqualizer(!showEqualizer)}
+                    className={`p-2 rounded-full transition-all ${showEqualizer ? 'text-white' : 'text-muted-foreground hover:text-foreground hover:bg-white/10'}`}
+                    style={showEqualizer ? { backgroundColor: `${track.color}30` } : {}}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    <SlidersHorizontal className="h-4 w-4" />
+                  </motion.button>
+                  <motion.button
+                    onClick={transcribeLyrics}
+                    disabled={isTranscribing}
+                    className={`p-2 rounded-full transition-all ${showLyrics ? 'text-white' : 'text-muted-foreground hover:text-foreground hover:bg-white/10'}`}
+                    style={showLyrics ? { backgroundColor: `${track.color}30` } : {}}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    {isTranscribing ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <FileText className="h-4 w-4" />
+                    )}
+                  </motion.button>
+                </div>
               </div>
 
               {/* Lyrics Display */}
@@ -805,22 +859,23 @@ const MusicPlayer = () => {
                 )}
               </AnimatePresence>
 
-              {/* Equalizer */}
+              {/* Equalizer - Modern style */}
               <AnimatePresence>
                 {showEqualizer && (
                   <motion.div
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden mb-4"
+                    className="overflow-hidden px-5 mb-4"
                   >
-                    <div className="p-3 rounded-xl bg-secondary/30 border border-border/50">
-                      <div className="flex items-center justify-between mb-3">
+                    <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                      <div className="flex items-center justify-between mb-4">
                         <span className="text-xs font-medium text-foreground">Equalizer</span>
                         <select
                           value={eqPreset}
                           onChange={(e) => applyEqPreset(e.target.value)}
-                          className="text-xs bg-background/50 border border-border rounded-md px-2 py-1 text-foreground"
+                          className="text-xs bg-white/10 border border-white/20 rounded-lg px-3 py-1.5 text-foreground focus:outline-none"
+                          style={{ backgroundColor: `${track.color}20` }}
                         >
                           <option value="flat">Flat</option>
                           <option value="bass">Bass Boost</option>
@@ -831,10 +886,10 @@ const MusicPlayer = () => {
                           {eqPreset === 'custom' && <option value="custom">Custom</option>}
                         </select>
                       </div>
-                      <div className="flex items-end justify-between gap-1 h-24">
+                      <div className="flex items-end justify-between gap-1 h-20">
                         {EQ_BANDS.map((band, index) => (
                           <div key={band.frequency} className="flex flex-col items-center gap-1 flex-1">
-                            <div className="relative h-16 w-full flex items-center justify-center">
+                            <div className="relative h-14 w-full flex items-center justify-center">
                               <input
                                 type="range"
                                 min="-12"
@@ -842,111 +897,148 @@ const MusicPlayer = () => {
                                 step="1"
                                 value={eqValues[index]}
                                 onChange={(e) => updateEqBand(index, Number(e.target.value))}
-                                className="absolute h-12 w-1.5 appearance-none cursor-pointer bg-secondary/50 rounded-full [writing-mode:vertical-lr] [direction:rtl] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-lg"
+                                className="absolute h-12 w-1.5 appearance-none cursor-pointer bg-white/10 rounded-full [writing-mode:vertical-lr] [direction:rtl] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-lg"
+                                style={{ 
+                                  '--tw-shadow-color': track.color,
+                                } as React.CSSProperties}
                               />
                               <motion.div
-                                className="absolute bottom-0 w-1.5 bg-gradient-to-t from-primary/80 to-primary/40 rounded-full pointer-events-none"
-                                animate={{ height: `${((eqValues[index] + 12) / 24) * 48}px` }}
+                                className="absolute bottom-0 w-1.5 rounded-full pointer-events-none"
+                                style={{ background: `linear-gradient(to top, ${track.color}, ${track.color}60)` }}
+                                animate={{ height: `${((eqValues[index] + 12) / 24) * 44}px` }}
                                 transition={{ duration: 0.1 }}
                               />
                             </div>
-                            <span className="text-[9px] text-muted-foreground">{band.label}</span>
+                            <span className="text-[8px] text-muted-foreground">{band.label}</span>
                           </div>
                         ))}
-                      </div>
-                      <div className="flex justify-between text-[8px] text-muted-foreground mt-1">
-                        <span>+12dB</span>
-                        <span>0dB</span>
-                        <span>-12dB</span>
                       </div>
                     </div>
                   </motion.div>
                 )}
               </AnimatePresence>
 
-              {/* Track List */}
-              <div className="pt-4 border-t border-border max-h-40 overflow-y-auto">
-                <p className="text-xs text-muted-foreground mb-2">プレイリスト</p>
-                <div className="space-y-1">
-                  {tracks.map((t, index) => (
-                    <motion.button
-                      key={t.id}
-                      onClick={() => {
-                        changeTrackWithAnimation(index);
-                        const newCounts = savePlayCount(t.id);
-                        setPlayCounts(newCounts);
-                        setIsPlaying(true);
-                      }}
-                      className={`w-full p-2 rounded-lg text-left transition-colors flex items-center gap-3 ${
-                        currentTrack === index
-                          ? 'bg-primary/20'
-                          : 'hover:bg-secondary'
-                      }`}
-                      whileHover={{ x: 3 }}
-                    >
-                      <img 
-                        src={t.artwork} 
-                        alt={t.title}
-                        className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
-                      />
-                      <div className="min-w-0 flex-1">
-                        <p className={`text-sm font-medium truncate ${currentTrack === index ? 'text-primary' : 'text-foreground'}`}>
-                          {t.title}
-                        </p>
-                        <p className="text-xs text-muted-foreground">{t.artist}</p>
-                      </div>
-                      {playCounts[t.id] > 0 && (
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded-full">
-                          <Play className="h-3 w-3" />
-                          {playCounts[t.id]}
+              {/* Track List - Modern cards */}
+              <div className="px-5 pb-5">
+                <div className="pt-4 border-t border-white/10 max-h-36 overflow-y-auto scrollbar-thin">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-3">Playlist</p>
+                  <div className="space-y-2">
+                    {tracks.map((t, index) => (
+                      <motion.button
+                        key={t.id}
+                        onClick={() => {
+                          changeTrackWithAnimation(index);
+                          const newCounts = savePlayCount(t.id);
+                          setPlayCounts(newCounts);
+                          setIsPlaying(true);
+                        }}
+                        className={`w-full p-2 rounded-xl text-left transition-all flex items-center gap-3 ${
+                          currentTrack === index
+                            ? ''
+                            : 'hover:bg-white/5'
+                        }`}
+                        style={currentTrack === index ? {
+                          background: `linear-gradient(135deg, ${t.color}20 0%, transparent 100%)`,
+                          border: `1px solid ${t.color}30`,
+                        } : {}}
+                        whileHover={{ x: 4 }}
+                      >
+                        <div className="relative">
+                          <img 
+                            src={t.artwork} 
+                            alt={t.title}
+                            className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+                          />
+                          {currentTrack === index && isPlaying && (
+                            <motion.div
+                              className="absolute inset-0 rounded-lg flex items-center justify-center bg-black/40"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                            >
+                              <div className="flex items-end gap-0.5 h-4">
+                                {[0, 1, 2].map((i) => (
+                                  <motion.div
+                                    key={i}
+                                    className="w-0.5 bg-white rounded-full"
+                                    animate={{ height: ['40%', '100%', '40%'] }}
+                                    transition={{ duration: 0.5, repeat: Infinity, delay: i * 0.1 }}
+                                  />
+                                ))}
+                              </div>
+                            </motion.div>
+                          )}
                         </div>
-                      )}
-                    </motion.button>
-                  ))}
+                        <div className="min-w-0 flex-1">
+                          <p className={`text-sm font-medium truncate ${currentTrack === index ? '' : 'text-foreground'}`}
+                            style={currentTrack === index ? { color: t.color } : {}}
+                          >
+                            {t.title}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground">{t.artist}</p>
+                        </div>
+                        {playCounts[t.id] > 0 && (
+                          <div className="flex items-center gap-1 text-[10px] text-muted-foreground bg-white/5 px-2 py-0.5 rounded-full">
+                            <Play className="h-2.5 w-2.5" />
+                            {playCounts[t.id]}
+                          </div>
+                        )}
+                      </motion.button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </motion.div>
           ) : (
             <motion.div
               key="compact"
-              className="glass rounded-2xl p-3 flex items-center gap-3 shadow-xl cursor-pointer"
+              className="rounded-2xl p-3 flex items-center gap-3 shadow-xl cursor-pointer"
+              style={{
+                background: `linear-gradient(145deg, ${track.color}20 0%, hsl(var(--background)) 50%, ${track.color}10 100%)`,
+                backdropFilter: 'blur(20px)',
+                border: `1px solid ${track.color}30`,
+                boxShadow: `0 15px 30px -10px ${track.color}40`,
+              }}
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={() => setIsExpanded(true)}
-              whileHover={{ scale: 1.02 }}
+              whileHover={{ scale: 1.03, boxShadow: `0 20px 40px -10px ${track.color}50` }}
             >
-              {/* Mini Vinyl Record */}
+              {/* Album art thumbnail */}
               <motion.div
-                className="w-12 h-12 rounded-full flex-shrink-0 overflow-hidden relative bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900"
-                animate={isPlaying ? { rotate: 360 } : {}}
-                transition={isPlaying ? { duration: 3, repeat: Infinity, ease: "linear" } : {}}
-                style={{ boxShadow: isPlaying ? "0 0 15px hsl(var(--primary) / 0.4)" : "0 2px 8px rgba(0,0,0,0.3)" }}
+                className="w-12 h-12 rounded-xl flex-shrink-0 overflow-hidden relative shadow-lg"
+                animate={isPlaying ? { scale: [1, 1.05, 1] } : {}}
+                transition={{ duration: 2, repeat: Infinity }}
+                style={{ boxShadow: `0 5px 20px -5px ${track.color}60` }}
               >
-                {/* Mini grooves */}
-                <div className="absolute inset-1 rounded-full border border-zinc-700/30" />
-                <div className="absolute inset-2 rounded-full border border-zinc-700/50" />
-                
-                {/* Mini center label */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-5 h-5 rounded-full overflow-hidden border border-zinc-600">
-                    <img 
-                      src={track.artwork} 
-                      alt={track.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                </div>
-                
-                {/* Mini center hole */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-1 h-1 rounded-full bg-zinc-900" />
-                </div>
+                <img 
+                  src={track.artwork} 
+                  alt={track.title}
+                  className="w-full h-full object-cover"
+                />
+                {isPlaying && (
+                  <motion.div
+                    className="absolute inset-0 bg-black/30 flex items-center justify-center"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                  >
+                    <div className="flex items-end gap-0.5 h-4">
+                      {[0, 1, 2].map((i) => (
+                        <motion.div
+                          key={i}
+                          className="w-0.5 bg-white rounded-full"
+                          animate={{ height: ['30%', '100%', '30%'] }}
+                          transition={{ duration: 0.4, repeat: Infinity, delay: i * 0.1 }}
+                        />
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
               </motion.div>
               
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground truncate">{track.title}</p>
-                <p className="text-xs text-muted-foreground truncate">{track.artist}</p>
+                <p className="text-[10px] text-muted-foreground truncate">{track.artist}</p>
               </div>
               
               <motion.button
@@ -954,14 +1046,18 @@ const MusicPlayer = () => {
                   e.stopPropagation();
                   togglePlay();
                 }}
-                className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0"
-                whileHover={{ scale: 1.1, backgroundColor: "hsl(var(--primary) / 0.3)" }}
+                className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                style={{
+                  background: `linear-gradient(135deg, ${track.color}, ${track.color}cc)`,
+                  boxShadow: `0 5px 15px -5px ${track.color}80`,
+                }}
+                whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
               >
                 {isPlaying ? (
-                  <Pause className="h-5 w-5 text-primary" />
+                  <Pause className="h-4 w-4 text-white" />
                 ) : (
-                  <Play className="h-5 w-5 text-primary ml-0.5" />
+                  <Play className="h-4 w-4 text-white ml-0.5" />
                 )}
               </motion.button>
             </motion.div>

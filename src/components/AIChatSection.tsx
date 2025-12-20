@@ -186,7 +186,7 @@ const VoiceInputButton = ({ onTranscript, isDisabled, texts }: VoiceInputProps) 
 
 export const AIChatSection = () => {
   const { toast } = useToast();
-  const { isOpen, toggleChat, pageContext, currentBlogTitle } = useChat();
+  const { isOpen, toggleChat, openChat, pageContext, currentBlogTitle } = useChat();
   const { language } = useLanguage();
   const [messages, setMessages] = useState<Message[]>(() => loadMessagesFromStorage());
   const [input, setInput] = useState('');
@@ -196,11 +196,32 @@ export const AIChatSection = () => {
   const [hasGreeted, setHasGreeted] = useState(() => {
     return localStorage.getItem(GREETED_KEY) === 'true';
   });
+  const [showMusicPrompt, setShowMusicPrompt] = useState(false);
+  const [hasShownBottomPrompt, setHasShownBottomPrompt] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const dragControls = useDragControls();
   const constraintsRef = useRef<HTMLDivElement>(null);
   const greetingInProgressRef = useRef(false);
+
+  // Detect when user scrolls to bottom of page
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      const windowHeight = window.innerHeight;
+      const docHeight = document.documentElement.scrollHeight;
+      const isAtBottom = scrollTop + windowHeight >= docHeight - 100;
+      
+      if (isAtBottom && !isOpen && !hasShownBottomPrompt) {
+        setHasShownBottomPrompt(true);
+        setShowMusicPrompt(true);
+        openChat();
+      }
+    };
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isOpen, hasShownBottomPrompt, openChat]);
 
   // Get time-based greeting prefix
   const getTimeGreeting = (lang: 'en' | 'ja') => {
@@ -692,6 +713,45 @@ export const AIChatSection = () => {
                 </div>
               </div>
             </div>
+
+            {/* Music Prompt */}
+            <AnimatePresence>
+              {showMusicPrompt && (
+                <motion.div
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="p-3 bg-gradient-to-r from-primary/10 to-accent/10 border-b border-border"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm text-foreground">
+                      {language === 'ja' ? '🎵 音楽を聴きながらチャットしませんか？' : '🎵 Want to listen to music while chatting?'}
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="default"
+                        className="h-7 text-xs"
+                        onClick={() => {
+                          window.dispatchEvent(new CustomEvent('toggleMusicPlayer'));
+                          setShowMusicPrompt(false);
+                        }}
+                      >
+                        {language === 'ja' ? '再生' : 'Play'}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 text-xs"
+                        onClick={() => setShowMusicPrompt(false)}
+                      >
+                        {language === 'ja' ? '後で' : 'Later'}
+                      </Button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-3 space-y-2.5 bg-muted/20">

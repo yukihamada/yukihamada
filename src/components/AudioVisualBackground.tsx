@@ -1,6 +1,6 @@
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 
 type ParticleShape = 'circle' | 'star' | 'heart' | 'diamond' | 'triangle';
 
@@ -12,6 +12,9 @@ interface Particle {
   delay: number;
   duration: number;
   shape: ParticleShape;
+  xOffset: number;
+  yOffset: number;
+  rotationSpeed: number;
 }
 
 // Generate random particles with different shapes
@@ -21,17 +24,18 @@ const generateParticles = (count: number): Particle[] => {
     id: i,
     x: Math.random() * 100,
     y: Math.random() * 100,
-    size: Math.random() * 8 + 4,
-    delay: Math.random() * 2,
-    duration: Math.random() * 3 + 2,
+    size: Math.random() * 10 + 4,
+    delay: Math.random() * 3,
+    duration: Math.random() * 4 + 2,
     shape: shapes[Math.floor(Math.random() * shapes.length)],
+    xOffset: (Math.random() - 0.5) * 100,
+    yOffset: Math.random() * 40 + 20,
+    rotationSpeed: (Math.random() - 0.5) * 720,
   }));
 };
 
 // SVG paths for different shapes
 const getShapePath = (shape: ParticleShape, size: number): JSX.Element => {
-  const halfSize = size / 2;
-  
   switch (shape) {
     case 'star':
       return (
@@ -73,11 +77,11 @@ const getShapePath = (shape: ParticleShape, size: number): JSX.Element => {
 
 const AudioVisualBackground = () => {
   const { isPlaying, analyzerData, currentColor } = useMusicPlayer();
+  const [beatFlash, setBeatFlash] = useState(false);
+  const prevBassRef = useRef(0);
   
-  const particles = useMemo(() => generateParticles(60), []);
+  const particles = useMemo(() => generateParticles(70), []);
   const floatingOrbs = useMemo(() => generateParticles(8), []);
-
-  if (!isPlaying) return null;
 
   const avgEnergy = analyzerData.length > 0 
     ? analyzerData.reduce((a, b) => a + b, 0) / analyzerData.length 
@@ -86,6 +90,18 @@ const AudioVisualBackground = () => {
   const bassEnergy = analyzerData.slice(0, 8).reduce((a, b) => a + b, 0) / 8;
   const midEnergy = analyzerData.slice(8, 24).reduce((a, b) => a + b, 0) / 16;
   const highEnergy = analyzerData.slice(24, 48).reduce((a, b) => a + b, 0) / 24;
+
+  // Beat detection for flash effect
+  useEffect(() => {
+    if (bassEnergy > 0.6 && prevBassRef.current < 0.4) {
+      setBeatFlash(true);
+      const timer = setTimeout(() => setBeatFlash(false), 100);
+      return () => clearTimeout(timer);
+    }
+    prevBassRef.current = bassEnergy;
+  }, [bassEnergy]);
+
+  if (!isPlaying) return null;
 
   return (
     <AnimatePresence>
@@ -96,6 +112,22 @@ const AudioVisualBackground = () => {
         exit={{ opacity: 0 }}
         transition={{ duration: 0.5 }}
       >
+        {/* Beat Flash Effect */}
+        <AnimatePresence>
+          {beatFlash && (
+            <motion.div
+              className="absolute inset-0"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.3 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.1 }}
+              style={{
+                background: `radial-gradient(circle at 50% 50%, ${currentColor} 0%, transparent 70%)`,
+              }}
+            />
+          )}
+        </AnimatePresence>
+
         {/* Dynamic gradient background */}
         <motion.div
           className="absolute inset-0"
@@ -107,7 +139,7 @@ const AudioVisualBackground = () => {
           transition={{ duration: 0.3 }}
         />
 
-        {/* Floating particles with different shapes */}
+        {/* Floating particles with different shapes and random movement */}
         {particles.map((particle) => (
           <motion.div
             key={`particle-${particle.id}`}
@@ -120,20 +152,26 @@ const AudioVisualBackground = () => {
             animate={{
               y: [
                 `${particle.y}vh`,
-                `${particle.y - 30 - avgEnergy * 20}vh`,
+                `${particle.y - particle.yOffset - avgEnergy * 15}vh`,
+                `${particle.y - particle.yOffset * 0.3}vh`,
                 `${particle.y}vh`,
               ],
-              opacity: [0.3, 0.9 * (0.5 + avgEnergy), 0.3],
-              scale: [1, 1.5 + avgEnergy, 1],
-              rotate: particle.shape === 'star' || particle.shape === 'diamond' 
-                ? [0, 180, 360] 
-                : [0, 0, 0],
+              x: [
+                0,
+                particle.xOffset * (0.5 + avgEnergy),
+                -particle.xOffset * 0.5 * avgEnergy,
+                0,
+              ],
+              opacity: [0.2, 0.9 * (0.5 + avgEnergy), 0.6, 0.2],
+              scale: [1, 1.3 + avgEnergy * 0.8, 1.1, 1],
+              rotate: [0, particle.rotationSpeed * avgEnergy, particle.rotationSpeed * 0.5, 0],
             }}
             transition={{
               duration: particle.duration,
               delay: particle.delay,
               repeat: Infinity,
               ease: 'easeInOut',
+              times: [0, 0.4, 0.7, 1],
             }}
           >
             {getShapePath(particle.shape, particle.size)}

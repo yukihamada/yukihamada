@@ -584,7 +584,12 @@ const AdminDashboard = () => {
                   <CardHeader>
                     <CardTitle className="flex items-center justify-between">
                       {isCreating ? '新規記事作成' : '記事編集'}
-                      <div className="flex gap-2">
+                  <div className="flex gap-2">
+                        {editingPost?.slug && (
+                          <Button variant="secondary" onClick={() => window.open(`/blog/${editingPost.slug}`, '_blank')}>
+                            <Eye className="mr-2 h-4 w-4" />プレビュー
+                          </Button>
+                        )}
                         <Button variant="outline" onClick={() => { setEditingPost(null); setIsCreating(false); }}>
                           <X className="mr-2 h-4 w-4" />キャンセル
                         </Button>

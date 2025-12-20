@@ -50,25 +50,22 @@ const LikeButton = ({ postSlug }: LikeButtonProps) => {
     const fetchLikes = async () => {
       const visitorId = getVisitorId();
       
-      // Get total like count
-      const { count, error: countError } = await supabase
-        .from('blog_likes')
-        .select('*', { count: 'exact', head: true })
-        .eq('post_slug', postSlug);
+      // Get total like count using security definer function
+      const { data: countData, error: countError } = await supabase
+        .rpc('get_blog_like_count', { p_post_slug: postSlug });
 
-      if (!countError) {
-        setLikeCount(count || 0);
+      if (!countError && countData !== null) {
+        setLikeCount(Number(countData));
       }
 
-      // Check if current visitor has liked
-      const { data: existingLike } = await supabase
-        .from('blog_likes')
-        .select('id')
-        .eq('post_slug', postSlug)
-        .eq('visitor_id', visitorId)
-        .maybeSingle();
+      // Check if current visitor has liked using security definer function
+      const { data: hasLikedData, error: hasLikedError } = await supabase
+        .rpc('has_visitor_liked', { p_post_slug: postSlug, p_visitor_id: visitorId });
 
-      setHasLiked(!!existingLike);
+      if (!hasLikedError) {
+        setHasLiked(hasLikedData || false);
+      }
+      
       setIsLoading(false);
     };
 

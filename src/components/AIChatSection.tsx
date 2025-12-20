@@ -4,6 +4,7 @@ import { MessageCircle, Send, X, Bot, Loader2, GripHorizontal, CheckCheck } from
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useChat } from '@/contexts/ChatContext';
 import yukiProfile from '@/assets/yuki-profile.jpg';
 
 type Message = {
@@ -27,7 +28,7 @@ const getVisitorId = () => {
 
 export const AIChatSection = () => {
   const { toast } = useToast();
-  const [isOpen, setIsOpen] = useState(false);
+  const { isOpen, toggleChat } = useChat();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -231,7 +232,7 @@ export const AIChatSection = () => {
         className="fixed bottom-6 left-6 z-50 w-14 h-14 rounded-full bg-gradient-to-r from-primary to-accent shadow-lg flex items-center justify-center text-primary-foreground"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={toggleChat}
         animate={!isOpen ? {
           boxShadow: [
             '0 0 20px hsl(var(--primary) / 0.4), 0 0 40px hsl(var(--primary) / 0.2)',

@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Calendar, Tag, Play } from 'lucide-react';
+import { ArrowLeft, Calendar, Tag, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getBlogPostBySlug, blogPosts } from '@/data/blogPosts';
 import Navigation from '@/components/Navigation';
@@ -12,6 +12,7 @@ import BlogOGP from '@/components/BlogOGP';
 import ShareButtons from '@/components/ShareButtons';
 import DOMPurify from 'dompurify';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useChat } from '@/contexts/ChatContext';
 // Blog post images
 import jiuflowHero from '@/assets/jiuflow-hero.png';
 import jiuflowLesson from '@/assets/jiuflow-lesson.png';
@@ -49,6 +50,7 @@ const BlogPost = () => {
   const post = slug ? getBlogPostBySlug(slug) : undefined;
   const contentRef = useRef<HTMLDivElement>(null);
   const { language } = useLanguage();
+  const { openChat } = useChat();
 
   // Add click listeners for play buttons after content renders
   useEffect(() => {
@@ -229,6 +231,29 @@ const BlogPost = () => {
             <div className="flex flex-col items-center gap-6 mt-8">
               <LikeButton postSlug={post.slug} />
               <ShareButtons title={content.title} url={window.location.href} />
+              
+              {/* Chat CTA */}
+              <motion.div
+                className="w-full mt-8 p-6 rounded-2xl bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+              >
+                <div className="text-center">
+                  <p className="text-foreground font-medium mb-3">
+                    {language === 'ja' 
+                      ? 'この記事について質問がありますか？' 
+                      : 'Have questions about this article?'}
+                  </p>
+                  <Button 
+                    onClick={openChat}
+                    className="gradient-bg text-primary-foreground hover:opacity-90"
+                  >
+                    <MessageCircle className="mr-2 h-4 w-4" />
+                    {language === 'ja' ? '濱田に聞いてみる' : 'Ask Yuki'}
+                  </Button>
+                </div>
+              </motion.div>
             </div>
           </motion.div>
 

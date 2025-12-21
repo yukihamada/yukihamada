@@ -10,7 +10,8 @@ import {
   LayoutDashboard, FileText, MessageCircle, Users, MessageSquare,
   BarChart3, Eye, Heart, TrendingUp, RefreshCw, ArrowLeft,
   Plus, Edit, Trash2, Save, X, ChevronRight, User, Bot,
-  Shield, LogOut, Settings, Columns2, PanelLeft, Music, Calendar, Clock
+  Shield, LogOut, Settings, Columns2, PanelLeft, Music, Calendar, Clock,
+  Globe, Sparkles
 } from 'lucide-react';
 import MarkdownPreview from '@/components/MarkdownPreview';
 import { Button } from '@/components/ui/button';
@@ -117,6 +118,15 @@ interface MusicTrack {
   updated_at: string;
 }
 
+interface AIPrompt {
+  id: string;
+  name: string;
+  content: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 const emptyPost: Omit<BlogPostDB, 'id' | 'created_at' | 'updated_at'> = {
   slug: '',
   featured: false,
@@ -166,6 +176,11 @@ const AdminDashboard = () => {
   // Music state
   const [musicTracks, setMusicTracks] = useState<MusicTrack[]>([]);
   const [editingTrack, setEditingTrack] = useState<Partial<MusicTrack> | null>(null);
+
+  // AI Prompts state
+  const [aiPrompts, setAiPrompts] = useState<AIPrompt[]>([]);
+  const [editingPrompt, setEditingPrompt] = useState<Partial<AIPrompt> | null>(null);
+  const [isCreatingPrompt, setIsCreatingPrompt] = useState(false);
   const [isCreatingTrack, setIsCreatingTrack] = useState(false);
 
   useEffect(() => {
@@ -200,7 +215,8 @@ const AdminDashboard = () => {
         fetchUsers(),
         fetchTopics(),
         fetchComments(),
-        fetchMusicTracks()
+        fetchMusicTracks(),
+        fetchAiPrompts()
       ]);
     }
     setIsLoading(false);
@@ -508,6 +524,75 @@ const AdminDashboard = () => {
     }
   };
 
+  // AI Prompt functions
+  const fetchAiPrompts = async () => {
+    const { data, error } = await supabase
+      .from('ai_prompts')
+      .select('*')
+      .order('name', { ascending: true });
+
+    if (!error && data) {
+      setAiPrompts(data);
+    }
+  };
+
+  const handleSavePrompt = async () => {
+    if (!editingPrompt) return;
+
+    const promptData = {
+      name: editingPrompt.name,
+      content: editingPrompt.content,
+      is_active: editingPrompt.is_active ?? true,
+    };
+
+    if (isCreatingPrompt) {
+      const { error } = await supabase.from('ai_prompts').insert([promptData]);
+      if (error) {
+        toast.error('プロンプトの作成に失敗しました');
+      } else {
+        toast.success('プロンプトを作成しました');
+        setEditingPrompt(null);
+        setIsCreatingPrompt(false);
+        fetchAiPrompts();
+      }
+    } else {
+      const { error } = await supabase
+        .from('ai_prompts')
+        .update(promptData)
+        .eq('id', editingPrompt.id);
+      if (error) {
+        toast.error('プロンプトの更新に失敗しました');
+      } else {
+        toast.success('プロンプトを更新しました');
+        setEditingPrompt(null);
+        fetchAiPrompts();
+      }
+    }
+  };
+
+  const deletePrompt = async (id: string) => {
+    if (!confirm('このプロンプトを削除しますか？')) return;
+    const { error } = await supabase.from('ai_prompts').delete().eq('id', id);
+    if (error) {
+      toast.error('プロンプトの削除に失敗しました');
+    } else {
+      toast.success('プロンプトを削除しました');
+      fetchAiPrompts();
+    }
+  };
+
+  const togglePromptActive = async (id: string, isActive: boolean) => {
+    const { error } = await supabase
+      .from('ai_prompts')
+      .update({ is_active: !isActive })
+      .eq('id', id);
+    if (error) {
+      toast.error('更新に失敗しました');
+    } else {
+      fetchAiPrompts();
+    }
+  };
+
   const getPostTitle = (slug: string) => {
     const post = blogPosts.find(p => p.slug === slug);
     return post?.ja.title || slug;
@@ -572,7 +657,7 @@ const AdminDashboard = () => {
           </motion.div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full max-w-3xl grid-cols-6 bg-muted/50">
+            <TabsList className="grid w-full max-w-4xl grid-cols-7 bg-muted/50">
               <TabsTrigger value="overview" className="flex items-center gap-2">
                 <BarChart3 className="w-4 h-4" />
                 <span className="hidden sm:inline">概要</span>
@@ -584,6 +669,10 @@ const AdminDashboard = () => {
               <TabsTrigger value="chat" className="flex items-center gap-2">
                 <MessageCircle className="w-4 h-4" />
                 <span className="hidden sm:inline">チャット</span>
+              </TabsTrigger>
+              <TabsTrigger value="prompts" className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4" />
+                <span className="hidden sm:inline">AI</span>
               </TabsTrigger>
               <TabsTrigger value="users" className="flex items-center gap-2">
                 <Users className="w-4 h-4" />
@@ -1220,10 +1309,13 @@ const AdminDashboard = () => {
                             {format(new Date(conv.updated_at), 'MM/dd HH:mm', { locale: ja })}
                             ・{conv.message_count}件
                           </p>
-                          {conv.ip_address && (
-                            <p className="text-xs text-muted-foreground/70 truncate">
-                              IP: {conv.ip_address}
-                            </p>
+                          {(conv.hostname || conv.ip_address) && (
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground/70">
+                              <Globe className="w-3 h-3" />
+                              <span className="truncate">
+                                {conv.hostname ? `${conv.hostname} (${conv.ip_address})` : conv.ip_address}
+                              </span>
+                            </div>
                           )}
                         </div>
                           <Button
@@ -1267,6 +1359,134 @@ const AdminDashboard = () => {
                   </CardContent>
                 </Card>
               </div>
+            </TabsContent>
+
+            {/* AI Prompts Tab */}
+            <TabsContent value="prompts" className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-semibold">AIプロンプト管理</h2>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={fetchAiPrompts}>
+                    <RefreshCw className="mr-2 h-4 w-4" />更新
+                  </Button>
+                  <Button onClick={() => { setIsCreatingPrompt(true); setEditingPrompt({ name: '', content: '', is_active: true }); }}>
+                    <Plus className="mr-2 h-4 w-4" />新規追加
+                  </Button>
+                </div>
+              </div>
+
+              {editingPrompt ? (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      {isCreatingPrompt ? '新規プロンプト追加' : 'プロンプト編集'}
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => { setEditingPrompt(null); setIsCreatingPrompt(false); }}>
+                          <X className="mr-2 h-4 w-4" />キャンセル
+                        </Button>
+                        <Button size="sm" onClick={handleSavePrompt}>
+                          <Save className="mr-2 h-4 w-4" />保存
+                        </Button>
+                      </div>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label>プロンプト名</Label>
+                        <Input
+                          value={editingPrompt.name || ''}
+                          onChange={(e) => setEditingPrompt({ ...editingPrompt, name: e.target.value })}
+                          placeholder="yuki-chat"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          システム内で識別に使用する名前（例: yuki-chat）
+                        </p>
+                      </div>
+                      <div className="flex items-end">
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            checked={editingPrompt.is_active ?? true}
+                            onCheckedChange={(checked) => setEditingPrompt({ ...editingPrompt, is_active: checked })}
+                          />
+                          <Label>有効</Label>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <Label>プロンプト内容</Label>
+                      <Textarea
+                        value={editingPrompt.content || ''}
+                        onChange={(e) => setEditingPrompt({ ...editingPrompt, content: e.target.value })}
+                        placeholder="AIのシステムプロンプトを入力してください..."
+                        rows={15}
+                        className="font-mono text-sm"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        AIの振る舞いを定義するシステムプロンプト
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card>
+                  <CardContent className="pt-4">
+                    <div className="space-y-2">
+                      {aiPrompts.length === 0 ? (
+                        <p className="text-center text-muted-foreground py-8">プロンプトがありません</p>
+                      ) : (
+                        aiPrompts.map((prompt) => (
+                          <div
+                            key={prompt.id}
+                            className={`p-4 rounded-lg border ${!prompt.is_active ? 'opacity-50' : ''}`}
+                          >
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Sparkles className="w-5 h-5 text-primary" />
+                                  <p className="font-medium">{prompt.name}</p>
+                                  {!prompt.is_active && <Badge variant="secondary">無効</Badge>}
+                                  {prompt.is_active && <Badge variant="default">有効</Badge>}
+                                </div>
+                                <p className="text-sm text-muted-foreground line-clamp-3 whitespace-pre-wrap">
+                                  {prompt.content.substring(0, 200)}...
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-2">
+                                  更新: {format(new Date(prompt.updated_at), 'yyyy/MM/dd HH:mm', { locale: ja })}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => togglePromptActive(prompt.id, prompt.is_active)}
+                                >
+                                  {prompt.is_active ? '無効化' : '有効化'}
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => { setEditingPrompt(prompt); setIsCreatingPrompt(false); }}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => deletePrompt(prompt.id)}
+                                  className="text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
 
             {/* Users Tab */}

@@ -26,7 +26,7 @@ const OrganicBackground = () => {
   }, []);
 
   return (
-    <div ref={containerRef} className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+    <div ref={containerRef} className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
       {/* Main organic blobs */}
       <motion.div
         className="absolute w-[800px] h-[800px] rounded-full bg-primary/20 blur-[120px]"

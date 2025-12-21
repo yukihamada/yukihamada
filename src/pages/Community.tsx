@@ -127,12 +127,10 @@ const Community = () => {
   const t = texts[language];
 
   useEffect(() => {
-    console.log('Community: Starting fetchTopics');
     fetchTopics();
   }, []);
 
   const fetchTopics = async () => {
-    console.log('Community: fetchTopics called');
     setIsLoading(true);
     try {
       const { data, error } = await supabase
@@ -141,8 +139,6 @@ const Community = () => {
         .order('is_pinned', { ascending: false })
         .order('created_at', { ascending: false });
 
-      console.log('Community: forum_topics result', { data, error });
-
       if (error) {
         console.error('Error fetching topics:', error);
         setIsLoading(false);
@@ -150,7 +146,6 @@ const Community = () => {
       }
 
       if (data) {
-        console.log('Community: Processing topics, count:', data.length);
         const topicsWithData = await Promise.all(
           data.map(async (topic) => {
             const { count } = await supabase
@@ -174,7 +169,6 @@ const Community = () => {
             return { ...topic, comment_count: count || 0, profiles: profile };
           })
         );
-        console.log('Community: Setting topics', topicsWithData);
         setTopics(topicsWithData as Topic[]);
       }
     } catch (err) {

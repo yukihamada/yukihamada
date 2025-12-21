@@ -9,7 +9,7 @@ import { MusicPlayerProvider } from "@/contexts/MusicPlayerContext";
 import { ChatProvider } from "@/contexts/ChatContext";
 import ScrollToTop from "@/components/ScrollToTop";
 import MusicPlayer from "@/components/MusicPlayer";
-import LivingGridBackground from "@/components/LivingGridBackground";
+import OrganicBackground from "@/components/OrganicBackground";
 import { AIChatSection } from "@/components/AIChatSection";
 import Index from "./pages/Index";
 import Blog from "./pages/Blog";
@@ -35,7 +35,7 @@ const App = () => (
               <Sonner />
               <BrowserRouter>
                 <ScrollToTop />
-                <LivingGridBackground />
+                <OrganicBackground />
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/blog" element={<Blog />} />

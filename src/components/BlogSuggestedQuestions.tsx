@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { MessageCircle, Sparkles, Loader2 } from 'lucide-react';
+import { MessageCircle, Sparkles, Loader2, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useChat } from '@/contexts/ChatContext';
+import { toast } from 'sonner';
 
 interface BlogSuggestedQuestionsProps {
   blogTitle: string;
@@ -17,49 +18,9 @@ const BlogSuggestedQuestions = ({ blogTitle, blogCategory, postSlug, content }: 
   const { openChat, setPendingMessage } = useChat();
   const [questions, setQuestions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRegenerating, setIsRegenerating] = useState(false);
 
-  useEffect(() => {
-    const fetchQuestions = async () => {
-      try {
-        const response = await fetch(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/blog-ai`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-            },
-            body: JSON.stringify({
-              action: 'questions',
-              postSlug,
-              title: blogTitle,
-              category: blogCategory,
-              content: content.substring(0, 3000),
-            }),
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch questions');
-        }
-
-        const data = await response.json();
-        const fetchedQuestions = language === 'ja' ? data.questions_ja : data.questions_en;
-        setQuestions(Array.isArray(fetchedQuestions) ? fetchedQuestions : []);
-      } catch (err) {
-        console.error('Error fetching questions:', err);
-        // Fallback to static questions
-        setQuestions(getStaticQuestions());
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchQuestions();
-  }, [postSlug, blogTitle, blogCategory, content, language]);
-
-  const getStaticQuestions = () => {
+  const getStaticQuestions = useCallback(() => {
     return language === 'ja' ? [
       `この記事の内容をもっと詳しく教えて`,
       `${blogTitle}について質問があります`,
@@ -71,7 +32,59 @@ const BlogSuggestedQuestions = ({ blogTitle, blogCategory, postSlug, content }: 
       `Are there any related articles you recommend?`,
       `How can I apply this in practice?`,
     ];
-  };
+  }, [blogTitle, language]);
+
+  const fetchQuestions = useCallback(async (forceRegenerate = false) => {
+    if (forceRegenerate) {
+      setIsRegenerating(true);
+    } else {
+      setIsLoading(true);
+    }
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/blog-ai`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({
+            action: 'questions',
+            postSlug,
+            title: blogTitle,
+            category: blogCategory,
+            content: content.substring(0, 3000),
+            forceRegenerate,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch questions');
+      }
+
+      const data = await response.json();
+      const fetchedQuestions = language === 'ja' ? data.questions_ja : data.questions_en;
+      setQuestions(Array.isArray(fetchedQuestions) ? fetchedQuestions : []);
+
+      if (forceRegenerate) {
+        toast.success(language === 'ja' ? '質問を再生成しました' : 'Questions regenerated');
+      }
+    } catch (err) {
+      console.error('Error fetching questions:', err);
+      setQuestions(getStaticQuestions());
+    } finally {
+      setIsLoading(false);
+      setIsRegenerating(false);
+    }
+  }, [postSlug, blogTitle, blogCategory, content, language, getStaticQuestions]);
+
+  useEffect(() => {
+    fetchQuestions(false);
+  }, [fetchQuestions]);
 
   const handleQuestionClick = (question: string) => {
     setPendingMessage(question);
@@ -89,9 +102,24 @@ const BlogSuggestedQuestions = ({ blogTitle, blogCategory, postSlug, content }: 
       transition={{ duration: 0.5 }}
     >
       <div className="text-center mb-6">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
-          <Sparkles className="h-4 w-4" />
-          {language === 'ja' ? 'AIに質問する' : 'Ask AI'}
+        <div className="flex items-center justify-center gap-2 mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
+            <Sparkles className="h-4 w-4" />
+            {language === 'ja' ? 'AIに質問する' : 'Ask AI'}
+          </div>
+          <Button
+            onClick={() => fetchQuestions(true)}
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground hover:text-foreground"
+            disabled={isRegenerating || isLoading}
+          >
+            {isRegenerating ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4" />
+            )}
+          </Button>
         </div>
         <h3 className="text-xl md:text-2xl font-bold text-foreground mb-2">
           {language === 'ja' 

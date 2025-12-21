@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { action, postSlug, content, title, category } = await req.json();
+    const { action, postSlug, content, title, category, forceRegenerate } = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -24,22 +24,31 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     if (action === 'summarize') {
-      // Check cache first
-      const { data: cached } = await supabase
-        .from('blog_summaries')
-        .select('summary_ja, summary_en')
-        .eq('post_slug', postSlug)
-        .single();
+      // Check cache first (unless force regenerate)
+      if (!forceRegenerate) {
+        const { data: cached } = await supabase
+          .from('blog_summaries')
+          .select('summary_ja, summary_en')
+          .eq('post_slug', postSlug)
+          .single();
 
-      if (cached) {
-        console.log('Returning cached summary for:', postSlug);
-        return new Response(JSON.stringify({
-          summary_ja: cached.summary_ja,
-          summary_en: cached.summary_en,
-          cached: true
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+        if (cached) {
+          console.log('Returning cached summary for:', postSlug);
+          return new Response(JSON.stringify({
+            summary_ja: cached.summary_ja,
+            summary_en: cached.summary_en,
+            cached: true
+          }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+      } else {
+        // Delete existing cache
+        await supabase
+          .from('blog_summaries')
+          .delete()
+          .eq('post_slug', postSlug);
+        console.log('Cleared cache for:', postSlug);
       }
 
       // Generate new summary
@@ -111,22 +120,31 @@ serve(async (req) => {
       });
 
     } else if (action === 'questions') {
-      // Check cache first
-      const { data: cached } = await supabase
-        .from('blog_suggested_questions')
-        .select('questions_ja, questions_en')
-        .eq('post_slug', postSlug)
-        .single();
+      // Check cache first (unless force regenerate)
+      if (!forceRegenerate) {
+        const { data: cached } = await supabase
+          .from('blog_suggested_questions')
+          .select('questions_ja, questions_en')
+          .eq('post_slug', postSlug)
+          .single();
 
-      if (cached) {
-        console.log('Returning cached questions for:', postSlug);
-        return new Response(JSON.stringify({
-          questions_ja: cached.questions_ja,
-          questions_en: cached.questions_en,
-          cached: true
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+        if (cached) {
+          console.log('Returning cached questions for:', postSlug);
+          return new Response(JSON.stringify({
+            questions_ja: cached.questions_ja,
+            questions_en: cached.questions_en,
+            cached: true
+          }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+      } else {
+        // Delete existing cache
+        await supabase
+          .from('blog_suggested_questions')
+          .delete()
+          .eq('post_slug', postSlug);
+        console.log('Cleared questions cache for:', postSlug);
       }
 
       // Generate new questions

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Check, Link2, MoreHorizontal } from 'lucide-react';
+import { Check, Link2, MoreHorizontal, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   DropdownMenu,
@@ -15,15 +15,33 @@ interface ShareButtonsProps {
 
 const ShareButtons = ({ title, url }: ShareButtonsProps) => {
   const [copied, setCopied] = useState(false);
+  const [isShortening, setIsShortening] = useState(false);
+
+  const shortenUrl = async (longUrl: string): Promise<string> => {
+    try {
+      const response = await fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(longUrl)}`);
+      const data = await response.json();
+      if (data.shorturl) {
+        return data.shorturl;
+      }
+      return longUrl;
+    } catch {
+      return longUrl;
+    }
+  };
 
   const handleCopyLink = async () => {
     try {
-      await navigator.clipboard.writeText(url);
+      setIsShortening(true);
+      const shortUrl = await shortenUrl(url);
+      await navigator.clipboard.writeText(shortUrl);
       setCopied(true);
-      toast.success('リンクをコピーしました');
+      toast.success('短縮リンクをコピーしました');
       setTimeout(() => setCopied(false), 2000);
     } catch {
       toast.error('コピーに失敗しました');
+    } finally {
+      setIsShortening(false);
     }
   };
 
@@ -64,6 +82,15 @@ const ShareButtons = ({ title, url }: ShareButtonsProps) => {
       icon: (
         <svg className="w-4 h-4" viewBox="0 0 600 530" fill="currentColor">
           <path d="M135.72 44.03C202.216 93.951 273.74 195.401 300 249.49c26.262-54.089 97.782-155.539 164.28-205.46C512.26 8.009 590-19.862 590 68.825c0 17.712-10.155 148.79-16.111 170.07-20.703 73.984-96.144 92.854-163.25 81.433 117.3 19.964 147.14 86.092 82.697 152.22-122.39 125.59-175.91-31.511-189.63-71.766-2.514-7.38-3.69-10.832-3.708-7.896-.017-2.936-1.193.516-3.707 7.896-13.714 40.255-67.233 197.36-189.63 71.766-64.444-66.128-34.605-132.256 82.697-152.22-67.108 11.421-142.55-7.449-163.25-81.433C20.15 217.615 10 86.537 10 68.825c0-88.687 77.742-60.816 125.72-24.795z" />
+        </svg>
+      ),
+    },
+    {
+      name: 'Threads',
+      url: `https://www.threads.net/intent/post?text=${encodeURIComponent(`${title} ${url}`)}`,
+      icon: (
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.472 12.01v-.017c.03-3.579.879-6.43 2.525-8.482C5.845 1.205 8.6.024 12.18 0h.014c2.746.02 5.043.725 6.826 2.098 1.677 1.29 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.914 3.589 12c.027 3.086.718 5.496 2.057 7.164 1.43 1.783 3.631 2.698 6.54 2.717 2.623-.02 4.358-.631 5.8-2.045 1.647-1.613 1.618-3.593 1.09-4.798-.31-.71-.873-1.3-1.634-1.75-.192 1.352-.622 2.446-1.284 3.272-.886 1.102-2.14 1.704-3.73 1.79-1.202.065-2.361-.218-3.259-.801-1.063-.689-1.685-1.74-1.752-2.96-.065-1.182.408-2.256 1.332-3.023.88-.73 2.132-1.13 3.628-1.154 1.075-.017 2.073.078 2.991.283-.034-.78-.177-1.396-.426-1.846-.357-.642-.983-.976-1.86-1.007-1.018-.035-1.86.272-2.274.56l-.428.323-1.19-1.727.373-.291c.727-.566 1.966-.963 3.494-.912 1.463.053 2.628.56 3.37 1.466.66.805 1.012 1.905 1.044 3.268.016.737-.012 1.388-.085 1.954a8.925 8.925 0 0 1 1.562.93c.964.69 1.681 1.57 2.132 2.602.775 1.78.772 4.58-1.533 6.838-1.913 1.874-4.334 2.753-7.621 2.772Zm-.35-9.088c-1.726.027-2.79.627-2.754 1.54.023.564.525 1.2 1.603 1.2.043 0 .087-.001.131-.004.972-.052 1.69-.428 2.134-1.118.343-.533.552-1.217.622-2.03a9.832 9.832 0 0 0-1.736.412Z" />
         </svg>
       ),
     },
@@ -140,10 +167,11 @@ const ShareButtons = ({ title, url }: ShareButtonsProps) => {
 
       <button
         onClick={handleCopyLink}
-        className="flex items-center justify-center w-10 h-10 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors text-foreground"
+        disabled={isShortening}
+        className="flex items-center justify-center w-10 h-10 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors text-foreground disabled:opacity-50"
         aria-label="リンクをコピー"
       >
-        {copied ? <Check className="w-5 h-5" /> : <Link2 className="w-5 h-5" />}
+        {isShortening ? <Loader2 className="w-5 h-5 animate-spin" /> : copied ? <Check className="w-5 h-5" /> : <Link2 className="w-5 h-5" />}
       </button>
     </div>
   );

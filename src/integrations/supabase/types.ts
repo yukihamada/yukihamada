@@ -364,6 +364,45 @@ export type Database = {
         }
         Relationships: []
       }
+      music_tracks: {
+        Row: {
+          artist: string
+          artwork: string | null
+          color: string | null
+          created_at: string
+          display_order: number
+          id: string
+          is_active: boolean
+          src: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          artist?: string
+          artwork?: string | null
+          color?: string | null
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          src: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          artist?: string
+          artwork?: string | null
+          color?: string | null
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          src?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

@@ -10,7 +10,7 @@ import {
   LayoutDashboard, FileText, MessageCircle, Users, MessageSquare,
   BarChart3, Eye, Heart, TrendingUp, RefreshCw, ArrowLeft,
   Plus, Edit, Trash2, Save, X, ChevronRight, User, Bot,
-  Shield, LogOut, Settings, Columns2, PanelLeft
+  Shield, LogOut, Settings, Columns2, PanelLeft, Music, Calendar, Clock
 } from 'lucide-react';
 import MarkdownPreview from '@/components/MarkdownPreview';
 import { Button } from '@/components/ui/button';
@@ -101,6 +101,19 @@ interface ForumComment {
   created_at: string;
 }
 
+interface MusicTrack {
+  id: string;
+  title: string;
+  artist: string;
+  src: string;
+  artwork: string | null;
+  color: string;
+  display_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 const emptyPost: Omit<BlogPostDB, 'id' | 'created_at' | 'updated_at'> = {
   slug: '',
   featured: false,
@@ -147,6 +160,11 @@ const AdminDashboard = () => {
   const [topics, setTopics] = useState<ForumTopic[]>([]);
   const [comments, setComments] = useState<ForumComment[]>([]);
 
+  // Music state
+  const [musicTracks, setMusicTracks] = useState<MusicTrack[]>([]);
+  const [editingTrack, setEditingTrack] = useState<Partial<MusicTrack> | null>(null);
+  const [isCreatingTrack, setIsCreatingTrack] = useState(false);
+
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       navigate('/auth');
@@ -178,7 +196,8 @@ const AdminDashboard = () => {
         fetchBlogAnalytics(),
         fetchUsers(),
         fetchTopics(),
-        fetchComments()
+        fetchComments(),
+        fetchMusicTracks()
       ]);
     }
     setIsLoading(false);
@@ -413,6 +432,79 @@ const AdminDashboard = () => {
     }
   };
 
+  // Music functions
+  const fetchMusicTracks = async () => {
+    const { data, error } = await supabase
+      .from('music_tracks')
+      .select('*')
+      .order('display_order', { ascending: true });
+
+    if (!error && data) {
+      setMusicTracks(data);
+    }
+  };
+
+  const handleSaveTrack = async () => {
+    if (!editingTrack) return;
+
+    const trackData = {
+      title: editingTrack.title,
+      artist: editingTrack.artist || 'Yuki Hamada',
+      src: editingTrack.src,
+      artwork: editingTrack.artwork || null,
+      color: editingTrack.color || '#3b82f6',
+      display_order: editingTrack.display_order || 0,
+      is_active: editingTrack.is_active ?? true,
+    };
+
+    if (isCreatingTrack) {
+      const { error } = await supabase.from('music_tracks').insert([trackData]);
+      if (error) {
+        toast.error('トラックの作成に失敗しました');
+      } else {
+        toast.success('トラックを作成しました');
+        setEditingTrack(null);
+        setIsCreatingTrack(false);
+        fetchMusicTracks();
+      }
+    } else {
+      const { error } = await supabase
+        .from('music_tracks')
+        .update(trackData)
+        .eq('id', editingTrack.id);
+      if (error) {
+        toast.error('トラックの更新に失敗しました');
+      } else {
+        toast.success('トラックを更新しました');
+        setEditingTrack(null);
+        fetchMusicTracks();
+      }
+    }
+  };
+
+  const deleteTrack = async (id: string) => {
+    if (!confirm('このトラックを削除しますか？')) return;
+    const { error } = await supabase.from('music_tracks').delete().eq('id', id);
+    if (error) {
+      toast.error('トラックの削除に失敗しました');
+    } else {
+      toast.success('トラックを削除しました');
+      fetchMusicTracks();
+    }
+  };
+
+  const toggleTrackActive = async (id: string, isActive: boolean) => {
+    const { error } = await supabase
+      .from('music_tracks')
+      .update({ is_active: !isActive })
+      .eq('id', id);
+    if (error) {
+      toast.error('更新に失敗しました');
+    } else {
+      fetchMusicTracks();
+    }
+  };
+
   const getPostTitle = (slug: string) => {
     const post = blogPosts.find(p => p.slug === slug);
     return post?.ja.title || slug;
@@ -477,7 +569,7 @@ const AdminDashboard = () => {
           </motion.div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full max-w-2xl grid-cols-5 bg-muted/50">
+            <TabsList className="grid w-full max-w-3xl grid-cols-6 bg-muted/50">
               <TabsTrigger value="overview" className="flex items-center gap-2">
                 <BarChart3 className="w-4 h-4" />
                 <span className="hidden sm:inline">概要</span>
@@ -494,6 +586,10 @@ const AdminDashboard = () => {
                 <Users className="w-4 h-4" />
                 <span className="hidden sm:inline">ユーザー</span>
               </TabsTrigger>
+              <TabsTrigger value="music" className="flex items-center gap-2">
+                <Music className="w-4 h-4" />
+                <span className="hidden sm:inline">音楽</span>
+              </TabsTrigger>
               <TabsTrigger value="forum" className="flex items-center gap-2">
                 <MessageSquare className="w-4 h-4" />
                 <span className="hidden sm:inline">フォーラム</span>
@@ -502,6 +598,7 @@ const AdminDashboard = () => {
 
             {/* Overview Tab */}
             <TabsContent value="overview" className="space-y-6">
+              {/* Summary Stats Row 1 */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card>
                   <CardContent className="pt-6">
@@ -549,6 +646,84 @@ const AdminDashboard = () => {
                 </Card>
               </div>
 
+              {/* Summary Stats Row 2 */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                        <FileText className="w-5 h-5 text-amber-500" />
+                      </div>
+                      <span className="text-sm text-muted-foreground">記事数</span>
+                    </div>
+                    <p className="text-3xl font-bold">{posts.length}</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-10 h-10 rounded-lg bg-cyan-500/10 flex items-center justify-center">
+                        <Music className="w-5 h-5 text-cyan-500" />
+                      </div>
+                      <span className="text-sm text-muted-foreground">楽曲数</span>
+                    </div>
+                    <p className="text-3xl font-bold">{musicTracks.filter(t => t.is_active).length}</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-10 h-10 rounded-lg bg-indigo-500/10 flex items-center justify-center">
+                        <Shield className="w-5 h-5 text-indigo-500" />
+                      </div>
+                      <span className="text-sm text-muted-foreground">登録ユーザー</span>
+                    </div>
+                    <p className="text-3xl font-bold">{users.length}</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-10 h-10 rounded-lg bg-rose-500/10 flex items-center justify-center">
+                        <MessageSquare className="w-5 h-5 text-rose-500" />
+                      </div>
+                      <span className="text-sm text-muted-foreground">トピック</span>
+                    </div>
+                    <p className="text-3xl font-bold">{topics.length}</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Quick Actions */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Clock className="w-5 h-5" />
+                    クイックアクション
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-3">
+                    <Button onClick={() => { setActiveTab('blog'); setIsCreating(true); setEditingPost(emptyPost); }}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      新規記事作成
+                    </Button>
+                    <Button variant="outline" onClick={() => setActiveTab('chat')}>
+                      <MessageCircle className="w-4 h-4 mr-2" />
+                      チャット管理
+                    </Button>
+                    <Button variant="outline" onClick={() => setActiveTab('music')}>
+                      <Music className="w-4 h-4 mr-2" />
+                      音楽管理
+                    </Button>
+                    <Button variant="outline" onClick={() => setActiveTab('users')}>
+                      <Users className="w-4 h-4 mr-2" />
+                      ユーザー管理
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
               {/* Analytics Table */}
               <Card>
                 <CardHeader>
@@ -584,6 +759,52 @@ const AdminDashboard = () => {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Recent Activity */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Calendar className="w-4 h-4" />
+                      最近の記事
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {posts.slice(0, 5).map((post) => (
+                      <div key={post.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium truncate">{post.title_ja}</p>
+                          <p className="text-xs text-muted-foreground">{post.date_ja}</p>
+                        </div>
+                        <Badge variant={post.status === 'published' ? 'default' : 'secondary'}>
+                          {post.status === 'published' ? '公開' : '下書き'}
+                        </Badge>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <MessageCircle className="w-4 h-4" />
+                      最近の会話
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {conversations.slice(0, 5).map((conv) => (
+                      <div key={conv.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm truncate">{conv.last_message || '(メッセージなし)'}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {format(new Date(conv.updated_at), 'MM/dd HH:mm', { locale: ja })}
+                          </p>
+                        </div>
+                        <Badge variant="outline">{conv.message_count}件</Badge>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              </div>
             </TabsContent>
 
             {/* Blog Tab */}
@@ -1100,6 +1321,168 @@ const AdminDashboard = () => {
                   </div>
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            {/* Music Tab */}
+            <TabsContent value="music" className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-semibold">音楽管理</h2>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={fetchMusicTracks}>
+                    <RefreshCw className="mr-2 h-4 w-4" />更新
+                  </Button>
+                  <Button onClick={() => { setIsCreatingTrack(true); setEditingTrack({ title: '', artist: 'Yuki Hamada', src: '', color: '#3b82f6', is_active: true, display_order: musicTracks.length + 1 }); }}>
+                    <Plus className="mr-2 h-4 w-4" />新規追加
+                  </Button>
+                </div>
+              </div>
+
+              {editingTrack ? (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      {isCreatingTrack ? '新規トラック追加' : 'トラック編集'}
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => { setEditingTrack(null); setIsCreatingTrack(false); }}>
+                          <X className="mr-2 h-4 w-4" />キャンセル
+                        </Button>
+                        <Button size="sm" onClick={handleSaveTrack}>
+                          <Save className="mr-2 h-4 w-4" />保存
+                        </Button>
+                      </div>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label>タイトル</Label>
+                        <Input
+                          value={editingTrack.title || ''}
+                          onChange={(e) => setEditingTrack({ ...editingTrack, title: e.target.value })}
+                          placeholder="曲のタイトル"
+                        />
+                      </div>
+                      <div>
+                        <Label>アーティスト</Label>
+                        <Input
+                          value={editingTrack.artist || ''}
+                          onChange={(e) => setEditingTrack({ ...editingTrack, artist: e.target.value })}
+                          placeholder="Yuki Hamada"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label>音声ファイルパス</Label>
+                        <Input
+                          value={editingTrack.src || ''}
+                          onChange={(e) => setEditingTrack({ ...editingTrack, src: e.target.value })}
+                          placeholder="/audio/track-name.mp3"
+                        />
+                      </div>
+                      <div>
+                        <Label>アートワークパス</Label>
+                        <Input
+                          value={editingTrack.artwork || ''}
+                          onChange={(e) => setEditingTrack({ ...editingTrack, artwork: e.target.value })}
+                          placeholder="/assets/album-name.jpg"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <Label>テーマカラー</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            type="color"
+                            value={editingTrack.color || '#3b82f6'}
+                            onChange={(e) => setEditingTrack({ ...editingTrack, color: e.target.value })}
+                            className="w-12 h-10 p-1"
+                          />
+                          <Input
+                            value={editingTrack.color || '#3b82f6'}
+                            onChange={(e) => setEditingTrack({ ...editingTrack, color: e.target.value })}
+                            placeholder="#3b82f6"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Label>表示順</Label>
+                        <Input
+                          type="number"
+                          value={editingTrack.display_order || 0}
+                          onChange={(e) => setEditingTrack({ ...editingTrack, display_order: parseInt(e.target.value) || 0 })}
+                        />
+                      </div>
+                      <div className="flex items-end">
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            checked={editingTrack.is_active ?? true}
+                            onCheckedChange={(checked) => setEditingTrack({ ...editingTrack, is_active: checked })}
+                          />
+                          <Label>有効</Label>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card>
+                  <CardContent className="pt-4">
+                    <div className="space-y-2">
+                      {musicTracks.length === 0 ? (
+                        <p className="text-center text-muted-foreground py-8">トラックがありません</p>
+                      ) : (
+                        musicTracks.map((track) => (
+                          <div
+                            key={track.id}
+                            className={`flex items-center gap-4 p-3 rounded-lg border ${!track.is_active ? 'opacity-50' : ''}`}
+                          >
+                            <div
+                              className="w-12 h-12 rounded-lg flex items-center justify-center"
+                              style={{ backgroundColor: `${track.color}20` }}
+                            >
+                              <Music className="w-6 h-6" style={{ color: track.color }} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <p className="font-medium truncate">{track.title}</p>
+                                {!track.is_active && <Badge variant="secondary">無効</Badge>}
+                              </div>
+                              <p className="text-sm text-muted-foreground">{track.artist}</p>
+                              <p className="text-xs text-muted-foreground truncate">{track.src}</p>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => toggleTrackActive(track.id, track.is_active)}
+                              >
+                                {track.is_active ? '無効化' : '有効化'}
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => { setEditingTrack(track); setIsCreatingTrack(false); }}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => deleteTrack(track.id)}
+                                className="text-destructive"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
 
             {/* Forum Tab */}

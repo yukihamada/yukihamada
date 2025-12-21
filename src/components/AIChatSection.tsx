@@ -596,9 +596,11 @@ export const AIChatSection = () => {
           "Content-Type": "application/json",
           apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          "x-visitor-id": visitorIdRef.current,
         },
         body: JSON.stringify({ 
-          messages: userMessages.map(m => ({ role: m.role, content: m.content }))
+          messages: userMessages.map(m => ({ role: m.role, content: m.content })),
+          conversationId: convId
         }),
       });
     } catch (networkError) {
@@ -1094,6 +1096,29 @@ export const AIChatSection = () => {
                       />
                     </div>
                   </div>
+                </motion.div>
+              )}
+              
+              {/* Registration prompt after 4+ user messages */}
+              {messages.filter(m => m.role === 'user').length >= 4 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-3 mx-2 mb-2 bg-gradient-to-r from-primary/10 to-accent/10 rounded-xl border border-primary/20"
+                >
+                  <p className="text-sm text-foreground mb-2">
+                    {language === 'ja' 
+                      ? '🌟 会話を楽しんでいただけているようで嬉しいです！会員登録すると、コミュニティへの参加やより多くの機能が使えるようになります。'
+                      : '🌟 Glad you\'re enjoying our chat! Register to join the community and unlock more features.'}
+                  </p>
+                  <Button
+                    size="sm"
+                    variant="default"
+                    className="w-full"
+                    onClick={() => window.location.href = '/auth'}
+                  >
+                    {language === 'ja' ? '無料で会員登録' : 'Sign Up Free'}
+                  </Button>
                 </motion.div>
               )}
               

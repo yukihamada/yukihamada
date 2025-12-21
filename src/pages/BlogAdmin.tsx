@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Plus, Edit, Trash2, Save, X, Eye, ArrowLeft, Clock, CalendarClock, FileText } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, X, Eye, ArrowLeft, Clock, CalendarClock, FileText, ImageIcon, Loader2, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -73,6 +73,50 @@ const BlogAdmin = () => {
   const [editingPost, setEditingPost] = useState<Partial<BlogPostDB> | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [activeTab, setActiveTab] = useState<'all' | 'published' | 'scheduled'>('all');
+  const [generatingOgp, setGeneratingOgp] = useState<string | null>(null);
+
+  // Generate OGP image for a post
+  const handleGenerateOgp = async (post: BlogPostDB) => {
+    if (generatingOgp) return;
+    
+    setGeneratingOgp(post.id);
+    toast.info('OGP画像を生成中...');
+
+    try {
+      const response = await supabase.functions.invoke('generate-ogp', {
+        body: {
+          postSlug: post.slug,
+          title: post.title_ja,
+          category: post.category_ja,
+          language: 'ja'
+        }
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message || 'OGP生成に失敗しました');
+      }
+
+      const data = response.data;
+      
+      if (data.success) {
+        toast.success('OGP画像を生成しました！');
+        // Update local state with new image URL
+        setPosts(prev => prev.map(p => 
+          p.id === post.id ? { ...p, image: data.imageUrl } : p
+        ));
+        if (editingPost?.id === post.id) {
+          setEditingPost({ ...editingPost, image: data.imageUrl });
+        }
+      } else {
+        throw new Error(data.error || 'OGP生成に失敗しました');
+      }
+    } catch (error) {
+      console.error('OGP generation error:', error);
+      toast.error(error instanceof Error ? error.message : 'OGP生成に失敗しました');
+    } finally {
+      setGeneratingOgp(null);
+    }
+  };
 
   // Filter posts based on active tab
   const filteredPosts = posts.filter(post => {
@@ -242,14 +286,22 @@ const BlogAdmin = () => {
             animate={{ opacity: 1, y: 0 }}
             className="mb-8"
           >
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/blog')}
-              className="mb-4"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              ブログに戻る
-            </Button>
+            <div className="flex gap-2 mb-4">
+              <Button
+                variant="ghost"
+                onClick={() => navigate('/blog')}
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                ブログに戻る
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => navigate('/admin')}
+              >
+                <BarChart3 className="mr-2 h-4 w-4" />
+                ダッシュボード
+              </Button>
+            </div>
             <div className="flex items-center justify-between">
               <h1 className="text-3xl font-bold">ブログ管理</h1>
               <Button
@@ -329,13 +381,48 @@ const BlogAdmin = () => {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="image">画像パス</Label>
-                        <Input
-                          id="image"
-                          value={editingPost.image || ''}
-                          onChange={(e) => setEditingPost({ ...editingPost, image: e.target.value })}
-                          placeholder="/images/blog-example.jpg"
-                        />
+                        <Label htmlFor="image">OGP画像</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            id="image"
+                            value={editingPost.image || ''}
+                            onChange={(e) => setEditingPost({ ...editingPost, image: e.target.value })}
+                            placeholder="/images/blog-example.jpg"
+                            className="flex-1"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => editingPost.slug && editingPost.title_ja && handleGenerateOgp(editingPost as BlogPostDB)}
+                            disabled={generatingOgp === editingPost.id || !editingPost.slug || !editingPost.title_ja}
+                            className="whitespace-nowrap"
+                          >
+                            {generatingOgp === editingPost.id ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                生成中...
+                              </>
+                            ) : (
+                              <>
+                                <ImageIcon className="mr-2 h-4 w-4" />
+                                AI生成
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                        {editingPost.image && (
+                          <div className="mt-2">
+                            <img 
+                              src={editingPost.image} 
+                              alt="OGP Preview" 
+                              className="max-h-32 rounded border"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = 'none';
+                              }}
+                            />
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -520,11 +607,25 @@ const BlogAdmin = () => {
                                 : post.date_ja}
                             </p>
                           </div>
-                          <div className="flex gap-2">
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleGenerateOgp(post)}
+                              disabled={generatingOgp === post.id}
+                              title="OGP画像を生成"
+                            >
+                              {generatingOgp === post.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <ImageIcon className="h-4 w-4" />
+                              )}
+                            </Button>
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => navigate(`/blog/${post.slug}`)}
+                              title="プレビュー"
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
@@ -532,6 +633,7 @@ const BlogAdmin = () => {
                               variant="ghost"
                               size="sm"
                               onClick={() => setEditingPost(post)}
+                              title="編集"
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
@@ -540,6 +642,7 @@ const BlogAdmin = () => {
                               size="sm"
                               onClick={() => handleDelete(post.id)}
                               className="text-destructive hover:text-destructive"
+                              title="削除"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>

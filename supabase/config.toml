@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.check-scheduled-posts]
 verify_jwt = false
+
+[functions.generate-ogp]
+verify_jwt = false

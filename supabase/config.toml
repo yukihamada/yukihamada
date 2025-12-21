@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.blog-tts]
 verify_jwt = false
+
+[functions.check-scheduled-posts]
+verify_jwt = false

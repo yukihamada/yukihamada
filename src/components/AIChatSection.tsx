@@ -208,8 +208,11 @@ export const AIChatSection = () => {
   const greetingInProgressRef = useRef(false);
   const visitorIdRef = useRef<string>(getVisitorId());
 
-  // Detect when user scrolls to bottom of page
+  // Detect when user scrolls to bottom of page (only on blog list page)
   useEffect(() => {
+    // Only enable scroll detection on blog list page
+    if (pageContext !== 'blog') return;
+    
     const handleScroll = () => {
       const scrollTop = window.scrollY;
       const windowHeight = window.innerHeight;
@@ -225,7 +228,7 @@ export const AIChatSection = () => {
     
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [isOpen, hasShownBottomPrompt, openChat]);
+  }, [isOpen, hasShownBottomPrompt, openChat, pageContext]);
 
   // Get time-based greeting prefix
   const getTimeGreeting = (lang: 'en' | 'ja') => {

@@ -1,6 +1,12 @@
 import { useState } from 'react';
-import { Check, Link2 } from 'lucide-react';
+import { Check, Link2, MoreHorizontal } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface ShareButtonsProps {
   title: string;
@@ -21,7 +27,7 @@ const ShareButtons = ({ title, url }: ShareButtonsProps) => {
     }
   };
 
-  const shareLinks = [
+  const primaryLinks = [
     {
       name: 'X',
       url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`,
@@ -49,11 +55,14 @@ const ShareButtons = ({ title, url }: ShareButtonsProps) => {
         </svg>
       ),
     },
+  ];
+
+  const moreLinks = [
     {
       name: 'Bluesky',
       url: `https://bsky.app/intent/compose?text=${encodeURIComponent(`${title} ${url}`)}`,
       icon: (
-        <svg className="w-5 h-5" viewBox="0 0 600 530" fill="currentColor">
+        <svg className="w-4 h-4" viewBox="0 0 600 530" fill="currentColor">
           <path d="M135.72 44.03C202.216 93.951 273.74 195.401 300 249.49c26.262-54.089 97.782-155.539 164.28-205.46C512.26 8.009 590-19.862 590 68.825c0 17.712-10.155 148.79-16.111 170.07-20.703 73.984-96.144 92.854-163.25 81.433 117.3 19.964 147.14 86.092 82.697 152.22-122.39 125.59-175.91-31.511-189.63-71.766-2.514-7.38-3.69-10.832-3.708-7.896-.017-2.936-1.193.516-3.707 7.896-13.714 40.255-67.233 197.36-189.63 71.766-64.444-66.128-34.605-132.256 82.697-152.22-67.108 11.421-142.55-7.449-163.25-81.433C20.15 217.615 10 86.537 10 68.825c0-88.687 77.742-60.816 125.72-24.795z" />
         </svg>
       ),
@@ -62,7 +71,7 @@ const ShareButtons = ({ title, url }: ShareButtonsProps) => {
       name: 'Mastodon',
       url: `https://toot.kytta.dev/?text=${encodeURIComponent(`${title} ${url}`)}`,
       icon: (
-        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
           <path d="M21.43 7.35c-.33-2.43-2.44-4.35-5.07-4.65C15.28 2.56 13.7 2.5 12 2.5s-3.28.06-4.36.2c-2.63.3-4.74 2.22-5.07 4.65-.12.9-.18 1.92-.18 3.03 0 3.57 1.26 6.37 3.94 7.32 1.12.4 2.07.48 2.83.33.83-.17 1.43-.55 1.78-1.03l.38-.55h.1c.02.19.05.39.1.6.2.86.7 1.53 1.55 1.98.8.42 1.86.55 3.07.4 1.94-.25 3.32-1.03 4.1-2.4.64-1.12.84-2.64.84-4.67 0-1.11-.06-2.13-.18-3.03Zm-4.24 6.77h-1.8v-4.4c0-.93-.39-1.4-1.17-1.4-.86 0-1.29.56-1.29 1.67v2.41h-1.78V9.99c0-1.11-.43-1.67-1.29-1.67-.78 0-1.17.47-1.17 1.4v4.4H6.9V9.6c0-.93.24-1.67.72-2.22.5-.56 1.15-.85 1.95-.85.93 0 1.63.36 2.1 1.08l.33.56.33-.56c.47-.72 1.17-1.08 2.1-1.08.8 0 1.45.29 1.95.85.48.55.72 1.29.72 2.22v4.52Z" />
         </svg>
       ),
@@ -71,7 +80,7 @@ const ShareButtons = ({ title, url }: ShareButtonsProps) => {
       name: 'Misskey',
       url: `https://misskey-hub.net/share/?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`,
       icon: (
-        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-6h2v6zm4 0h-2v-6h2v6zm0-8h-6V7h6v2z" />
         </svg>
       ),
@@ -80,7 +89,7 @@ const ShareButtons = ({ title, url }: ShareButtonsProps) => {
       name: 'Friendica',
       url: `https://friendica.me/share?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`,
       icon: (
-        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" />
         </svg>
       ),
@@ -90,7 +99,7 @@ const ShareButtons = ({ title, url }: ShareButtonsProps) => {
   return (
     <div className="flex items-center gap-3 flex-wrap">
       <span className="text-sm text-muted-foreground">シェア:</span>
-      {shareLinks.map((link) => (
+      {primaryLinks.map((link) => (
         <a
           key={link.name}
           href={link.url}
@@ -102,6 +111,33 @@ const ShareButtons = ({ title, url }: ShareButtonsProps) => {
           {link.icon}
         </a>
       ))}
+      
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            className="flex items-center justify-center w-10 h-10 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors text-foreground"
+            aria-label="その他の共有オプション"
+          >
+            <MoreHorizontal className="w-5 h-5" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="bg-background border border-border z-50">
+          {moreLinks.map((link) => (
+            <DropdownMenuItem key={link.name} asChild>
+              <a
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 cursor-pointer"
+              >
+                {link.icon}
+                <span>{link.name}</span>
+              </a>
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
       <button
         onClick={handleCopyLink}
         className="flex items-center justify-center w-10 h-10 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors text-foreground"

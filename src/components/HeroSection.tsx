@@ -231,6 +231,7 @@ const HeroSection = ({ onMusicPlay }: HeroSectionProps) => {
                 src={rolesWithTypos[currentRole].bgImage} 
                 alt=""
                 className="w-full h-full object-cover blur-sm"
+                fetchPriority={currentRole === 0 ? "high" : "auto"}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background" />
             </motion.div>

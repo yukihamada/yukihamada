@@ -19,6 +19,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useChat } from '@/contexts/ChatContext';
 import { calculateReadingTime, formatReadingTime } from '@/lib/readingTime';
 import ShareCounts from '@/components/ShareCounts';
+import TableOfContents from '@/components/TableOfContents';
 import jiuflowHero from '@/assets/jiuflow-hero.png';
 import jiuflowLesson from '@/assets/jiuflow-lesson.png';
 import yukiProfile from '@/assets/yuki-profile.jpg';
@@ -223,6 +224,9 @@ const BlogPost = () => {
               category={content.category}
               content={content.content}
             />
+
+            {/* Table of Contents */}
+            <TableOfContents content={content.content} />
           </motion.header>
 
           <motion.div
@@ -238,8 +242,22 @@ const BlogPost = () => {
                 dangerouslySetInnerHTML={{ 
                   __html: DOMPurify.sanitize(
                     content.content
-                      .replace(/^## (.+)$/gm, '<h2 class="text-2xl md:text-3xl font-bold mt-12 mb-6 text-foreground border-l-4 border-primary pl-4">$1</h2>')
-                      .replace(/^### (.+)$/gm, '<h3 class="text-xl md:text-2xl font-semibold mt-8 mb-4 text-foreground">$1</h3>')
+                      .replace(/^## (.+)$/gm, (_, heading) => {
+                        const id = heading.replace(/\*\*/g, '').trim()
+                          .toLowerCase()
+                          .replace(/[^\w\s\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/g, '')
+                          .replace(/\s+/g, '-')
+                          .slice(0, 50);
+                        return `<h2 id="${id}" class="text-2xl md:text-3xl font-bold mt-12 mb-6 text-foreground border-l-4 border-primary pl-4">${heading}</h2>`;
+                      })
+                      .replace(/^### (.+)$/gm, (_, heading) => {
+                        const id = heading.replace(/\*\*/g, '').trim()
+                          .toLowerCase()
+                          .replace(/[^\w\s\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/g, '')
+                          .replace(/\s+/g, '-')
+                          .slice(0, 50);
+                        return `<h3 id="${id}" class="text-xl md:text-2xl font-semibold mt-8 mb-4 text-foreground">${heading}</h3>`;
+                      })
                       .replace(/\|(.+)\|/g, (match) => {
                         const cells = match.split('|').filter(c => c.trim());
                         if (cells.every(c => c.trim().match(/^[-:]+$/))) {

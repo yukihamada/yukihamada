@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Sparkles, User, Users, ChevronDown, Briefcase, TrendingUp, BookOpen, Heart } from 'lucide-react';
+import { Menu, X, Sparkles, User, Users, ChevronDown, Briefcase, TrendingUp, BookOpen, Heart, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
@@ -18,7 +18,7 @@ const Navigation = () => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { t, language } = useLanguage();
   const { isPlaying, analyzerData } = useMusicPlayer();
-  const { isAuthenticated, profile } = useAuth();
+  const { isAuthenticated, profile, isAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -319,6 +319,17 @@ const Navigation = () => {
               
               {isAuthenticated ? (
                 <>
+                  {isAdmin && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="rounded-full h-8 px-3 text-muted-foreground hover:text-foreground"
+                      onClick={() => navigate('/chat-admin')}
+                    >
+                      <Settings className="h-4 w-4" />
+                      <span className="ml-1.5 hidden lg:inline">{language === 'ja' ? '管理' : 'Admin'}</span>
+                    </Button>
+                  )}
                   <Button
                     variant="ghost"
                     size="icon"
@@ -460,14 +471,26 @@ const Navigation = () => {
                 </Button>
                 
                 {isAuthenticated ? (
-                  <Button
-                    variant="outline"
-                    className="w-full h-12 text-base rounded-xl"
-                    onClick={() => { setIsMobileMenuOpen(false); navigate('/profile'); }}
-                  >
-                    <User className="h-5 w-5 mr-2" />
-                    {profile?.display_name || (language === 'ja' ? 'プロフィール' : 'Profile')}
-                  </Button>
+                  <>
+                    {isAdmin && (
+                      <Button
+                        variant="outline"
+                        className="w-full h-12 text-base rounded-xl"
+                        onClick={() => { setIsMobileMenuOpen(false); navigate('/chat-admin'); }}
+                      >
+                        <Settings className="h-5 w-5 mr-2" />
+                        {language === 'ja' ? '管理画面' : 'Admin'}
+                      </Button>
+                    )}
+                    <Button
+                      variant="outline"
+                      className="w-full h-12 text-base rounded-xl"
+                      onClick={() => { setIsMobileMenuOpen(false); navigate('/profile'); }}
+                    >
+                      <User className="h-5 w-5 mr-2" />
+                      {profile?.display_name || (language === 'ja' ? 'プロフィール' : 'Profile')}
+                    </Button>
+                  </>
                 ) : (
                   <Button
                     variant="outline"

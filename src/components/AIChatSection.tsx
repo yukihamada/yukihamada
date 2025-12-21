@@ -189,7 +189,7 @@ const VoiceInputButton = ({ onTranscript, isDisabled, texts }: VoiceInputProps) 
 
 export const AIChatSection = () => {
   const { toast } = useToast();
-  const { isOpen, toggleChat, openChat, pageContext, currentBlogTitle, pendingMessage, setPendingMessage } = useChat();
+  const { isOpen, toggleChat, openChat, closeChat, pageContext, currentBlogTitle, pendingMessage, setPendingMessage } = useChat();
   const { language } = useLanguage();
   const [messages, setMessages] = useState<Message[]>(() => loadMessagesFromStorage());
   const [input, setInput] = useState('');
@@ -203,10 +203,32 @@ export const AIChatSection = () => {
   const [hasShownBottomPrompt, setHasShownBottomPrompt] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
   const dragControls = useDragControls();
   const constraintsRef = useRef<HTMLDivElement>(null);
   const greetingInProgressRef = useRef(false);
   const visitorIdRef = useRef<string>(getVisitorId());
+
+  // Close chat when clicking outside
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    const handleClickOutside = (e: MouseEvent) => {
+      if (chatContainerRef.current && !chatContainerRef.current.contains(e.target as Node)) {
+        closeChat();
+      }
+    };
+    
+    // Delay adding listener to prevent immediate close
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside);
+    }, 100);
+    
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen, closeChat]);
 
   // Detect when user scrolls to bottom of page (only on blog pages)
   useEffect(() => {
@@ -825,6 +847,7 @@ export const AIChatSection = () => {
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            ref={chatContainerRef}
             drag={window.innerWidth >= 768 && !isResizing.current}
             dragControls={dragControls}
             dragConstraints={constraintsRef}

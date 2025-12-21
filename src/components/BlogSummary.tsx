@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+import { Sparkles, ChevronDown, ChevronUp, Loader2, RefreshCw, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { toast } from 'sonner';
+import BlogReadAloud from './BlogReadAloud';
 
 interface BlogSummaryProps {
   postSlug: string;
@@ -16,15 +18,20 @@ const BlogSummary = ({ postSlug, title, category, content }: BlogSummaryProps) =
   const [isExpanded, setIsExpanded] = useState(false);
   const [summary, setSummary] = useState<{ ja: string; en: string } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRegenerating, setIsRegenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchSummary = async () => {
-    if (summary) {
+  const fetchSummary = async (forceRegenerate = false) => {
+    if (summary && !forceRegenerate) {
       setIsExpanded(!isExpanded);
       return;
     }
 
-    setIsLoading(true);
+    if (forceRegenerate) {
+      setIsRegenerating(true);
+    } else {
+      setIsLoading(true);
+    }
     setError(null);
 
     try {
@@ -42,7 +49,8 @@ const BlogSummary = ({ postSlug, title, category, content }: BlogSummaryProps) =
             postSlug,
             title,
             category,
-            content: content.substring(0, 3000), // Limit content length
+            content: content.substring(0, 3000),
+            forceRegenerate,
           }),
         }
       );
@@ -57,38 +65,47 @@ const BlogSummary = ({ postSlug, title, category, content }: BlogSummaryProps) =
         en: data.summary_en,
       });
       setIsExpanded(true);
+      
+      if (forceRegenerate) {
+        toast.success(language === 'ja' ? '要約を再生成しました' : 'Summary regenerated');
+      }
     } catch (err) {
       console.error('Error fetching summary:', err);
       setError(language === 'ja' ? '要約の取得に失敗しました' : 'Failed to fetch summary');
     } finally {
       setIsLoading(false);
+      setIsRegenerating(false);
     }
   };
 
   return (
     <div className="w-full mb-8">
-      <Button
-        onClick={fetchSummary}
-        variant="outline"
-        className="w-full flex items-center justify-center gap-2 py-6 border-primary/30 hover:border-primary hover:bg-primary/5"
-        disabled={isLoading}
-      >
-        {isLoading ? (
-          <Loader2 className="h-5 w-5 animate-spin" />
-        ) : (
-          <Sparkles className="h-5 w-5 text-primary" />
-        )}
-        <span className="font-medium">
-          {isLoading
-            ? (language === 'ja' ? 'AIが要約中...' : 'AI is summarizing...')
-            : summary
-              ? (language === 'ja' ? 'AI要約を表示/非表示' : 'Toggle AI Summary')
-              : (language === 'ja' ? 'AIで記事を要約する' : 'Summarize with AI')}
-        </span>
-        {summary && (
-          isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-        )}
-      </Button>
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        <Button
+          onClick={() => fetchSummary(false)}
+          variant="outline"
+          className="flex-1 flex items-center justify-center gap-2 py-6 border-primary/30 hover:border-primary hover:bg-primary/5"
+          disabled={isLoading || isRegenerating}
+        >
+          {isLoading ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : (
+            <Sparkles className="h-5 w-5 text-primary" />
+          )}
+          <span className="font-medium">
+            {isLoading
+              ? (language === 'ja' ? 'AIが要約中...' : 'AI is summarizing...')
+              : summary
+                ? (language === 'ja' ? 'AI要約を表示/非表示' : 'Toggle AI Summary')
+                : (language === 'ja' ? 'AIで記事を要約する' : 'Summarize with AI')}
+          </span>
+          {summary && (
+            isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+          )}
+        </Button>
+        
+        <BlogReadAloud content={content} title={title} />
+      </div>
 
       <AnimatePresence>
         {isExpanded && summary && (
@@ -100,11 +117,29 @@ const BlogSummary = ({ postSlug, title, category, content }: BlogSummaryProps) =
             className="overflow-hidden"
           >
             <div className="mt-4 p-6 rounded-xl bg-gradient-to-br from-primary/5 to-accent/5 border border-primary/20">
-              <div className="flex items-center gap-2 mb-3">
-                <Sparkles className="h-4 w-4 text-primary" />
-                <span className="text-sm font-medium text-primary">
-                  {language === 'ja' ? 'AI要約' : 'AI Summary'}
-                </span>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium text-primary">
+                    {language === 'ja' ? 'AI要約' : 'AI Summary'}
+                  </span>
+                </div>
+                <Button
+                  onClick={() => fetchSummary(true)}
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground hover:text-foreground"
+                  disabled={isRegenerating}
+                >
+                  {isRegenerating ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <RefreshCw className="h-4 w-4" />
+                  )}
+                  <span className="ml-1 text-xs">
+                    {language === 'ja' ? '再生成' : 'Regenerate'}
+                  </span>
+                </Button>
               </div>
               <p className="text-foreground leading-relaxed">
                 {language === 'ja' ? summary.ja : summary.en}

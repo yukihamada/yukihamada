@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.blog-ai]
 verify_jwt = false
+
+[functions.blog-tts]
+verify_jwt = false

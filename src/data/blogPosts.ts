@@ -41,6 +41,8 @@ export const blogPosts: BlogPost[] = [
 
 今回は、AI時代に**「沈んでいく仕事（レッドオーシャン）」と「価値が爆上がりする仕事（ブルーオーシャン）」**を明確に定義し、僕たちが今すぐ取るべき行動指針をシェアします。
 
+[image:ai-jobs-crossroads]
+
 ---
 
 ## 1. 「6割の仕事」が沈みゆく船になる
@@ -81,9 +83,11 @@ export const blogPosts: BlogPost[] = [
 
 **未来：** AIが普及すればするほど、人間による「プレミアム」な価値がつき、需要が爆発します。
 
+[image:ai-jobs-transition]
+
 ---
 
-## 2. なぜ「柔術家」が最強の職業なのか？
+## 2. なぜ「柔術家」が最強の職業なのか?
 
 昨日の記事でも少し触れましたが、僕はこれからの時代、**「柔術家」のような生き方こそが最強のキャリアモデル**になると本気で考えています。
 
@@ -106,6 +110,8 @@ AIはメタバースの中で計算はできても、実際にマットの上で
 これは柔術に限りません。
 
 **「ハイテク武装した配管工」「人生の物語を聞ける介護士」「偏愛を語れるスナックのママ」**。これらはすべて、AIには真似できない「体温」を持った仕事です。
+
+[image:ai-jobs-bjj]
 
 ---
 
@@ -188,6 +194,8 @@ Today, I'll give my concrete answer to that question.
 
 This time, I'll clearly define **"sinking jobs (Red Ocean)" and "skyrocketing value jobs (Blue Ocean)"** in the AI era, and share action guidelines we should take immediately.
 
+[image:ai-jobs-crossroads]
+
 ---
 
 ## 1. "60% of Jobs" Will Become Sinking Ships
@@ -228,6 +236,8 @@ Comparing Japan's current labor distribution with AI's evolution speed, the foll
 
 **Future:** As AI spreads, "premium" value from humans will explode in demand.
 
+[image:ai-jobs-transition]
+
 ---
 
 ## 2. Why "Jiu-Jitsu Practitioner" Is the Ultimate Career
@@ -253,6 +263,8 @@ Techniques and philosophy passed from master to student through direct physical 
 This isn't limited to Jiu-Jitsu.
 
 **"High-tech armed plumbers," "caregivers who can listen to life stories," "bar mamas who can speak of passionate obsessions."** These are all jobs with "warmth" that AI cannot imitate.
+
+[image:ai-jobs-bjj]
 
 ---
 

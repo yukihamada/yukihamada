@@ -28,6 +28,9 @@ const blogImages: Record<string, string> = {
   'bjj-group1': '/images/blog-bjj-group1.jpg',
   'bjj-victory': '/images/blog-bjj-victory.jpg',
   'sinic-diagram': '/images/sinic-theory-diagram.svg',
+  'ai-jobs-transition': '/images/blog-ai-jobs-transition.jpg',
+  'ai-jobs-bjj': '/images/blog-ai-jobs-bjj.jpg',
+  'ai-jobs-crossroads': '/images/blog-ai-jobs-crossroads.jpg',
 };
 
 const trackMapping: Record<string, number> = {

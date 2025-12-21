@@ -105,6 +105,12 @@ interface ForumComment {
   created_at: string;
 }
 
+interface LyricLine {
+  start: number;
+  end: number;
+  text: string;
+}
+
 interface MusicTrack {
   id: string;
   title: string;
@@ -114,6 +120,7 @@ interface MusicTrack {
   color: string;
   display_order: number;
   is_active: boolean;
+  lyrics: LyricLine[] | null;
   created_at: string;
   updated_at: string;
 }
@@ -373,6 +380,8 @@ const AdminDashboard = () => {
   // Music state
   const [musicTracks, setMusicTracks] = useState<MusicTrack[]>([]);
   const [editingTrack, setEditingTrack] = useState<Partial<MusicTrack> | null>(null);
+  const [isTranscribingLyrics, setIsTranscribingLyrics] = useState(false);
+  const [lyricsText, setLyricsText] = useState(''); // For editing lyrics as text
 
   // AI Prompts state
   const [aiPrompts, setAiPrompts] = useState<AIPrompt[]>([]);
@@ -659,12 +668,49 @@ const AdminDashboard = () => {
       .order('display_order', { ascending: true });
 
     if (!error && data) {
-      setMusicTracks(data);
+      const mappedTracks: MusicTrack[] = data.map((track) => ({
+        ...track,
+        lyrics: track.lyrics as unknown as LyricLine[] | null,
+      }));
+      setMusicTracks(mappedTracks);
     }
   };
 
   const handleSaveTrack = async () => {
     if (!editingTrack) return;
+
+    // Parse lyrics text to LyricLine array
+    let parsedLyrics: LyricLine[] | null = null;
+    if (lyricsText.trim()) {
+      try {
+        // Try parsing as JSON first
+        const parsed = JSON.parse(lyricsText);
+        if (Array.isArray(parsed)) {
+          parsedLyrics = parsed;
+        }
+      } catch {
+        // Parse as simple text format: "0:00 歌詞テキスト" per line
+        const lines = lyricsText.trim().split('\n');
+        parsedLyrics = lines.map((line, index) => {
+          const match = line.match(/^(\d+):(\d+)\s+(.+)$/);
+          if (match) {
+            const minutes = parseInt(match[1]);
+            const seconds = parseInt(match[2]);
+            const text = match[3];
+            return {
+              start: minutes * 60 + seconds,
+              end: minutes * 60 + seconds + 5,
+              text,
+            };
+          }
+          return {
+            start: index * 5,
+            end: (index + 1) * 5,
+            text: line,
+          };
+        });
+      }
+    }
 
     const trackData = {
       title: editingTrack.title,
@@ -674,6 +720,7 @@ const AdminDashboard = () => {
       color: editingTrack.color || '#3b82f6',
       display_order: editingTrack.display_order || 0,
       is_active: editingTrack.is_active ?? true,
+      lyrics: parsedLyrics,
     };
 
     if (isCreatingTrack) {
@@ -684,6 +731,7 @@ const AdminDashboard = () => {
         toast.success('トラックを作成しました');
         setEditingTrack(null);
         setIsCreatingTrack(false);
+        setLyricsText('');
         fetchMusicTracks();
       }
     } else {
@@ -696,8 +744,79 @@ const AdminDashboard = () => {
       } else {
         toast.success('トラックを更新しました');
         setEditingTrack(null);
+        setLyricsText('');
         fetchMusicTracks();
       }
+    }
+  };
+
+  // Transcribe lyrics using AI
+  const transcribeLyricsForTrack = async (trackSrc: string) => {
+    setIsTranscribingLyrics(true);
+    try {
+      const audioResponse = await fetch(trackSrc);
+      const audioBlob = await audioResponse.blob();
+      
+      const formData = new FormData();
+      formData.append('audio', audioBlob, 'track.mp3');
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/transcribe-lyrics`,
+        {
+          method: 'POST',
+          headers: {
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to transcribe');
+      }
+
+      const data = await response.json();
+      
+      // Convert to LyricLine format
+      if (data.words && Array.isArray(data.words)) {
+        const lyrics: LyricLine[] = [];
+        let currentLine = { text: '', start: 0, end: 0 };
+        
+        data.words.forEach((word: { text: string; start: number; end: number }, index: number) => {
+          if (index === 0) {
+            currentLine = { text: word.text, start: word.start, end: word.end };
+          } else {
+            const gap = word.start - currentLine.end;
+            if (gap > 1 || /[。、！？.!?,]$/.test(currentLine.text)) {
+              lyrics.push(currentLine);
+              currentLine = { text: word.text, start: word.start, end: word.end };
+            } else {
+              currentLine.text += ' ' + word.text;
+              currentLine.end = word.end;
+            }
+          }
+        });
+        lyrics.push(currentLine);
+        
+        // Format as text
+        const formattedText = lyrics.map(line => {
+          const minutes = Math.floor(line.start / 60);
+          const seconds = Math.floor(line.start % 60);
+          return `${minutes}:${seconds.toString().padStart(2, '0')} ${line.text}`;
+        }).join('\n');
+        
+        setLyricsText(formattedText);
+        toast.success('歌詞を抽出しました');
+      } else if (data.text) {
+        setLyricsText(data.text);
+        toast.success('歌詞を抽出しました');
+      }
+    } catch (error) {
+      console.error('Transcription error:', error);
+      toast.error('歌詞の抽出に失敗しました');
+    } finally {
+      setIsTranscribingLyrics(false);
     }
   };
 
@@ -2080,6 +2199,44 @@ const AdminDashboard = () => {
                           <Label>有効</Label>
                         </div>
                       </div>
+                    </div>
+                    
+                    {/* Lyrics Section */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label>歌詞 (タイムスタンプ形式: 0:00 歌詞テキスト)</Label>
+                        {editingTrack.src && (
+                          <Button 
+                            type="button" 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => transcribeLyricsForTrack(editingTrack.src!)}
+                            disabled={isTranscribingLyrics}
+                          >
+                            {isTranscribingLyrics ? (
+                              <>
+                                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                                抽出中...
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="mr-2 h-4 w-4" />
+                                AIで歌詞を抽出
+                              </>
+                            )}
+                          </Button>
+                        )}
+                      </div>
+                      <Textarea
+                        value={lyricsText}
+                        onChange={(e) => setLyricsText(e.target.value)}
+                        placeholder="0:00 最初の歌詞&#10;0:15 次の歌詞&#10;..."
+                        rows={8}
+                        className="font-mono text-sm"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        各行を「分:秒 歌詞」形式で入力するか、AIで自動抽出できます
+                      </p>
                     </div>
                   </CardContent>
                 </Card>

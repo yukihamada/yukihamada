@@ -25,6 +25,12 @@ const artworkMap: Record<string, string> = {
   'album-musubinaosu.jpg': albumMusubinaosu,
 };
 
+interface LyricLine {
+  start: number;
+  end: number;
+  text: string;
+}
+
 interface Track {
   id: string;
   title: string;
@@ -32,11 +38,11 @@ interface Track {
   src: string;
   artwork: string;
   color: string;
-  lyrics?: string | null;
+  lyrics?: LyricLine[] | null;
 }
 
 // Store lyrics in memory
-const lyricsCache: Record<string, string> = {};
+const lyricsCache: Record<string, LyricLine[]> = {};
 
 type RepeatMode = 'off' | 'all' | 'one';
 
@@ -103,9 +109,11 @@ const MusicPlayer = () => {
   const [eqValues, setEqValues] = useState<number[]>([0, 0, 0, 0, 0, 0, 0, 0]);
   const [eqPreset, setEqPreset] = useState<string>('flat');
   const [showLyrics, setShowLyrics] = useState(false);
-  const [currentLyrics, setCurrentLyrics] = useState<string | null>(null);
+  const [currentLyrics, setCurrentLyrics] = useState<LyricLine[] | null>(null);
+  const [currentLyricIndex, setCurrentLyricIndex] = useState(-1);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [transcribeError, setTranscribeError] = useState<string | null>(null);
+  const lyricsContainerRef = useRef<HTMLDivElement>(null);
 
   // Fetch tracks from database
   useEffect(() => {
@@ -127,6 +135,7 @@ const MusicPlayer = () => {
             src: t.src,
             artwork: artworkMap[t.artwork || ''] || t.artwork || albumFreeToChange,
             color: t.color || '#3b82f6',
+            lyrics: t.lyrics as unknown as LyricLine[] | null,
           }));
           setTracks(mappedTracks);
           const randomIndex = Math.floor(Math.random() * mappedTracks.length);
@@ -425,26 +434,36 @@ const MusicPlayer = () => {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  // Transcribe lyrics using ElevenLabs
-  const transcribeLyrics = async () => {
+  // Load lyrics from track or transcribe
+  const loadOrTranscribeLyrics = async () => {
     if (tracks.length === 0) return;
-    const trackId = tracks[currentTrack].id;
+    const track = tracks[currentTrack];
+    const trackId = track.id;
     
+    // First check if track has saved lyrics
+    if (track.lyrics && track.lyrics.length > 0) {
+      setCurrentLyrics(track.lyrics);
+      setShowLyrics(true);
+      return;
+    }
+    
+    // Then check cache
     if (lyricsCache[trackId]) {
       setCurrentLyrics(lyricsCache[trackId]);
       setShowLyrics(true);
       return;
     }
 
+    // Otherwise transcribe
     setIsTranscribing(true);
     setTranscribeError(null);
 
     try {
-      const audioResponse = await fetch(tracks[currentTrack].src);
+      const audioResponse = await fetch(track.src);
       const audioBlob = await audioResponse.blob();
       
       const formData = new FormData();
-      formData.append('audio', audioBlob, `${tracks[currentTrack].title}.mp3`);
+      formData.append('audio', audioBlob, `${track.title}.mp3`);
 
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/transcribe-lyrics`,
@@ -463,11 +482,24 @@ const MusicPlayer = () => {
       }
 
       const data = await response.json();
-      const lyrics = data.text || 'No lyrics detected';
       
-      lyricsCache[trackId] = lyrics;
-      setCurrentLyrics(lyrics);
-      setShowLyrics(true);
+      // Convert ElevenLabs response to LyricLine format
+      const lyrics: LyricLine[] = data.words?.map((word: { text: string; start: number; end: number }) => ({
+        text: word.text,
+        start: word.start,
+        end: word.end,
+      })) || [];
+      
+      // Group words into lines (by sentence or time gap)
+      const groupedLyrics = groupWordsIntoLines(lyrics);
+      
+      if (groupedLyrics.length > 0) {
+        lyricsCache[trackId] = groupedLyrics;
+        setCurrentLyrics(groupedLyrics);
+        setShowLyrics(true);
+      } else {
+        setTranscribeError('歌詞が検出されませんでした');
+      }
     } catch (error) {
       console.error('Transcription error:', error);
       setTranscribeError('歌詞の抽出に失敗しました');
@@ -475,6 +507,56 @@ const MusicPlayer = () => {
       setIsTranscribing(false);
     }
   };
+
+  // Group words into lines based on time gaps
+  const groupWordsIntoLines = (words: LyricLine[]): LyricLine[] => {
+    if (words.length === 0) return [];
+    
+    const lines: LyricLine[] = [];
+    let currentLine = { text: words[0].text, start: words[0].start, end: words[0].end };
+    
+    for (let i = 1; i < words.length; i++) {
+      const word = words[i];
+      const gap = word.start - currentLine.end;
+      
+      // If gap is more than 1 second or text ends with punctuation, start new line
+      if (gap > 1 || /[。、！？.!?,]$/.test(currentLine.text)) {
+        lines.push(currentLine);
+        currentLine = { text: word.text, start: word.start, end: word.end };
+      } else {
+        currentLine.text += ' ' + word.text;
+        currentLine.end = word.end;
+      }
+    }
+    lines.push(currentLine);
+    
+    return lines;
+  };
+
+  // Update current lyric index based on playback time
+  useEffect(() => {
+    if (!currentLyrics || currentLyrics.length === 0) {
+      setCurrentLyricIndex(-1);
+      return;
+    }
+    
+    const index = currentLyrics.findIndex((line, i) => {
+      const nextLine = currentLyrics[i + 1];
+      return currentTime >= line.start && (nextLine ? currentTime < nextLine.start : currentTime <= line.end);
+    });
+    
+    setCurrentLyricIndex(index);
+  }, [currentTime, currentLyrics]);
+
+  // Auto-scroll to current lyric
+  useEffect(() => {
+    if (currentLyricIndex >= 0 && lyricsContainerRef.current) {
+      const activeElement = lyricsContainerRef.current.querySelector(`[data-lyric-index="${currentLyricIndex}"]`);
+      if (activeElement) {
+        activeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [currentLyricIndex]);
 
   // Loading state
   if (isLoading || tracks.length === 0) {
@@ -810,7 +892,7 @@ const MusicPlayer = () => {
                     <SlidersHorizontal className="h-4 w-4" />
                   </motion.button>
                   <motion.button
-                    onClick={transcribeLyrics}
+                    onClick={loadOrTranscribeLyrics}
                     disabled={isTranscribing}
                     className={`p-2 rounded-full transition-all ${showLyrics ? 'text-white' : 'text-muted-foreground hover:text-foreground hover:bg-white/10'}`}
                     style={showLyrics ? { backgroundColor: `${track.color}30` } : {}}
@@ -826,18 +908,18 @@ const MusicPlayer = () => {
                 </div>
               </div>
 
-              {/* Lyrics Display */}
+              {/* Lyrics Display with Timestamps */}
               <AnimatePresence>
-                {showLyrics && currentLyrics && (
+                {showLyrics && currentLyrics && currentLyrics.length > 0 && (
                   <motion.div
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden mb-4"
+                    className="overflow-hidden mb-4 px-5"
                   >
-                    <div className="p-3 rounded-xl bg-secondary/30 border border-border/50 max-h-32 overflow-y-auto">
+                    <div className="p-3 rounded-xl bg-secondary/30 border border-border/50">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-medium text-foreground">歌詞 (AI自動抽出)</span>
+                        <span className="text-xs font-medium text-foreground">歌詞</span>
                         <motion.button
                           onClick={() => setShowLyrics(false)}
                           className="p-1 rounded-full hover:bg-secondary"
@@ -847,9 +929,48 @@ const MusicPlayer = () => {
                           <X className="h-3 w-3 text-muted-foreground" />
                         </motion.button>
                       </div>
-                      <p className="text-xs text-muted-foreground whitespace-pre-wrap leading-relaxed">
-                        {currentLyrics}
-                      </p>
+                      <div 
+                        ref={lyricsContainerRef}
+                        className="max-h-40 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent"
+                      >
+                        <div className="space-y-1 py-2">
+                          {currentLyrics.map((line, index) => (
+                            <motion.div
+                              key={index}
+                              data-lyric-index={index}
+                              className={`px-2 py-1 rounded-lg transition-all duration-300 cursor-pointer ${
+                                index === currentLyricIndex 
+                                  ? 'bg-primary/20 scale-[1.02]' 
+                                  : 'hover:bg-secondary/50'
+                              }`}
+                              onClick={() => {
+                                if (audioRef.current) {
+                                  audioRef.current.currentTime = line.start;
+                                }
+                              }}
+                              animate={{
+                                opacity: index === currentLyricIndex ? 1 : 0.6,
+                              }}
+                            >
+                              <div className="flex items-start gap-2">
+                                <span className="text-[10px] text-muted-foreground font-mono min-w-[32px] pt-0.5">
+                                  {formatTime(line.start)}
+                                </span>
+                                <p 
+                                  className={`text-xs leading-relaxed flex-1 ${
+                                    index === currentLyricIndex 
+                                      ? 'text-foreground font-medium' 
+                                      : 'text-muted-foreground'
+                                  }`}
+                                  style={index === currentLyricIndex ? { color: track.color } : {}}
+                                >
+                                  {line.text}
+                                </p>
+                              </div>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   </motion.div>
                 )}

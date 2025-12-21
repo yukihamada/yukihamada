@@ -7,6 +7,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import { useAuth } from '@/hooks/useAuth';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -313,6 +314,7 @@ const Navigation = () => {
                 <span className="ml-1.5 hidden lg:inline">{language === 'ja' ? 'コミュニティ' : 'Community'}</span>
               </Button>
 
+              <ThemeToggle />
               <LanguageSwitcher />
               
               {isAuthenticated ? (
@@ -348,8 +350,8 @@ const Navigation = () => {
             </div>
           </div>
 
-          {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center gap-3">
+          <div className="md:hidden flex items-center gap-2">
+            <ThemeToggle />
             <LanguageSwitcher />
             <motion.button
               className="relative p-2.5 rounded-xl bg-secondary/50 text-foreground border border-border/30"

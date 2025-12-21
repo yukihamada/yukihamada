@@ -877,8 +877,12 @@ const AdminDashboard = () => {
   };
 
   const getPostTitle = (slug: string) => {
-    const post = blogPosts.find(p => p.slug === slug);
-    return post?.ja.title || slug;
+    // First check database posts
+    const dbPost = posts.find(p => p.slug === slug);
+    if (dbPost) return dbPost.title_ja;
+    // Fallback to static blog posts
+    const staticPost = blogPosts.find(p => p.slug === slug);
+    return staticPost?.ja.title || slug;
   };
 
   const totalViews = blogAnalytics.reduce((sum, a) => sum + a.view_count, 0);

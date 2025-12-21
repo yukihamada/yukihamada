@@ -11,7 +11,7 @@ import {
   BarChart3, Eye, Heart, TrendingUp, RefreshCw, ArrowLeft,
   Plus, Edit, Trash2, Save, X, ChevronRight, User, Bot,
   Shield, LogOut, Settings, Columns2, PanelLeft, Music, Calendar, Clock,
-  Globe, Sparkles, History, RotateCcw, Monitor, Smartphone, Tablet
+  Globe, Sparkles, History, RotateCcw, Monitor, Smartphone, Tablet, GitCompare
 } from 'lucide-react';
 import MarkdownPreview from '@/components/MarkdownPreview';
 import { Button } from '@/components/ui/button';
@@ -136,13 +136,68 @@ interface AIPromptVersion {
   created_by: string | null;
 }
 
-// Parse User Agent to get readable device/browser info
-const parseUserAgent = (ua: string | null): { device: string; browser: string; os: string; icon: 'monitor' | 'smartphone' | 'tablet' } => {
-  if (!ua) return { device: '不明', browser: '不明', os: '不明', icon: 'monitor' };
+// Parse User Agent to get readable device/browser info with bot detection
+const parseUserAgent = (ua: string | null): { 
+  device: string; 
+  browser: string; 
+  os: string; 
+  icon: 'monitor' | 'smartphone' | 'tablet' | 'bot';
+  isBot: boolean;
+  botName: string | null;
+  browserVersion: string | null;
+} => {
+  if (!ua) return { device: '不明', browser: '不明', os: '不明', icon: 'monitor', isBot: false, botName: null, browserVersion: null };
+  
+  // Bot detection patterns
+  const botPatterns: { pattern: RegExp; name: string }[] = [
+    { pattern: /Googlebot/i, name: 'Googlebot' },
+    { pattern: /bingbot/i, name: 'Bingbot' },
+    { pattern: /Slurp/i, name: 'Yahoo! Slurp' },
+    { pattern: /DuckDuckBot/i, name: 'DuckDuckBot' },
+    { pattern: /Baiduspider/i, name: 'Baidu Spider' },
+    { pattern: /YandexBot/i, name: 'Yandex Bot' },
+    { pattern: /facebookexternalhit/i, name: 'Facebook Bot' },
+    { pattern: /Twitterbot/i, name: 'Twitter Bot' },
+    { pattern: /LinkedInBot/i, name: 'LinkedIn Bot' },
+    { pattern: /Slackbot/i, name: 'Slack Bot' },
+    { pattern: /Discordbot/i, name: 'Discord Bot' },
+    { pattern: /WhatsApp/i, name: 'WhatsApp Bot' },
+    { pattern: /TelegramBot/i, name: 'Telegram Bot' },
+    { pattern: /ChatGPT/i, name: 'ChatGPT Bot' },
+    { pattern: /GPTBot/i, name: 'GPT Bot' },
+    { pattern: /ClaudeBot/i, name: 'Claude Bot' },
+    { pattern: /Applebot/i, name: 'Apple Bot' },
+    { pattern: /PetalBot/i, name: 'Petal Bot' },
+    { pattern: /SemrushBot/i, name: 'Semrush Bot' },
+    { pattern: /AhrefsBot/i, name: 'Ahrefs Bot' },
+    { pattern: /MJ12bot/i, name: 'Majestic Bot' },
+    { pattern: /DotBot/i, name: 'DotBot' },
+    { pattern: /Screaming Frog/i, name: 'Screaming Frog' },
+    { pattern: /HeadlessChrome/i, name: 'Headless Chrome' },
+    { pattern: /PhantomJS/i, name: 'PhantomJS' },
+    { pattern: /Puppeteer/i, name: 'Puppeteer' },
+    { pattern: /Selenium/i, name: 'Selenium' },
+    { pattern: /bot|crawler|spider|scraper/i, name: '不明なBot' },
+  ];
+
+  // Check for bots first
+  for (const { pattern, name } of botPatterns) {
+    if (pattern.test(ua)) {
+      return { 
+        device: 'Bot', 
+        browser: name, 
+        os: '-', 
+        icon: 'bot',
+        isBot: true,
+        botName: name,
+        browserVersion: null
+      };
+    }
+  }
   
   // Detect device type
   let device = 'PC';
-  let icon: 'monitor' | 'smartphone' | 'tablet' = 'monitor';
+  let icon: 'monitor' | 'smartphone' | 'tablet' | 'bot' = 'monitor';
   if (/iPad/i.test(ua)) {
     device = 'iPad';
     icon = 'tablet';
@@ -163,40 +218,110 @@ const parseUserAgent = (ua: string | null): { device: string; browser: string; o
     device = 'Linux PC';
   }
   
-  // Detect browser
+  // Detect browser with version
   let browser = '不明';
-  if (/Edg\//i.test(ua)) {
+  let browserVersion: string | null = null;
+  
+  const edgeMatch = ua.match(/Edg\/([\d.]+)/i);
+  const chromeMatch = ua.match(/Chrome\/([\d.]+)/i);
+  const firefoxMatch = ua.match(/Firefox\/([\d.]+)/i);
+  const safariMatch = ua.match(/Version\/([\d.]+).*Safari/i);
+  const operaMatch = ua.match(/(?:Opera|OPR)\/([\d.]+)/i);
+  
+  if (edgeMatch) {
     browser = 'Edge';
-  } else if (/Chrome/i.test(ua) && !/Chromium/i.test(ua)) {
-    browser = 'Chrome';
-  } else if (/Safari/i.test(ua) && !/Chrome/i.test(ua)) {
-    browser = 'Safari';
-  } else if (/Firefox/i.test(ua)) {
-    browser = 'Firefox';
-  } else if (/Opera|OPR/i.test(ua)) {
+    browserVersion = edgeMatch[1].split('.')[0];
+  } else if (operaMatch) {
     browser = 'Opera';
+    browserVersion = operaMatch[1].split('.')[0];
+  } else if (chromeMatch && !/Chromium/i.test(ua)) {
+    browser = 'Chrome';
+    browserVersion = chromeMatch[1].split('.')[0];
+  } else if (safariMatch) {
+    browser = 'Safari';
+    browserVersion = safariMatch[1].split('.')[0];
+  } else if (firefoxMatch) {
+    browser = 'Firefox';
+    browserVersion = firefoxMatch[1].split('.')[0];
   }
   
-  // Detect OS
+  // Detect OS with version
   let os = '不明';
   if (/Windows NT 10/i.test(ua)) {
     os = 'Windows 10/11';
+  } else if (/Windows NT 6\.3/i.test(ua)) {
+    os = 'Windows 8.1';
+  } else if (/Windows NT 6\.2/i.test(ua)) {
+    os = 'Windows 8';
+  } else if (/Windows NT 6\.1/i.test(ua)) {
+    os = 'Windows 7';
   } else if (/Windows/i.test(ua)) {
     os = 'Windows';
   } else if (/Mac OS X/i.test(ua)) {
     const match = ua.match(/Mac OS X ([\d_]+)/);
-    os = match ? `macOS ${match[1].replace(/_/g, '.')}` : 'macOS';
+    if (match) {
+      const version = match[1].replace(/_/g, '.').split('.').slice(0, 2).join('.');
+      os = `macOS ${version}`;
+    } else {
+      os = 'macOS';
+    }
   } else if (/Android ([\d.]+)/i.test(ua)) {
     const match = ua.match(/Android ([\d.]+)/i);
-    os = match ? `Android ${match[1]}` : 'Android';
+    os = match ? `Android ${match[1].split('.')[0]}` : 'Android';
   } else if (/iOS ([\d_]+)/i.test(ua) || /iPhone OS ([\d_]+)/i.test(ua)) {
     const match = ua.match(/(?:iOS|iPhone OS) ([\d_]+)/i);
-    os = match ? `iOS ${match[1].replace(/_/g, '.')}` : 'iOS';
+    if (match) {
+      const version = match[1].replace(/_/g, '.').split('.').slice(0, 2).join('.');
+      os = `iOS ${version}`;
+    } else {
+      os = 'iOS';
+    }
   } else if (/Linux/i.test(ua)) {
-    os = 'Linux';
+    if (/Ubuntu/i.test(ua)) {
+      os = 'Ubuntu';
+    } else if (/Fedora/i.test(ua)) {
+      os = 'Fedora';
+    } else {
+      os = 'Linux';
+    }
   }
   
-  return { device, browser, os, icon };
+  return { 
+    device, 
+    browser: browserVersion ? `${browser} ${browserVersion}` : browser, 
+    os, 
+    icon,
+    isBot: false,
+    botName: null,
+    browserVersion
+  };
+};
+
+// Simple diff function to highlight changes between two texts
+const getDiffLines = (oldText: string, newText: string): { type: 'same' | 'added' | 'removed'; text: string }[] => {
+  const oldLines = oldText.split('\n');
+  const newLines = newText.split('\n');
+  const result: { type: 'same' | 'added' | 'removed'; text: string }[] = [];
+  
+  const maxLen = Math.max(oldLines.length, newLines.length);
+  
+  for (let i = 0; i < maxLen; i++) {
+    const oldLine = oldLines[i];
+    const newLine = newLines[i];
+    
+    if (oldLine === undefined) {
+      result.push({ type: 'added', text: newLine });
+    } else if (newLine === undefined) {
+      result.push({ type: 'removed', text: oldLine });
+    } else if (oldLine === newLine) {
+      result.push({ type: 'same', text: newLine });
+    } else {
+      result.push({ type: 'removed', text: oldLine });
+      result.push({ type: 'added', text: newLine });
+    }
+  }
+  
+  return result;
 };
 
 const emptyPost: Omit<BlogPostDB, 'id' | 'created_at' | 'updated_at'> = {
@@ -256,6 +381,7 @@ const AdminDashboard = () => {
   const [isCreatingTrack, setIsCreatingTrack] = useState(false);
   const [promptVersions, setPromptVersions] = useState<AIPromptVersion[]>([]);
   const [showVersionHistory, setShowVersionHistory] = useState<string | null>(null);
+  const [comparingVersion, setComparingVersion] = useState<AIPromptVersion | null>(null);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -1453,18 +1579,26 @@ const AdminDashboard = () => {
                   <CardContent className="space-y-2">
                     {conversations.map((conv) => {
                       const uaInfo = parseUserAgent(conv.user_agent);
-                      const DeviceIcon = uaInfo.icon === 'smartphone' ? Smartphone : uaInfo.icon === 'tablet' ? Tablet : Monitor;
+                      const DeviceIcon = uaInfo.icon === 'bot' ? Bot : uaInfo.icon === 'smartphone' ? Smartphone : uaInfo.icon === 'tablet' ? Tablet : Monitor;
                       return (
                         <div
                           key={conv.id}
                           className={`p-3 rounded-lg border cursor-pointer transition-colors ${
                             selectedConversation === conv.id ? 'bg-primary/10 border-primary' : 'hover:bg-muted/50'
-                          }`}
+                          } ${uaInfo.isBot ? 'border-amber-500/50 bg-amber-500/5' : ''}`}
                           onClick={() => { setSelectedConversation(conv.id); fetchMessages(conv.id); }}
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm truncate">{conv.last_message || '(空)'}</p>
+                              <div className="flex items-center gap-2">
+                                <p className="text-sm truncate flex-1">{conv.last_message || '(空)'}</p>
+                                {uaInfo.isBot && (
+                                  <Badge variant="outline" className="text-amber-600 border-amber-500 text-xs shrink-0">
+                                    <Bot className="w-3 h-3 mr-1" />
+                                    Bot
+                                  </Badge>
+                                )}
+                              </div>
                               <p className="text-xs text-muted-foreground">
                                 {format(new Date(conv.updated_at), 'MM/dd HH:mm', { locale: ja })}
                                 ・{conv.message_count}件
@@ -1480,7 +1614,12 @@ const AdminDashboard = () => {
                               {conv.user_agent && (
                                 <div className="flex items-center gap-2 text-xs text-muted-foreground/70 mt-1">
                                   <DeviceIcon className="w-3 h-3" />
-                                  <span>{uaInfo.device} / {uaInfo.browser} / {uaInfo.os}</span>
+                                  <span>
+                                    {uaInfo.isBot 
+                                      ? uaInfo.botName 
+                                      : `${uaInfo.device} / ${uaInfo.browser} / ${uaInfo.os}`
+                                    }
+                                  </span>
                                 </div>
                               )}
                             </div>
@@ -1661,10 +1800,53 @@ const AdminDashboard = () => {
                             </div>
                             {showVersionHistory === prompt.id && (
                               <div className="mt-4 border-t pt-4">
-                                <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
-                                  <History className="w-4 h-4" />
-                                  バージョン履歴
-                                </h4>
+                                <div className="flex items-center justify-between mb-3">
+                                  <h4 className="text-sm font-medium flex items-center gap-2">
+                                    <History className="w-4 h-4" />
+                                    バージョン履歴
+                                  </h4>
+                                  {comparingVersion && (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => setComparingVersion(null)}
+                                    >
+                                      <X className="h-3 w-3 mr-1" />
+                                      差分を閉じる
+                                    </Button>
+                                  )}
+                                </div>
+                                
+                                {comparingVersion && (
+                                  <div className="mb-4 p-3 bg-muted/30 rounded-lg border">
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <GitCompare className="w-4 h-4" />
+                                      <span className="text-sm font-medium">
+                                        v{comparingVersion.version_number} → 現在
+                                      </span>
+                                    </div>
+                                    <div className="font-mono text-xs max-h-64 overflow-y-auto space-y-0.5">
+                                      {getDiffLines(comparingVersion.content, prompt.content).map((line, i) => (
+                                        <div
+                                          key={i}
+                                          className={`px-2 py-0.5 rounded ${
+                                            line.type === 'added' 
+                                              ? 'bg-green-500/20 text-green-700 dark:text-green-400' 
+                                              : line.type === 'removed' 
+                                                ? 'bg-red-500/20 text-red-700 dark:text-red-400' 
+                                                : 'text-muted-foreground'
+                                          }`}
+                                        >
+                                          <span className="mr-2 opacity-50">
+                                            {line.type === 'added' ? '+' : line.type === 'removed' ? '-' : ' '}
+                                          </span>
+                                          {line.text || ' '}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                                
                                 {promptVersions.length === 0 ? (
                                   <p className="text-sm text-muted-foreground">履歴がありません</p>
                                 ) : (
@@ -1672,14 +1854,27 @@ const AdminDashboard = () => {
                                     {promptVersions.map((version) => (
                                       <div
                                         key={version.id}
-                                        className="p-3 bg-muted/50 rounded-lg text-sm"
+                                        className={`p-3 rounded-lg text-sm ${
+                                          comparingVersion?.id === version.id 
+                                            ? 'bg-primary/10 border border-primary' 
+                                            : 'bg-muted/50'
+                                        }`}
                                       >
                                         <div className="flex items-center justify-between mb-2">
                                           <Badge variant="outline">v{version.version_number}</Badge>
-                                          <div className="flex items-center gap-2">
-                                            <span className="text-xs text-muted-foreground">
+                                          <div className="flex items-center gap-1">
+                                            <span className="text-xs text-muted-foreground mr-2">
                                               {format(new Date(version.created_at), 'yyyy/MM/dd HH:mm', { locale: ja })}
                                             </span>
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              onClick={() => setComparingVersion(comparingVersion?.id === version.id ? null : version)}
+                                              className="h-7"
+                                            >
+                                              <GitCompare className="h-3 w-3 mr-1" />
+                                              差分
+                                            </Button>
                                             <Button
                                               variant="ghost"
                                               size="sm"

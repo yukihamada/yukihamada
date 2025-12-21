@@ -11,7 +11,7 @@ import {
   BarChart3, Eye, Heart, TrendingUp, RefreshCw, ArrowLeft,
   Plus, Edit, Trash2, Save, X, ChevronRight, User, Bot,
   Shield, LogOut, Settings, Columns2, PanelLeft, Music, Calendar, Clock,
-  Globe, Sparkles
+  Globe, Sparkles, History, RotateCcw, Monitor, Smartphone, Tablet
 } from 'lucide-react';
 import MarkdownPreview from '@/components/MarkdownPreview';
 import { Button } from '@/components/ui/button';
@@ -127,6 +127,78 @@ interface AIPrompt {
   updated_at: string;
 }
 
+interface AIPromptVersion {
+  id: string;
+  prompt_id: string;
+  content: string;
+  version_number: number;
+  created_at: string;
+  created_by: string | null;
+}
+
+// Parse User Agent to get readable device/browser info
+const parseUserAgent = (ua: string | null): { device: string; browser: string; os: string; icon: 'monitor' | 'smartphone' | 'tablet' } => {
+  if (!ua) return { device: '不明', browser: '不明', os: '不明', icon: 'monitor' };
+  
+  // Detect device type
+  let device = 'PC';
+  let icon: 'monitor' | 'smartphone' | 'tablet' = 'monitor';
+  if (/iPad/i.test(ua)) {
+    device = 'iPad';
+    icon = 'tablet';
+  } else if (/iPhone/i.test(ua)) {
+    device = 'iPhone';
+    icon = 'smartphone';
+  } else if (/Android.*Mobile/i.test(ua)) {
+    device = 'Android Phone';
+    icon = 'smartphone';
+  } else if (/Android/i.test(ua)) {
+    device = 'Android Tablet';
+    icon = 'tablet';
+  } else if (/Macintosh/i.test(ua)) {
+    device = 'Mac';
+  } else if (/Windows/i.test(ua)) {
+    device = 'Windows PC';
+  } else if (/Linux/i.test(ua)) {
+    device = 'Linux PC';
+  }
+  
+  // Detect browser
+  let browser = '不明';
+  if (/Edg\//i.test(ua)) {
+    browser = 'Edge';
+  } else if (/Chrome/i.test(ua) && !/Chromium/i.test(ua)) {
+    browser = 'Chrome';
+  } else if (/Safari/i.test(ua) && !/Chrome/i.test(ua)) {
+    browser = 'Safari';
+  } else if (/Firefox/i.test(ua)) {
+    browser = 'Firefox';
+  } else if (/Opera|OPR/i.test(ua)) {
+    browser = 'Opera';
+  }
+  
+  // Detect OS
+  let os = '不明';
+  if (/Windows NT 10/i.test(ua)) {
+    os = 'Windows 10/11';
+  } else if (/Windows/i.test(ua)) {
+    os = 'Windows';
+  } else if (/Mac OS X/i.test(ua)) {
+    const match = ua.match(/Mac OS X ([\d_]+)/);
+    os = match ? `macOS ${match[1].replace(/_/g, '.')}` : 'macOS';
+  } else if (/Android ([\d.]+)/i.test(ua)) {
+    const match = ua.match(/Android ([\d.]+)/i);
+    os = match ? `Android ${match[1]}` : 'Android';
+  } else if (/iOS ([\d_]+)/i.test(ua) || /iPhone OS ([\d_]+)/i.test(ua)) {
+    const match = ua.match(/(?:iOS|iPhone OS) ([\d_]+)/i);
+    os = match ? `iOS ${match[1].replace(/_/g, '.')}` : 'iOS';
+  } else if (/Linux/i.test(ua)) {
+    os = 'Linux';
+  }
+  
+  return { device, browser, os, icon };
+};
+
 const emptyPost: Omit<BlogPostDB, 'id' | 'created_at' | 'updated_at'> = {
   slug: '',
   featured: false,
@@ -182,6 +254,8 @@ const AdminDashboard = () => {
   const [editingPrompt, setEditingPrompt] = useState<Partial<AIPrompt> | null>(null);
   const [isCreatingPrompt, setIsCreatingPrompt] = useState(false);
   const [isCreatingTrack, setIsCreatingTrack] = useState(false);
+  const [promptVersions, setPromptVersions] = useState<AIPromptVersion[]>([]);
+  const [showVersionHistory, setShowVersionHistory] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -556,6 +630,33 @@ const AdminDashboard = () => {
         fetchAiPrompts();
       }
     } else {
+      // Save current version before updating
+      const { data: currentPrompt } = await supabase
+        .from('ai_prompts')
+        .select('content')
+        .eq('id', editingPrompt.id)
+        .single();
+
+      if (currentPrompt && currentPrompt.content !== editingPrompt.content) {
+        // Get current max version number
+        const { data: versions } = await supabase
+          .from('ai_prompt_versions')
+          .select('version_number')
+          .eq('prompt_id', editingPrompt.id)
+          .order('version_number', { ascending: false })
+          .limit(1);
+
+        const nextVersion = (versions?.[0]?.version_number || 0) + 1;
+
+        // Save the old content as a version
+        await supabase.from('ai_prompt_versions').insert({
+          prompt_id: editingPrompt.id,
+          content: currentPrompt.content,
+          version_number: nextVersion,
+          created_by: user?.id
+        });
+      }
+
       const { error } = await supabase
         .from('ai_prompts')
         .update(promptData)
@@ -567,6 +668,62 @@ const AdminDashboard = () => {
         setEditingPrompt(null);
         fetchAiPrompts();
       }
+    }
+  };
+
+  const fetchPromptVersions = async (promptId: string) => {
+    const { data, error } = await supabase
+      .from('ai_prompt_versions')
+      .select('*')
+      .eq('prompt_id', promptId)
+      .order('version_number', { ascending: false });
+
+    if (!error && data) {
+      setPromptVersions(data);
+    }
+  };
+
+  const restorePromptVersion = async (version: AIPromptVersion) => {
+    if (!confirm(`バージョン ${version.version_number} に復元しますか？現在の内容は履歴に保存されます。`)) return;
+
+    // First save current content as a new version
+    const { data: currentPrompt } = await supabase
+      .from('ai_prompts')
+      .select('content')
+      .eq('id', version.prompt_id)
+      .single();
+
+    if (currentPrompt) {
+      const { data: versions } = await supabase
+        .from('ai_prompt_versions')
+        .select('version_number')
+        .eq('prompt_id', version.prompt_id)
+        .order('version_number', { ascending: false })
+        .limit(1);
+
+      const nextVersion = (versions?.[0]?.version_number || 0) + 1;
+
+      await supabase.from('ai_prompt_versions').insert({
+        prompt_id: version.prompt_id,
+        content: currentPrompt.content,
+        version_number: nextVersion,
+        created_by: user?.id
+      });
+    }
+
+    // Restore the old version
+    const { error } = await supabase
+      .from('ai_prompts')
+      .update({ content: version.content })
+      .eq('id', version.prompt_id);
+
+    if (error) {
+      toast.error('復元に失敗しました');
+    } else {
+      toast.success(`バージョン ${version.version_number} に復元しました`);
+      setShowVersionHistory(null);
+      fetchAiPrompts();
+      fetchPromptVersions(version.prompt_id);
     }
   };
 
@@ -1294,41 +1451,51 @@ const AdminDashboard = () => {
                     <CardTitle className="text-base">会話一覧</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-2">
-                    {conversations.map((conv) => (
-                      <div
-                        key={conv.id}
-                        className={`p-3 rounded-lg border cursor-pointer transition-colors ${
-                          selectedConversation === conv.id ? 'bg-primary/10 border-primary' : 'hover:bg-muted/50'
-                        }`}
-                        onClick={() => { setSelectedConversation(conv.id); fetchMessages(conv.id); }}
-                      >
-                        <div className="flex items-center justify-between">
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm truncate">{conv.last_message || '(空)'}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {format(new Date(conv.updated_at), 'MM/dd HH:mm', { locale: ja })}
-                            ・{conv.message_count}件
-                          </p>
-                          {(conv.hostname || conv.ip_address) && (
-                            <div className="flex items-center gap-1 text-xs text-muted-foreground/70">
-                              <Globe className="w-3 h-3" />
-                              <span className="truncate">
-                                {conv.hostname ? `${conv.hostname} (${conv.ip_address})` : conv.ip_address}
-                              </span>
+                    {conversations.map((conv) => {
+                      const uaInfo = parseUserAgent(conv.user_agent);
+                      const DeviceIcon = uaInfo.icon === 'smartphone' ? Smartphone : uaInfo.icon === 'tablet' ? Tablet : Monitor;
+                      return (
+                        <div
+                          key={conv.id}
+                          className={`p-3 rounded-lg border cursor-pointer transition-colors ${
+                            selectedConversation === conv.id ? 'bg-primary/10 border-primary' : 'hover:bg-muted/50'
+                          }`}
+                          onClick={() => { setSelectedConversation(conv.id); fetchMessages(conv.id); }}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm truncate">{conv.last_message || '(空)'}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {format(new Date(conv.updated_at), 'MM/dd HH:mm', { locale: ja })}
+                                ・{conv.message_count}件
+                              </p>
+                              {(conv.hostname || conv.ip_address) && (
+                                <div className="flex items-center gap-1 text-xs text-muted-foreground/70 mt-1">
+                                  <Globe className="w-3 h-3" />
+                                  <span className="truncate">
+                                    {conv.hostname ? `${conv.hostname} (${conv.ip_address})` : conv.ip_address}
+                                  </span>
+                                </div>
+                              )}
+                              {conv.user_agent && (
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground/70 mt-1">
+                                  <DeviceIcon className="w-3 h-3" />
+                                  <span>{uaInfo.device} / {uaInfo.browser} / {uaInfo.os}</span>
+                                </div>
+                              )}
                             </div>
-                          )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => { e.stopPropagation(); deleteConversation(conv.id); }}
+                              className="text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => { e.stopPropagation(); deleteConversation(conv.id); }}
-                            className="text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </CardContent>
                 </Card>
                 <Card className="max-h-[600px] overflow-y-auto">
@@ -1459,6 +1626,18 @@ const AdminDashboard = () => {
                                 <Button
                                   variant="ghost"
                                   size="sm"
+                                  onClick={() => { 
+                                    setShowVersionHistory(showVersionHistory === prompt.id ? null : prompt.id);
+                                    if (showVersionHistory !== prompt.id) {
+                                      fetchPromptVersions(prompt.id);
+                                    }
+                                  }}
+                                >
+                                  <History className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
                                   onClick={() => togglePromptActive(prompt.id, prompt.is_active)}
                                 >
                                   {prompt.is_active ? '無効化' : '有効化'}
@@ -1480,6 +1659,47 @@ const AdminDashboard = () => {
                                 </Button>
                               </div>
                             </div>
+                            {showVersionHistory === prompt.id && (
+                              <div className="mt-4 border-t pt-4">
+                                <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
+                                  <History className="w-4 h-4" />
+                                  バージョン履歴
+                                </h4>
+                                {promptVersions.length === 0 ? (
+                                  <p className="text-sm text-muted-foreground">履歴がありません</p>
+                                ) : (
+                                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                                    {promptVersions.map((version) => (
+                                      <div
+                                        key={version.id}
+                                        className="p-3 bg-muted/50 rounded-lg text-sm"
+                                      >
+                                        <div className="flex items-center justify-between mb-2">
+                                          <Badge variant="outline">v{version.version_number}</Badge>
+                                          <div className="flex items-center gap-2">
+                                            <span className="text-xs text-muted-foreground">
+                                              {format(new Date(version.created_at), 'yyyy/MM/dd HH:mm', { locale: ja })}
+                                            </span>
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              onClick={() => restorePromptVersion(version)}
+                                              className="h-7"
+                                            >
+                                              <RotateCcw className="h-3 w-3 mr-1" />
+                                              復元
+                                            </Button>
+                                          </div>
+                                        </div>
+                                        <p className="text-xs text-muted-foreground line-clamp-2 whitespace-pre-wrap">
+                                          {version.content.substring(0, 150)}...
+                                        </p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </div>
                         ))
                       )}

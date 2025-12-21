@@ -105,10 +105,8 @@ const Blog = () => {
             initial="hidden"
             animate="visible"
           >
-            {blogPosts.map((post, index) => {
+            {blogPosts.map((post) => {
               const content = post[language];
-              // Only show profile image on the first post
-              const showImage = index === 0 && post.image;
               return (
                 <Link key={post.slug} to={`/blog/${post.slug}`}>
                   <motion.article
@@ -121,7 +119,7 @@ const Blog = () => {
                     }}
                     transition={{ type: "spring", stiffness: 300 }}
                   >
-                    {showImage && post.image && (
+                    {post.image && (
                       <div className="aspect-video overflow-hidden">
                         <OptimizedImage
                           src={post.image}

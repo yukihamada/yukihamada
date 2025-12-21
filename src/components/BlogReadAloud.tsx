@@ -1,22 +1,41 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Volume2, Pause, Loader2, Square, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 interface BlogReadAloudProps {
   content: string;
   title: string;
+  postSlug: string;
 }
 
-const BlogReadAloud = ({ content, title }: BlogReadAloudProps) => {
+// Cache audio URLs by postSlug and language
+const audioCache = new Map<string, string>();
+
+const BlogReadAloud = ({ content, title, postSlug }: BlogReadAloudProps) => {
   const { language } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const audioUrlRef = useRef<string | null>(null);
+  const currentLanguageRef = useRef<string>(language);
+
+  // Cache key includes both slug and language
+  const getCacheKey = (lang: string) => `${postSlug}_${lang}`;
+
+  // Clean up audio when language changes
+  useEffect(() => {
+    if (currentLanguageRef.current !== language && audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+      setIsPlaying(false);
+      setIsPaused(false);
+    }
+    currentLanguageRef.current = language;
+  }, [language]);
 
   // Clean content for TTS (remove markdown, html, etc.)
   const cleanContent = (text: string): string => {
@@ -35,6 +54,33 @@ const BlogReadAloud = ({ content, title }: BlogReadAloudProps) => {
   };
 
   const generateAudio = async () => {
+    const cacheKey = getCacheKey(language);
+    
+    // Check cache first
+    if (audioCache.has(cacheKey)) {
+      const cachedUrl = audioCache.get(cacheKey)!;
+      const audio = new Audio(cachedUrl);
+      audioRef.current = audio;
+      
+      audio.onended = () => {
+        setIsPlaying(false);
+        setIsPaused(false);
+      };
+
+      audio.onerror = () => {
+        // Cache may be stale, remove it and try again
+        audioCache.delete(cacheKey);
+        toast.error(language === 'ja' ? '再生エラーが発生しました。再試行してください。' : 'Playback error. Please try again.');
+        setIsPlaying(false);
+        setIsPaused(false);
+      };
+
+      await audio.play();
+      setIsPlaying(true);
+      setIsPaused(false);
+      return;
+    }
+
     setIsLoading(true);
     
     try {
@@ -52,6 +98,7 @@ const BlogReadAloud = ({ content, title }: BlogReadAloudProps) => {
           body: JSON.stringify({
             text: textToRead,
             language,
+            postSlug,
           }),
         }
       );
@@ -62,7 +109,9 @@ const BlogReadAloud = ({ content, title }: BlogReadAloudProps) => {
 
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
-      audioUrlRef.current = audioUrl;
+      
+      // Store in cache
+      audioCache.set(cacheKey, audioUrl);
       
       const audio = new Audio(audioUrl);
       audioRef.current = audio;
@@ -91,13 +140,15 @@ const BlogReadAloud = ({ content, title }: BlogReadAloudProps) => {
   };
 
   const handlePlay = async () => {
-    if (audioRef.current && audioUrlRef.current) {
+    const cacheKey = getCacheKey(language);
+    
+    if (audioRef.current && audioCache.has(cacheKey)) {
       // Resume existing audio
       await audioRef.current.play();
       setIsPlaying(true);
       setIsPaused(false);
     } else {
-      // Generate new audio
+      // Generate new audio (will use cache if available)
       await generateAudio();
     }
   };
@@ -134,8 +185,7 @@ const BlogReadAloud = ({ content, title }: BlogReadAloudProps) => {
         <Button
           onClick={handlePlay}
           variant="outline"
-          size="sm"
-          className="flex items-center gap-2 border-primary/30 hover:border-primary hover:bg-primary/5"
+          className="flex items-center gap-2 py-6 px-6 border-primary/30 hover:border-primary hover:bg-primary/5"
           disabled={isLoading}
         >
           {isLoading ? (
@@ -143,7 +193,7 @@ const BlogReadAloud = ({ content, title }: BlogReadAloudProps) => {
           ) : (
             <Volume2 className="h-4 w-4 text-primary" />
           )}
-          <span className="text-sm">
+          <span className="text-sm font-medium">
             {isLoading 
               ? (language === 'ja' ? '音声生成中...' : 'Generating...') 
               : (language === 'ja' ? '記事を読み上げる' : 'Read Aloud')}
@@ -157,7 +207,7 @@ const BlogReadAloud = ({ content, title }: BlogReadAloudProps) => {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30"
+            className="flex items-center gap-2 px-4 py-3 rounded-full bg-primary/10 border border-primary/30"
           >
             {isPlaying ? (
               <>

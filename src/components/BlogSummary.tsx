@@ -79,32 +79,34 @@ const BlogSummary = ({ postSlug, title, category, content }: BlogSummaryProps) =
   };
 
   return (
-    <div className="w-full mb-8">
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-        <Button
-          onClick={() => fetchSummary(false)}
-          variant="outline"
-          className="flex-1 flex items-center justify-center gap-2 py-6 border-primary/30 hover:border-primary hover:bg-primary/5"
-          disabled={isLoading || isRegenerating}
-        >
-          {isLoading ? (
-            <Loader2 className="h-5 w-5 animate-spin" />
-          ) : (
-            <Sparkles className="h-5 w-5 text-primary" />
-          )}
-          <span className="font-medium">
-            {isLoading
-              ? (language === 'ja' ? 'AIが要約中...' : 'AI is summarizing...')
-              : summary
-                ? (language === 'ja' ? 'AI要約を表示/非表示' : 'Toggle AI Summary')
-                : (language === 'ja' ? 'AIで記事を要約する' : 'Summarize with AI')}
-          </span>
-          {summary && (
-            isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-          )}
-        </Button>
-        
-        <BlogReadAloud content={content} title={title} />
+    <div className="w-full my-8">
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <Button
+            onClick={() => fetchSummary(false)}
+            variant="outline"
+            className="flex-1 flex items-center justify-center gap-2 py-6 border-primary/30 hover:border-primary hover:bg-primary/5"
+            disabled={isLoading || isRegenerating}
+          >
+            {isLoading ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <Sparkles className="h-5 w-5 text-primary" />
+            )}
+            <span className="font-medium">
+              {isLoading
+                ? (language === 'ja' ? 'AIが要約中...' : 'AI is summarizing...')
+                : summary
+                  ? (language === 'ja' ? 'AI要約を表示/非表示' : 'Toggle AI Summary')
+                  : (language === 'ja' ? 'AIで記事を要約する' : 'Summarize with AI')}
+            </span>
+            {summary && (
+              isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+            )}
+          </Button>
+          
+          <BlogReadAloud content={content} title={title} postSlug={postSlug} />
+        </div>
       </div>
 
       <AnimatePresence>

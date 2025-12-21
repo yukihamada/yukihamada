@@ -159,6 +159,14 @@ AIはメタバースの中で計算はできても、実際にマットの上で
 
 ---
 
+## 🎵 今日の一曲：Free to Change
+
+変わることを恐れないで。この曲は、まさに今日のテーマにぴったりです。
+
+[play:free-to-change]
+
+---
+
 ## P.S.
 
 「自分の今の仕事がどのゾーンかわからない」「具体的にどうシフトすればいい？」という相談があれば、X（旧Twitter）やこの記事のコメントで教えてください。
@@ -309,6 +317,14 @@ There's no need to be afraid.
 **First, close your PC, go out to town, go to the dojo, talk to someone.**
 
 That's where the "seeds of income" for the next era must be falling.
+
+---
+
+## 🎵 Today's Song: Free to Change
+
+Don't be afraid to change. This song is perfect for today's theme.
+
+[play:free-to-change]
 
 ---
 

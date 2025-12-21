@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,18 +12,49 @@ serve(async (req) => {
   }
 
   try {
-    const { text, language } = await req.json();
+    const { text, language, postSlug } = await req.json();
     
     const ELEVENLABS_API_KEY = Deno.env.get("ELEVENLABS_API_KEY");
     if (!ELEVENLABS_API_KEY) {
       throw new Error("ELEVENLABS_API_KEY is not configured");
     }
 
-    // Use appropriate voice based on language
-    // Roger for English, a Japanese-capable voice for Japanese
-    const voiceId = language === 'ja' ? 'pFZP5JQG7iQjIQuC4Bku' : 'CwhRBWXzGAHq8TQ4Fs17'; // Lily for Japanese, Roger for English
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    console.log(`Generating TTS for language: ${language}, text length: ${text.length}`);
+    // Create cache file path
+    const cacheFileName = `${postSlug}_${language}.mp3`;
+    
+    // Check if cached audio exists in storage
+    console.log(`Checking cache for: ${cacheFileName}`);
+    const { data: existingFile } = await supabase.storage
+      .from('blog-tts-cache')
+      .list('', { search: cacheFileName });
+    
+    if (existingFile && existingFile.length > 0) {
+      // Return cached audio URL
+      const { data: publicUrl } = supabase.storage
+        .from('blog-tts-cache')
+        .getPublicUrl(cacheFileName);
+      
+      console.log(`Cache hit! Returning cached audio: ${publicUrl.publicUrl}`);
+      
+      return new Response(
+        JSON.stringify({ 
+          cached: true, 
+          audioUrl: publicUrl.publicUrl 
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    console.log(`Cache miss. Generating TTS for language: ${language}, text length: ${text.length}`);
+
+    // Use appropriate voice based on language
+    const voiceId = language === 'ja' ? 'pFZP5JQG7iQjIQuC4Bku' : 'CwhRBWXzGAHq8TQ4Fs17'; // Lily for Japanese, Roger for English
 
     const response = await fetch(
       `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
@@ -53,13 +85,38 @@ serve(async (req) => {
     }
 
     const audioBuffer = await response.arrayBuffer();
+    const audioUint8 = new Uint8Array(audioBuffer);
+    
+    // Upload to Supabase Storage for caching
+    console.log(`Uploading audio to storage: ${cacheFileName}`);
+    const { error: uploadError } = await supabase.storage
+      .from('blog-tts-cache')
+      .upload(cacheFileName, audioUint8, {
+        contentType: 'audio/mpeg',
+        upsert: true,
+      });
 
-    return new Response(audioBuffer, {
-      headers: {
-        ...corsHeaders,
-        "Content-Type": "audio/mpeg",
-      },
-    });
+    if (uploadError) {
+      console.error('Failed to cache audio:', uploadError);
+      // Still return the audio even if caching fails
+    } else {
+      console.log('Audio cached successfully');
+    }
+
+    // Get the public URL
+    const { data: publicUrl } = supabase.storage
+      .from('blog-tts-cache')
+      .getPublicUrl(cacheFileName);
+
+    return new Response(
+      JSON.stringify({ 
+        cached: false, 
+        audioUrl: publicUrl.publicUrl 
+      }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
 
   } catch (error) {
     console.error('Error in blog-tts function:', error);

@@ -4,16 +4,12 @@ import { Volume2, Pause, Loader2, Square, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
 
 interface BlogReadAloudProps {
   content: string;
   title: string;
   postSlug: string;
 }
-
-// Cache audio URLs by postSlug and language
-const audioCache = new Map<string, string>();
 
 const BlogReadAloud = ({ content, title, postSlug }: BlogReadAloudProps) => {
   const { language } = useLanguage();
@@ -22,9 +18,6 @@ const BlogReadAloud = ({ content, title, postSlug }: BlogReadAloudProps) => {
   const [isPaused, setIsPaused] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const currentLanguageRef = useRef<string>(language);
-
-  // Cache key includes both slug and language
-  const getCacheKey = (lang: string) => `${postSlug}_${lang}`;
 
   // Clean up audio when language changes
   useEffect(() => {
@@ -54,33 +47,6 @@ const BlogReadAloud = ({ content, title, postSlug }: BlogReadAloudProps) => {
   };
 
   const generateAudio = async () => {
-    const cacheKey = getCacheKey(language);
-    
-    // Check cache first
-    if (audioCache.has(cacheKey)) {
-      const cachedUrl = audioCache.get(cacheKey)!;
-      const audio = new Audio(cachedUrl);
-      audioRef.current = audio;
-      
-      audio.onended = () => {
-        setIsPlaying(false);
-        setIsPaused(false);
-      };
-
-      audio.onerror = () => {
-        // Cache may be stale, remove it and try again
-        audioCache.delete(cacheKey);
-        toast.error(language === 'ja' ? '再生エラーが発生しました。再試行してください。' : 'Playback error. Please try again.');
-        setIsPlaying(false);
-        setIsPaused(false);
-      };
-
-      await audio.play();
-      setIsPlaying(true);
-      setIsPaused(false);
-      return;
-    }
-
     setIsLoading(true);
     
     try {
@@ -107,13 +73,14 @@ const BlogReadAloud = ({ content, title, postSlug }: BlogReadAloudProps) => {
         throw new Error('Failed to generate audio');
       }
 
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
+      const data = await response.json();
       
-      // Store in cache
-      audioCache.set(cacheKey, audioUrl);
-      
-      const audio = new Audio(audioUrl);
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      // Use the audio URL from storage
+      const audio = new Audio(data.audioUrl);
       audioRef.current = audio;
       
       audio.onended = () => {
@@ -131,6 +98,12 @@ const BlogReadAloud = ({ content, title, postSlug }: BlogReadAloudProps) => {
       setIsPlaying(true);
       setIsPaused(false);
       
+      if (data.cached) {
+        console.log('Playing cached audio');
+      } else {
+        console.log('Playing freshly generated audio (now cached)');
+      }
+      
     } catch (err) {
       console.error('Error generating audio:', err);
       toast.error(language === 'ja' ? '音声生成に失敗しました' : 'Failed to generate audio');
@@ -140,15 +113,13 @@ const BlogReadAloud = ({ content, title, postSlug }: BlogReadAloudProps) => {
   };
 
   const handlePlay = async () => {
-    const cacheKey = getCacheKey(language);
-    
-    if (audioRef.current && audioCache.has(cacheKey)) {
+    if (audioRef.current && !audioRef.current.ended) {
       // Resume existing audio
       await audioRef.current.play();
       setIsPlaying(true);
       setIsPaused(false);
     } else {
-      // Generate new audio (will use cache if available)
+      // Generate/fetch audio
       await generateAudio();
     }
   };
@@ -180,20 +151,20 @@ const BlogReadAloud = ({ content, title, postSlug }: BlogReadAloudProps) => {
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 flex-1">
       {!isPlaying && !isPaused && (
         <Button
           onClick={handlePlay}
           variant="outline"
-          className="flex items-center gap-2 py-6 px-6 border-primary/30 hover:border-primary hover:bg-primary/5"
+          className="flex-1 flex items-center justify-center gap-2 py-6 border-primary/30 hover:border-primary hover:bg-primary/5"
           disabled={isLoading}
         >
           {isLoading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <Loader2 className="h-5 w-5 animate-spin" />
           ) : (
-            <Volume2 className="h-4 w-4 text-primary" />
+            <Volume2 className="h-5 w-5 text-primary" />
           )}
-          <span className="text-sm font-medium">
+          <span className="font-medium">
             {isLoading 
               ? (language === 'ja' ? '音声生成中...' : 'Generating...') 
               : (language === 'ja' ? '記事を読み上げる' : 'Read Aloud')}
@@ -207,7 +178,7 @@ const BlogReadAloud = ({ content, title, postSlug }: BlogReadAloudProps) => {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="flex items-center gap-2 px-4 py-3 rounded-full bg-primary/10 border border-primary/30"
+            className="flex-1 flex items-center justify-center gap-3 px-6 py-4 rounded-xl bg-primary/10 border border-primary/30"
           >
             {isPlaying ? (
               <>
@@ -229,6 +200,9 @@ const BlogReadAloud = ({ content, title, postSlug }: BlogReadAloudProps) => {
                     />
                   ))}
                 </motion.div>
+                <span className="text-sm font-medium text-primary">
+                  {language === 'ja' ? '再生中...' : 'Playing...'}
+                </span>
                 <Button
                   onClick={handlePause}
                   variant="ghost"
@@ -239,14 +213,19 @@ const BlogReadAloud = ({ content, title, postSlug }: BlogReadAloudProps) => {
                 </Button>
               </>
             ) : (
-              <Button
-                onClick={handlePlay}
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-              >
-                <Volume2 className="h-4 w-4" />
-              </Button>
+              <>
+                <span className="text-sm font-medium text-muted-foreground">
+                  {language === 'ja' ? '一時停止中' : 'Paused'}
+                </span>
+                <Button
+                  onClick={handlePlay}
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                >
+                  <Volume2 className="h-4 w-4" />
+                </Button>
+              </>
             )}
             
             <Button

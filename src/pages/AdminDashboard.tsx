@@ -53,6 +53,9 @@ interface Conversation {
   updated_at: string;
   message_count: number;
   last_message: string;
+  ip_address: string | null;
+  user_agent: string | null;
+  hostname: string | null;
 }
 
 interface Message {
@@ -1211,13 +1214,18 @@ const AdminDashboard = () => {
                         onClick={() => { setSelectedConversation(conv.id); fetchMessages(conv.id); }}
                       >
                         <div className="flex items-center justify-between">
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm truncate">{conv.last_message || '(空)'}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {format(new Date(conv.updated_at), 'MM/dd HH:mm', { locale: ja })}
-                              ・{conv.message_count}件
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm truncate">{conv.last_message || '(空)'}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {format(new Date(conv.updated_at), 'MM/dd HH:mm', { locale: ja })}
+                            ・{conv.message_count}件
+                          </p>
+                          {conv.ip_address && (
+                            <p className="text-xs text-muted-foreground/70 truncate">
+                              IP: {conv.ip_address}
                             </p>
-                          </div>
+                          )}
+                        </div>
                           <Button
                             variant="ghost"
                             size="sm"

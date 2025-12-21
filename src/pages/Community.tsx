@@ -18,7 +18,8 @@ import {
   User, 
   Loader2,
   Send,
-  X
+  X,
+  Lock
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ja, enUS } from 'date-fns/locale';
@@ -90,6 +91,9 @@ const Community = () => {
       back: 'Back to topics',
       views: 'views',
       loginRequired: 'Please login to participate',
+      loginToView: 'Login to view details',
+      loginPromptTitle: 'Member Only Content',
+      loginPromptDesc: 'Register or login to view topic details and participate in discussions.',
     },
     ja: {
       title: 'コミュニティ',
@@ -114,6 +118,9 @@ const Community = () => {
       back: 'トピック一覧に戻る',
       views: '閲覧',
       loginRequired: '参加するにはログインしてください',
+      loginToView: 'ログインして詳細を見る',
+      loginPromptTitle: '会員限定コンテンツ',
+      loginPromptDesc: '会員登録またはログインすると、トピックの詳細を見たりディスカッションに参加できます。',
     },
   };
 
@@ -176,6 +183,11 @@ const Community = () => {
   };
 
   const handleSelectTopic = async (topic: Topic) => {
+    // Require authentication to view details
+    if (!isAuthenticated) {
+      return; // The UI will show login prompt
+    }
+    
     setSelectedTopic(topic);
     fetchComments(topic.id);
     
@@ -418,7 +430,11 @@ const Community = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
                     onClick={() => handleSelectTopic(topic)}
-                    className="bg-card border border-border rounded-xl p-5 cursor-pointer hover:border-primary/50 transition-all group"
+                    className={`bg-card border border-border rounded-xl p-5 transition-all group ${
+                      isAuthenticated 
+                        ? 'cursor-pointer hover:border-primary/50' 
+                        : 'cursor-default'
+                    }`}
                   >
                     <div className="flex items-start gap-4">
                       <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
@@ -436,9 +452,17 @@ const Community = () => {
                         <h3 className="font-semibold group-hover:text-primary transition-colors truncate">
                           {topic.title}
                         </h3>
-                        <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-                          {topic.content}
-                        </p>
+                        {/* Show preview only for authenticated users */}
+                        {isAuthenticated ? (
+                          <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+                            {topic.content}
+                          </p>
+                        ) : (
+                          <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
+                            <Lock className="w-4 h-4" />
+                            <span>{t.loginToView}</span>
+                          </div>
+                        )}
                         <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <Clock className="w-3 h-3" />
@@ -451,9 +475,44 @@ const Community = () => {
                           <span>{topic.view_count} {t.views}</span>
                         </div>
                       </div>
+                      
+                      {/* Login prompt for non-authenticated users */}
+                      {!isAuthenticated && (
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate('/auth');
+                          }}
+                        >
+                          {language === 'ja' ? 'ログイン' : 'Login'}
+                        </Button>
+                      )}
                     </div>
                   </motion.div>
                 ))
+              )}
+              
+              {/* Login Banner for non-authenticated users */}
+              {!isAuthenticated && topics.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 rounded-xl p-6 text-center"
+                >
+                  <Lock className="w-12 h-12 mx-auto mb-4 text-primary" />
+                  <h3 className="text-lg font-semibold mb-2">{t.loginPromptTitle}</h3>
+                  <p className="text-muted-foreground mb-4">{t.loginPromptDesc}</p>
+                  <div className="flex gap-3 justify-center">
+                    <Button onClick={() => navigate('/auth')}>
+                      {language === 'ja' ? '無料で会員登録' : 'Sign Up Free'}
+                    </Button>
+                    <Button variant="outline" onClick={() => navigate('/auth')}>
+                      {language === 'ja' ? 'ログイン' : 'Login'}
+                    </Button>
+                  </div>
+                </motion.div>
               )}
             </div>
           )}

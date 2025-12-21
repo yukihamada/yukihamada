@@ -13,6 +13,7 @@ import ShareButtons from '@/components/ShareButtons';
 import { BlogComments } from '@/components/BlogComments';
 import BlogSuggestedQuestions from '@/components/BlogSuggestedQuestions';
 import BlogSummary from '@/components/BlogSummary';
+import OptimizedImage from '@/components/OptimizedImage';
 import DOMPurify from 'dompurify';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useChat } from '@/contexts/ChatContext';
@@ -152,9 +153,12 @@ const BlogPost = () => {
             {/* Author section */}
             <div className="flex items-center justify-between gap-4 mb-6 p-4 glass rounded-2xl">
               <div className="flex items-center gap-4">
-                <img 
-                  src={yukiProfile} 
-                  alt="Yuki Nagao" 
+                <OptimizedImage
+                  src={yukiProfile}
+                  alt="Yuki Nagao"
+                  width={56}
+                  height={56}
+                  loading="eager"
                   className="w-14 h-14 rounded-full object-cover ring-2 ring-primary/30"
                 />
                 <div>

@@ -18,6 +18,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useChat } from '@/contexts/ChatContext';
 import jiuflowHero from '@/assets/jiuflow-hero.png';
 import jiuflowLesson from '@/assets/jiuflow-lesson.png';
+import yukiProfile from '@/assets/yuki-profile.jpg';
 
 const blogImages: Record<string, string> = {
   'jiuflow-hero': jiuflowHero,
@@ -148,6 +149,21 @@ const BlogPost = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
+            {/* Author section */}
+            <div className="flex items-center gap-4 mb-6 p-4 glass rounded-2xl">
+              <img 
+                src={yukiProfile} 
+                alt="Yuki Nagao" 
+                className="w-14 h-14 rounded-full object-cover ring-2 ring-primary/30"
+              />
+              <div>
+                <p className="font-semibold text-foreground">Yuki Nagao</p>
+                <p className="text-sm text-muted-foreground">
+                  {language === 'ja' ? 'AIイネーブラー・柔術家・シンガーソングライター' : 'AI Enabler・BJJ Practitioner・Singer-Songwriter'}
+                </p>
+              </div>
+            </div>
+
             <div className="flex flex-wrap items-center gap-3 mb-4">
               <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-primary/20 text-primary text-sm font-medium">
                 <Tag className="h-3 w-3" />

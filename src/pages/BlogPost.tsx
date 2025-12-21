@@ -150,62 +150,66 @@ const BlogPost = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            {/* Author section */}
-            <div className="flex items-center justify-between gap-4 mb-6 p-4 glass rounded-2xl">
-              <div className="flex items-center gap-4">
-                <OptimizedImage
-                  src={yukiProfile}
-                  alt="Yuki Nagao"
-                  width={56}
-                  height={56}
-                  loading="eager"
-                  className="w-14 h-14 rounded-full object-cover ring-2 ring-primary/30"
-                />
-                <div>
-                  <p className="font-semibold text-foreground">Yuki Hamada</p>
-                  <p className="text-sm text-muted-foreground">
-                    {language === 'ja' ? '株式会社イネブラ・イノベーター' : 'Enebular Inc.・Innovator'}
-                  </p>
-                </div>
-              </div>
-              <a
-                href="https://x.com/nagaoyuki"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-foreground text-background hover:bg-foreground/90 transition-colors text-sm font-medium"
-              >
-                <Twitter className="h-4 w-4" />
-                <span className="hidden sm:inline">{language === 'ja' ? 'フォロー' : 'Follow'}</span>
-              </a>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3 mb-4">
-              <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-primary/20 text-primary text-sm font-medium">
-                <Tag className="h-3 w-3" />
+            {/* Category and Date - Clean top line */}
+            <div className="flex flex-wrap items-center gap-3 mb-6">
+              <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/15 text-primary text-sm font-medium">
+                <Tag className="h-3.5 w-3.5" />
                 {content.category}
               </span>
-              <span className="flex items-center gap-1 text-muted-foreground text-sm">
+              <span className="flex items-center gap-1.5 text-muted-foreground text-sm">
                 <Calendar className="h-4 w-4" />
                 {content.date}
               </span>
-            </div>
-
-            <div className="mb-6">
               <BlogViewStats postSlug={post.slug} />
             </div>
 
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight mb-6">
+            {/* Title - Prominent */}
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight mb-4">
               {content.title}
             </h1>
 
-            <p className="text-xl text-muted-foreground leading-relaxed mb-6">
+            {/* Excerpt */}
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed mb-6">
               {content.excerpt}
             </p>
 
-            <div className="mb-8">
+            {/* Author and Actions - Compact row */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 glass rounded-2xl mb-6">
+              <div className="flex items-center gap-3">
+                <OptimizedImage
+                  src={yukiProfile}
+                  alt="Yuki Hamada"
+                  width={48}
+                  height={48}
+                  loading="eager"
+                  className="w-12 h-12 rounded-full object-cover ring-2 ring-primary/30"
+                />
+                <div>
+                  <p className="font-semibold text-foreground text-sm">Yuki Hamada</p>
+                  <p className="text-xs text-muted-foreground">
+                    {language === 'ja' ? '株式会社イネブラ' : 'Enebular Inc.'}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <a
+                  href="https://x.com/yukihamada"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-foreground text-background hover:bg-foreground/90 transition-colors text-xs font-medium"
+                >
+                  <Twitter className="h-3.5 w-3.5" />
+                  <span>{language === 'ja' ? 'フォロー' : 'Follow'}</span>
+                </a>
+              </div>
+            </div>
+
+            {/* Share Buttons */}
+            <div className="mb-6">
               <ShareButtons title={content.title} url={window.location.href} />
             </div>
 
+            {/* AI Summary and Read Aloud */}
             <BlogSummary 
               postSlug={post.slug}
               title={content.title}

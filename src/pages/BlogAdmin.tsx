@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Plus, Edit, Trash2, Save, X, Eye, ArrowLeft, Clock } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, X, Eye, ArrowLeft, Clock, CalendarClock, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -72,6 +72,19 @@ const BlogAdmin = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [editingPost, setEditingPost] = useState<Partial<BlogPostDB> | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [activeTab, setActiveTab] = useState<'all' | 'published' | 'scheduled'>('all');
+
+  // Filter posts based on active tab
+  const filteredPosts = posts.filter(post => {
+    if (activeTab === 'all') return true;
+    const isScheduled = isScheduledPost(post.published_at);
+    if (activeTab === 'scheduled') return isScheduled;
+    if (activeTab === 'published') return !isScheduled;
+    return true;
+  });
+
+  const scheduledCount = posts.filter(p => isScheduledPost(p.published_at)).length;
+  const publishedCount = posts.filter(p => !isScheduledPost(p.published_at)).length;
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -247,6 +260,34 @@ const BlogAdmin = () => {
               >
                 <Plus className="mr-2 h-4 w-4" />
                 新規作成
+              </Button>
+            </div>
+            
+            {/* Tab filters */}
+            <div className="flex gap-2 mt-4">
+              <Button
+                variant={activeTab === 'all' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setActiveTab('all')}
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                すべて ({posts.length})
+              </Button>
+              <Button
+                variant={activeTab === 'published' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setActiveTab('published')}
+              >
+                <Eye className="mr-2 h-4 w-4" />
+                公開済み ({publishedCount})
+              </Button>
+              <Button
+                variant={activeTab === 'scheduled' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setActiveTab('scheduled')}
+              >
+                <CalendarClock className="mr-2 h-4 w-4" />
+                予約投稿 ({scheduledCount})
               </Button>
             </div>
           </motion.div>
@@ -431,14 +472,18 @@ const BlogAdmin = () => {
             </motion.div>
           ) : (
             <div className="grid gap-4">
-              {posts.length === 0 ? (
+              {filteredPosts.length === 0 ? (
                 <Card>
                   <CardContent className="py-12 text-center text-muted-foreground">
-                    まだDBに記事がありません。新規作成してください。
+                    {activeTab === 'scheduled' 
+                      ? '予約投稿はありません。' 
+                      : activeTab === 'published' 
+                        ? '公開済みの記事はありません。'
+                        : 'まだDBに記事がありません。新規作成してください。'}
                   </CardContent>
                 </Card>
               ) : (
-                posts.map((post) => (
+                filteredPosts.map((post) => (
                   <motion.div
                     key={post.id}
                     initial={{ opacity: 0, y: 10 }}

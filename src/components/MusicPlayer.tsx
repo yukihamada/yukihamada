@@ -167,12 +167,33 @@ const MusicPlayer = () => {
   };
   
   const audioRef = useRef<HTMLAudioElement>(null);
+  const playerContainerRef = useRef<HTMLDivElement>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyzerRef = useRef<AnalyserNode | null>(null);
   const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
   const eqFiltersRef = useRef<BiquadFilterNode[]>([]);
   const animationRef = useRef<number | null>(null);
 
+  // Close expanded player when clicking outside
+  useEffect(() => {
+    if (!isExpanded) return;
+    
+    const handleClickOutside = (e: MouseEvent) => {
+      if (playerContainerRef.current && !playerContainerRef.current.contains(e.target as Node)) {
+        setIsExpanded(false);
+      }
+    };
+    
+    // Delay adding listener to prevent immediate close
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside);
+    }, 100);
+    
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isExpanded]);
   const initializeAudioContext = useCallback(() => {
     if (!audioRef.current || audioContextRef.current) return;
 
@@ -505,6 +526,7 @@ const MusicPlayer = () => {
       <audio ref={audioRef} src={track.src} preload="metadata" crossOrigin="anonymous" />
       
       <motion.div
+        ref={playerContainerRef}
         className="fixed bottom-6 right-6 z-50"
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}

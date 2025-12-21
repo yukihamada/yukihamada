@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useBlogPosts } from '@/hooks/useBlogPosts';
 import { Skeleton } from '@/components/ui/skeleton';
+import OptimizedImage from '@/components/OptimizedImage';
 
 const Blog = () => {
   const { language } = useLanguage();
@@ -120,15 +121,14 @@ const Blog = () => {
                     }}
                     transition={{ type: "spring", stiffness: 300 }}
                   >
-                    {showImage && (
+                    {showImage && post.image && (
                       <div className="aspect-video overflow-hidden">
-                        <img 
-                          src={post.image} 
+                        <OptimizedImage
+                          src={post.image}
                           alt={content.title}
+                          width={400}
+                          height={225}
                           loading="lazy"
-                          decoding="async"
-                          width="400"
-                          height="225"
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                       </div>

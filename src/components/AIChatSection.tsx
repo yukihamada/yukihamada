@@ -529,19 +529,20 @@ export const AIChatSection = () => {
     const visitorId = visitorIdRef.current;
     const visitorSupabase = getVisitorSupabaseClient(visitorId);
 
-    const { data, error } = await visitorSupabase
+    // Generate UUID client-side to avoid needing SELECT after INSERT
+    const newConversationId = crypto.randomUUID();
+
+    const { error } = await visitorSupabase
       .from('chat_conversations')
-      .insert({ visitor_id: visitorId })
-      .select('id')
-      .single();
+      .insert({ id: newConversationId, visitor_id: visitorId });
 
     if (error) {
       console.error('Error creating conversation:', error);
       return null;
     }
 
-    setConversationId(data.id);
-    return data.id;
+    setConversationId(newConversationId);
+    return newConversationId;
   };
 
   // Save message to database

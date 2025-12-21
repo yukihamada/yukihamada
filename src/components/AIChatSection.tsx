@@ -25,7 +25,7 @@ type StoredMessage = {
   status?: 'sending' | 'sent' | 'delivered';
 };
 
-const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat-with-yuki`;
+const CHAT_URL = "https://itryqwkqnexuawvpoetz.functions.supabase.co/functions/v1/chat-with-yuki";
 const STORAGE_KEY = 'yuki_chat_history';
 const CONVERSATION_ID_KEY = 'yuki_chat_conversation_id';
 const GREETED_KEY = 'yuki_chat_greeted';
@@ -569,6 +569,7 @@ export const AIChatSection = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
         body: JSON.stringify({ 

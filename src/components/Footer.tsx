@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
-import { Github, Linkedin, Mail, ExternalLink, MessageCircle } from 'lucide-react';
+import { Github, Linkedin, Mail, ExternalLink, MessageCircle, Settings } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import MagneticButton from '@/components/MagneticButton';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -28,9 +29,9 @@ const socialLinks = [
 ];
 
 const Footer = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { openChat } = useChat();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isAdmin } = useAuth();
 
   const quickLinks = [
     { name: t.nav.enabler, href: '#enabler' },
@@ -179,6 +180,19 @@ const Footer = () => {
               enablerhq.com
               <ExternalLink className="h-3 w-3" />
             </motion.a>
+            {isAdmin && (
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+              >
+                <Link
+                  to="/chat-admin"
+                  className="text-muted-foreground hover:text-primary text-sm flex items-center gap-1 transition-colors"
+                >
+                  <Settings className="h-3 w-3" />
+                  {language === 'ja' ? '管理画面' : 'Admin'}
+                </Link>
+              </motion.div>
+            )}
             {isAuthenticated && (
               <motion.a
                 href="https://www.patreon.com/paradisecreator/"

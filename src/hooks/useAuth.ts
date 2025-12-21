@@ -14,6 +14,7 @@ export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -23,13 +24,15 @@ export const useAuth = () => {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Fetch profile after auth state change
+        // Fetch profile and check admin role after auth state change
         if (session?.user) {
           setTimeout(() => {
             fetchProfile(session.user.id);
+            checkAdminRole(session.user.id);
           }, 0);
         } else {
           setProfile(null);
+          setIsAdmin(false);
         }
       }
     );
@@ -40,6 +43,7 @@ export const useAuth = () => {
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchProfile(session.user.id);
+        checkAdminRole(session.user.id);
       }
       setIsLoading(false);
     });
@@ -57,11 +61,25 @@ export const useAuth = () => {
     setProfile(data);
   };
 
+  const checkAdminRole = async (userId: string) => {
+    const { data, error } = await supabase.rpc('has_role', {
+      _user_id: userId,
+      _role: 'admin'
+    });
+    
+    if (!error && data) {
+      setIsAdmin(true);
+    } else {
+      setIsAdmin(false);
+    }
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
     setProfile(null);
+    setIsAdmin(false);
   };
 
   return {
@@ -70,6 +88,7 @@ export const useAuth = () => {
     profile,
     isLoading,
     isAuthenticated: !!session,
+    isAdmin,
     signOut,
     refreshProfile: () => user && fetchProfile(user.id),
   };

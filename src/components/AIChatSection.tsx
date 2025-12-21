@@ -208,10 +208,10 @@ export const AIChatSection = () => {
   const greetingInProgressRef = useRef(false);
   const visitorIdRef = useRef<string>(getVisitorId());
 
-  // Detect when user scrolls to bottom of page (only on blog list page)
+  // Detect when user scrolls to bottom of page (only on blog pages)
   useEffect(() => {
-    // Only enable scroll detection on blog list page
-    if (pageContext !== 'blog') return;
+    // Only enable scroll detection on blog list and blog post pages
+    if (pageContext !== 'blog' && pageContext !== 'blog-post') return;
     
     const handleScroll = () => {
       const scrollTop = window.scrollY;

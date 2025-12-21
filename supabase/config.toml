@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.chat-with-yuki]
 verify_jwt = false
+
+[functions.blog-ai]
+verify_jwt = false

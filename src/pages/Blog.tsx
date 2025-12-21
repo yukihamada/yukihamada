@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useChat } from '@/contexts/ChatContext';
 import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useBlogPosts } from '@/hooks/useBlogPosts';
@@ -14,9 +15,15 @@ import { calculateReadingTime, formatReadingTime } from '@/lib/readingTime';
 
 const Blog = () => {
   const { language } = useLanguage();
+  const { setPageContext } = useChat();
   const { posts: blogPosts, isLoading } = useBlogPosts();
   const [viewCounts, setViewCounts] = useState<Record<string, number>>({});
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  // Set page context for chat
+  useEffect(() => {
+    setPageContext('blog');
+  }, [setPageContext]);
 
   // Extract unique categories
   const categories = useMemo(() => {

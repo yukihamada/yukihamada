@@ -55,8 +55,8 @@ const playTrack = (trackIndex: number) => {
 
 const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { post, isLoading } = useBlogPost(slug);
-  const { posts: allPosts } = useBlogPosts();
+  const { post, isLoading, isScheduled } = useBlogPost(slug, true); // allowScheduled for admin preview
+  const { posts: allPosts, isAdmin } = useBlogPosts(true);
   const contentRef = useRef<HTMLDivElement>(null);
   const { language } = useLanguage();
   const { setPageContext, setCurrentBlogTitle } = useChat();
@@ -155,6 +155,13 @@ const BlogPost = () => {
           >
             {/* Category and Date - Clean top line */}
             <div className="flex flex-wrap items-center gap-3 mb-6">
+              {/* Scheduled Badge for Admin */}
+              {isScheduled && isAdmin && (
+                <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500 text-white text-sm font-medium">
+                  <Clock className="h-3.5 w-3.5" />
+                  {language === 'ja' ? '予約投稿（管理者プレビュー）' : 'Scheduled (Admin Preview)'}
+                </span>
+              )}
               <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/15 text-primary text-sm font-medium">
                 <Tag className="h-3.5 w-3.5" />
                 {content.category}

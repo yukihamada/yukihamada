@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Plus, Edit, Trash2, Save, X, Eye, ArrowLeft } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, X, Eye, ArrowLeft, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -30,9 +30,22 @@ interface BlogPostDB {
   content_en: string;
   date_en: string;
   category_en: string;
+  published_at: string | null;
   created_at: string;
   updated_at: string;
 }
+
+// Helper to format date for datetime-local input
+const formatDateTimeLocal = (date: Date): string => {
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
+
+// Check if a post is scheduled (future)
+const isScheduledPost = (publishedAt: string | null): boolean => {
+  if (!publishedAt) return false;
+  return new Date(publishedAt) > new Date();
+};
 
 const emptyPost: Omit<BlogPostDB, 'id' | 'created_at' | 'updated_at'> = {
   slug: '',
@@ -48,6 +61,7 @@ const emptyPost: Omit<BlogPostDB, 'id' | 'created_at' | 'updated_at'> = {
   content_en: '',
   date_en: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
   category_en: '',
+  published_at: formatDateTimeLocal(new Date()),
 };
 
 const BlogAdmin = () => {
@@ -122,6 +136,7 @@ const BlogAdmin = () => {
       content_en: editingPost.content_en,
       date_en: editingPost.date_en,
       category_en: editingPost.category_en,
+      published_at: editingPost.published_at ? new Date(editingPost.published_at).toISOString() : new Date().toISOString(),
     };
 
     if (isCreating) {
@@ -283,13 +298,31 @@ const BlogAdmin = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        id="featured"
-                        checked={editingPost.featured || false}
-                        onCheckedChange={(checked) => setEditingPost({ ...editingPost, featured: checked })}
-                      />
-                      <Label htmlFor="featured">注目記事</Label>
+                    <div className="flex items-center gap-6">
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id="featured"
+                          checked={editingPost.featured || false}
+                          onCheckedChange={(checked) => setEditingPost({ ...editingPost, featured: checked })}
+                        />
+                        <Label htmlFor="featured">注目記事</Label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor="published_at" className="whitespace-nowrap">公開日時</Label>
+                        <Input
+                          id="published_at"
+                          type="datetime-local"
+                          value={editingPost.published_at ? formatDateTimeLocal(new Date(editingPost.published_at)) : formatDateTimeLocal(new Date())}
+                          onChange={(e) => setEditingPost({ ...editingPost, published_at: e.target.value })}
+                          className="w-auto"
+                        />
+                        {editingPost.published_at && isScheduledPost(editingPost.published_at) && (
+                          <span className="text-xs bg-amber-500 text-white px-2 py-0.5 rounded flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            予約投稿
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     <Tabs defaultValue="ja" className="w-full">
@@ -416,6 +449,12 @@ const BlogAdmin = () => {
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
+                              {isScheduledPost(post.published_at) && (
+                                <span className="text-xs bg-amber-500 text-white px-2 py-0.5 rounded flex items-center gap-1">
+                                  <Clock className="h-3 w-3" />
+                                  予約
+                                </span>
+                              )}
                               {post.featured && (
                                 <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded">
                                   注目
@@ -424,7 +463,17 @@ const BlogAdmin = () => {
                               <span className="text-xs text-muted-foreground">{post.category_ja}</span>
                             </div>
                             <h3 className="font-semibold">{post.title_ja}</h3>
-                            <p className="text-sm text-muted-foreground">{post.date_ja}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {post.published_at 
+                                ? new Date(post.published_at).toLocaleString('ja-JP', { 
+                                    year: 'numeric', 
+                                    month: 'long', 
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  })
+                                : post.date_ja}
+                            </p>
                           </div>
                           <div className="flex gap-2">
                             <Button

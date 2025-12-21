@@ -18,15 +18,22 @@ interface BlogPostDB {
   date_en: string;
   category_en: string;
   status: string;
+  published_at: string | null;
   created_at: string;
   updated_at: string;
 }
 
+// Extended BlogPost with published_at for internal use
+interface BlogPostWithPublishedAt extends BlogPost {
+  publishedAt?: Date;
+}
+
 // Convert DB format to app format
-const convertDBToAppFormat = (dbPost: BlogPostDB): BlogPost => ({
+const convertDBToAppFormat = (dbPost: BlogPostDB): BlogPostWithPublishedAt => ({
   slug: dbPost.slug,
   featured: dbPost.featured,
   image: dbPost.image || undefined,
+  publishedAt: dbPost.published_at ? new Date(dbPost.published_at) : undefined,
   ja: {
     title: dbPost.title_ja,
     excerpt: dbPost.excerpt_ja,
@@ -54,73 +61,101 @@ const parseDateString = (dateStr: string): Date => {
   return new Date(dateStr);
 };
 
-// Filter out future-dated posts
-const filterFuturePosts = (posts: BlogPost[]): BlogPost[] => {
+// Filter out future-dated posts based on published_at or date string
+const filterFuturePosts = (posts: BlogPostWithPublishedAt[]): BlogPost[] => {
   const now = new Date();
-  now.setHours(0, 0, 0, 0); // Compare dates only, not time
   return posts.filter(post => {
-    const postDate = parseDateString(post.ja.date);
+    // Use published_at if available, otherwise fall back to date string
+    const postDate = post.publishedAt || parseDateString(post.ja.date);
     return postDate <= now;
   });
 };
 
 // Sort posts by date (newest first)
-const sortPostsByDate = (posts: BlogPost[]): BlogPost[] => {
+const sortPostsByDate = (posts: BlogPostWithPublishedAt[]): BlogPost[] => {
   return [...posts].sort((a, b) => {
-    const dateA = parseDateString(a.ja.date);
-    const dateB = parseDateString(b.ja.date);
+    const dateA = a.publishedAt || parseDateString(a.ja.date);
+    const dateB = b.publishedAt || parseDateString(b.ja.date);
     return dateB.getTime() - dateA.getTime();
   });
 };
 
-// Filter and sort posts
-const processPublicPosts = (posts: BlogPost[]): BlogPost[] => {
+// Filter and sort posts for public view
+const processPublicPosts = (posts: BlogPostWithPublishedAt[]): BlogPost[] => {
   return sortPostsByDate(filterFuturePosts(posts));
 };
 
-export const useBlogPosts = () => {
-  const [posts, setPosts] = useState<BlogPost[]>(processPublicPosts(staticBlogPosts));
+// Sort only (for admin view - includes future posts)
+const processAllPosts = (posts: BlogPostWithPublishedAt[]): BlogPost[] => {
+  return sortPostsByDate(posts);
+};
+
+// Check if user is admin
+const checkIsAdmin = async (): Promise<boolean> => {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return false;
+  
+  const { data } = await supabase.rpc('has_role', { _user_id: user.id, _role: 'admin' });
+  return data === true;
+};
+
+export const useBlogPosts = (includeScheduled = false) => {
+  const [posts, setPosts] = useState<BlogPost[]>(processPublicPosts(staticBlogPosts as BlogPostWithPublishedAt[]));
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
+        // Check admin status if includeScheduled is requested
+        let adminStatus = false;
+        if (includeScheduled) {
+          adminStatus = await checkIsAdmin();
+          setIsAdmin(adminStatus);
+        }
+
         const { data, error } = await supabase
           .from('blog_posts')
           .select('*')
           .eq('status', 'published')
-          .order('created_at', { ascending: false });
+          .order('published_at', { ascending: false, nullsFirst: false });
 
         if (error) throw error;
 
         if (data && data.length > 0) {
           const convertedPosts = data.map(convertDBToAppFormat);
-          setPosts(processPublicPosts(convertedPosts));
+          // If admin and includeScheduled, show all posts; otherwise filter future posts
+          if (includeScheduled && adminStatus) {
+            setPosts(processAllPosts(convertedPosts));
+          } else {
+            setPosts(processPublicPosts(convertedPosts));
+          }
         } else {
           // Use processed static posts as fallback
-          setPosts(processPublicPosts(staticBlogPosts));
+          setPosts(processPublicPosts(staticBlogPosts as BlogPostWithPublishedAt[]));
         }
       } catch (err) {
         console.error('Error fetching blog posts:', err);
         setError(err as Error);
         // Fallback to processed static posts on error
-        setPosts(processPublicPosts(staticBlogPosts));
+        setPosts(processPublicPosts(staticBlogPosts as BlogPostWithPublishedAt[]));
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchPosts();
-  }, []);
+  }, [includeScheduled]);
 
-  return { posts, isLoading, error };
+  return { posts, isLoading, error, isAdmin };
 };
 
-export const useBlogPost = (slug: string | undefined) => {
+export const useBlogPost = (slug: string | undefined, allowScheduled = false) => {
   const [post, setPost] = useState<BlogPost | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [isScheduled, setIsScheduled] = useState(false);
 
   useEffect(() => {
     if (!slug) {
@@ -130,6 +165,12 @@ export const useBlogPost = (slug: string | undefined) => {
 
     const fetchPost = async () => {
       try {
+        // Check admin status if allowScheduled
+        let isAdmin = false;
+        if (allowScheduled) {
+          isAdmin = await checkIsAdmin();
+        }
+
         const { data, error } = await supabase
           .from('blog_posts')
           .select('*')
@@ -140,11 +181,34 @@ export const useBlogPost = (slug: string | undefined) => {
         if (error) throw error;
 
         if (data) {
-          setPost(convertDBToAppFormat(data));
+          const convertedPost = convertDBToAppFormat(data);
+          const now = new Date();
+          const postDate = convertedPost.publishedAt || parseDateString(data.date_ja);
+          const isFuturePost = postDate > now;
+          
+          setIsScheduled(isFuturePost);
+          
+          // Show post if it's not future, or if user is admin
+          if (!isFuturePost || isAdmin) {
+            setPost(convertedPost);
+          } else {
+            setPost(null);
+          }
         } else {
           // Fallback to static posts
           const staticPost = staticBlogPosts.find(p => p.slug === slug);
-          setPost(staticPost || null);
+          if (staticPost) {
+            const postDate = parseDateString(staticPost.ja.date);
+            const isFuturePost = postDate > new Date();
+            setIsScheduled(isFuturePost);
+            if (!isFuturePost || isAdmin) {
+              setPost(staticPost);
+            } else {
+              setPost(null);
+            }
+          } else {
+            setPost(null);
+          }
         }
       } catch (err) {
         console.error('Error fetching blog post:', err);
@@ -158,7 +222,7 @@ export const useBlogPost = (slug: string | undefined) => {
     };
 
     fetchPost();
-  }, [slug]);
+  }, [slug, allowScheduled]);
 
-  return { post, isLoading, error };
+  return { post, isLoading, error, isScheduled };
 };

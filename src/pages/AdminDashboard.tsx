@@ -1603,11 +1603,14 @@ const AdminDashboard = () => {
                                 {format(new Date(conv.updated_at), 'MM/dd HH:mm', { locale: ja })}
                                 ・{conv.message_count}件
                               </p>
-                              {(conv.hostname || conv.ip_address) && (
+                              {conv.ip_address && (
                                 <div className="flex items-center gap-1 text-xs text-muted-foreground/70 mt-1">
                                   <Globe className="w-3 h-3" />
                                   <span className="truncate">
-                                    {conv.hostname ? `${conv.hostname} (${conv.ip_address})` : conv.ip_address}
+                                    {conv.hostname ? `${conv.hostname}` : ''}
+                                    {conv.hostname && ' / '}
+                                    <span className="text-green-600 dark:text-green-400">匿名化済み</span>
+                                    <span className="text-muted-foreground/50 ml-1">({conv.ip_address.slice(0, 8)}...)</span>
                                   </span>
                                 </div>
                               )}

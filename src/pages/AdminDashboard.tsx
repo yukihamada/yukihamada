@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
+import type { Json } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import {
@@ -720,11 +721,11 @@ const AdminDashboard = () => {
       color: editingTrack.color || '#3b82f6',
       display_order: editingTrack.display_order || 0,
       is_active: editingTrack.is_active ?? true,
-      lyrics: parsedLyrics,
+      lyrics: parsedLyrics as unknown as Json,
     };
 
     if (isCreatingTrack) {
-      const { error } = await supabase.from('music_tracks').insert([trackData]);
+      const { error } = await supabase.from('music_tracks').insert([trackData as any]);
       if (error) {
         toast.error('トラックの作成に失敗しました');
       } else {
@@ -737,7 +738,7 @@ const AdminDashboard = () => {
     } else {
       const { error } = await supabase
         .from('music_tracks')
-        .update(trackData)
+        .update(trackData as any)
         .eq('id', editingTrack.id);
       if (error) {
         toast.error('トラックの更新に失敗しました');
@@ -773,7 +774,12 @@ const AdminDashboard = () => {
       );
 
       if (!response.ok) {
-        throw new Error('Failed to transcribe');
+        const errorData = await response.json().catch(() => ({}));
+        const errorMsg = errorData.error || 'Failed to transcribe';
+        if (errorMsg.includes('missing_permissions')) {
+          throw new Error('ElevenLabs APIキーにspeech_to_text権限がありません。ElevenLabsダッシュボードでAPIキーの権限を確認してください。');
+        }
+        throw new Error(errorMsg);
       }
 
       const data = await response.json();
@@ -812,9 +818,9 @@ const AdminDashboard = () => {
         setLyricsText(data.text);
         toast.success('歌詞を抽出しました');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Transcription error:', error);
-      toast.error('歌詞の抽出に失敗しました');
+      toast.error(error.message || '歌詞の抽出に失敗しました');
     } finally {
       setIsTranscribingLyrics(false);
     }

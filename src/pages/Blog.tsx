@@ -1,11 +1,11 @@
 import { motion } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Calendar, Tag, Eye } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Calendar, Tag, Eye, Filter } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useBlogPosts } from '@/hooks/useBlogPosts';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -15,6 +15,22 @@ const Blog = () => {
   const { language } = useLanguage();
   const { posts: blogPosts, isLoading } = useBlogPosts();
   const [viewCounts, setViewCounts] = useState<Record<string, number>>({});
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  // Extract unique categories
+  const categories = useMemo(() => {
+    const cats = new Set<string>();
+    blogPosts.forEach(post => {
+      cats.add(post[language].category);
+    });
+    return Array.from(cats).sort();
+  }, [blogPosts, language]);
+
+  // Filter posts by category
+  const filteredPosts = useMemo(() => {
+    if (!selectedCategory) return blogPosts;
+    return blogPosts.filter(post => post[language].category === selectedCategory);
+  }, [blogPosts, selectedCategory, language]);
 
   useEffect(() => {
     const fetchViewCounts = async () => {
@@ -63,7 +79,7 @@ const Blog = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="mb-12"
+            className="mb-8"
           >
             <Link to="/#blog">
               <Button variant="ghost" className="mb-6 text-muted-foreground hover:text-foreground">
@@ -79,10 +95,48 @@ const Blog = () => {
               {isLoading 
                 ? (language === 'ja' ? '読み込み中...' : 'Loading...') 
                 : (language === 'ja' 
-                  ? `${blogPosts.length}件の記事があります` 
-                  : `${blogPosts.length} articles available`)}
+                  ? `${filteredPosts.length}件の記事${selectedCategory ? ` (${selectedCategory})` : ''}` 
+                  : `${filteredPosts.length} articles${selectedCategory ? ` in ${selectedCategory}` : ''}`)}
             </p>
           </motion.div>
+
+          {/* Category Filter */}
+          {!isLoading && categories.length > 1 && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.2 }}
+              className="mb-8"
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <Filter className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">
+                  {language === 'ja' ? 'カテゴリーで絞り込み' : 'Filter by category'}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant={selectedCategory === null ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedCategory(null)}
+                  className="rounded-full"
+                >
+                  {language === 'ja' ? 'すべて' : 'All'}
+                </Button>
+                {categories.map((category) => (
+                  <Button
+                    key={category}
+                    variant={selectedCategory === category ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSelectedCategory(category)}
+                    className="rounded-full"
+                  >
+                    {category}
+                  </Button>
+                ))}
+              </div>
+            </motion.div>
+          )}
 
           {isLoading ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -98,14 +152,21 @@ const Blog = () => {
                 </div>
               ))}
             </div>
+          ) : filteredPosts.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">
+                {language === 'ja' ? 'このカテゴリーには記事がありません' : 'No articles in this category'}
+              </p>
+            </div>
           ) : (
           <motion.div
             className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
             variants={containerVariants}
             initial="hidden"
             animate="visible"
+            key={selectedCategory || 'all'} // Re-animate when filter changes
           >
-            {blogPosts.map((post) => {
+            {filteredPosts.map((post) => {
               const content = post[language];
               return (
                 <Link key={post.slug} to={`/blog/${post.slug}`}>

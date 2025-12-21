@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.89.0';
+import { crypto } from "https://deno.land/std@0.168.0/crypto/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -27,6 +28,15 @@ function checkRateLimit(identifier: string): { allowed: boolean; remaining: numb
   
   record.count++;
   return { allowed: true, remaining: RATE_LIMIT_MAX - record.count };
+}
+
+// Hash function for IP anonymization
+async function hashIP(ip: string): Promise<string> {
+  const salt = Deno.env.get("SUPABASE_PROJECT_ID") || "default-salt";
+  const data = new TextEncoder().encode(ip + salt);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 16);
 }
 
 // Default prompt as fallback
@@ -114,17 +124,20 @@ serve(async (req) => {
           }
         }
         
+        // Hash IP address for privacy
+        const hashedIP = await hashIP(clientIP);
+        
         await supabase
           .from('chat_conversations')
           .update({ 
-            ip_address: clientIP,
+            ip_address: hashedIP,
             user_agent: userAgent,
             hostname: hostname
           })
           .eq('id', conversationId);
           
         if (hostname) {
-          console.log(`Resolved hostname for IP ${clientIP}: ${hostname}`);
+          console.log(`Resolved hostname for hashed IP ${hashedIP}: ${hostname}`);
         }
       } catch (e) {
         console.error('Failed to update conversation with visitor info:', e);

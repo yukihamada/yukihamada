@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Calendar, Tag, RefreshCw, Twitter } from 'lucide-react';
+import { ArrowLeft, Calendar, Tag, RefreshCw, Twitter, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useBlogPost, useBlogPosts } from '@/hooks/useBlogPosts';
 import Navigation from '@/components/Navigation';
@@ -17,6 +17,7 @@ import OptimizedImage from '@/components/OptimizedImage';
 import DOMPurify from 'dompurify';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useChat } from '@/contexts/ChatContext';
+import { calculateReadingTime, formatReadingTime } from '@/lib/readingTime';
 import jiuflowHero from '@/assets/jiuflow-hero.png';
 import jiuflowLesson from '@/assets/jiuflow-lesson.png';
 import yukiProfile from '@/assets/yuki-profile.jpg';
@@ -159,6 +160,10 @@ const BlogPost = () => {
               <span className="flex items-center gap-1.5 text-muted-foreground text-sm">
                 <Calendar className="h-4 w-4" />
                 {content.date}
+              </span>
+              <span className="flex items-center gap-1.5 text-muted-foreground text-sm">
+                <Clock className="h-4 w-4" />
+                {formatReadingTime(calculateReadingTime(content.content, language), language)}
               </span>
               <BlogViewStats postSlug={post.slug} />
             </div>

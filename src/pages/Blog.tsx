@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Calendar, Tag, Eye, Filter } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Calendar, Tag, Eye, Filter, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Navigation from '@/components/Navigation';
@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useBlogPosts } from '@/hooks/useBlogPosts';
 import { Skeleton } from '@/components/ui/skeleton';
 import OptimizedImage from '@/components/OptimizedImage';
+import { calculateReadingTime, formatReadingTime } from '@/lib/readingTime';
 
 const Blog = () => {
   const { language } = useLanguage();
@@ -213,10 +214,14 @@ const Blog = () => {
                       </p>
                       
                       <div className="flex items-center justify-between pt-4 border-t border-border mt-auto">
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
                           <span className="flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
                             {content.date}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {formatReadingTime(calculateReadingTime(content.content, language), language)}
                           </span>
                           <span className="flex items-center gap-1">
                             <Eye className="h-3 w-3" />

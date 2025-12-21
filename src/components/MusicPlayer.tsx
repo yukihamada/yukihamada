@@ -4,6 +4,7 @@ import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Music, X, Chevron
 import { supabase } from '@/integrations/supabase/client';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 
+// Artwork mapping for dynamic imports
 import albumFreeToChange from '@/assets/album-free-to-change.jpg';
 import albumHello2150 from '@/assets/album-hello-2150.jpg';
 import albumBjj from '@/assets/album-everybody-bjj.jpg';
@@ -13,83 +14,29 @@ import albumKoiJujutsu from '@/assets/album-koi-jujutsu.jpg';
 import albumShioPixel from '@/assets/album-shio-pixel.jpg';
 import albumMusubinaosu from '@/assets/album-musubinaosu.jpg';
 
-const tracks = [
-  {
-    id: 1,
-    title: 'Free to Change',
-    artist: 'Yuki Hamada',
-    src: '/audio/free-to-change.mp3',
-    artwork: albumFreeToChange,
-    lyrics: null as string | null,
-    color: '#3b82f6', // Blue
-  },
-  {
-    id: 2,
-    title: 'HELLO 2150',
-    artist: 'Yuki Hamada',
-    src: '/audio/hello-2150.mp3',
-    artwork: albumHello2150,
-    lyrics: null as string | null,
-    color: '#8b5cf6', // Purple
-  },
-  {
-    id: 3,
-    title: 'Everybody say BJJ',
-    artist: 'Yuki Hamada',
-    src: '/audio/everybody-say-bjj.mp3',
-    artwork: albumBjj,
-    lyrics: null as string | null,
-    color: '#ef4444', // Red
-  },
-  {
-    id: 4,
-    title: 'I Love You',
-    artist: 'Yuki Hamada',
-    src: '/audio/i-love-you.mp3',
-    artwork: albumILoveYou,
-    lyrics: null as string | null,
-    color: '#ec4899', // Pink
-  },
-  {
-    id: 5,
-    title: 'I Need Your Attention',
-    artist: 'Yuki Hamada',
-    src: '/audio/i-need-your-attention.mp3',
-    artwork: albumAttention,
-    lyrics: null as string | null,
-    color: '#f59e0b', // Amber
-  },
-  {
-    id: 6,
-    title: 'それ恋じゃなく柔術でした',
-    artist: 'Yuki Hamada',
-    src: '/audio/sore-koi-janaku-jujutsu.mp3',
-    artwork: albumKoiJujutsu,
-    lyrics: null as string | null,
-    color: '#10b981', // Emerald
-  },
-  {
-    id: 7,
-    title: '塩とピクセル',
-    artist: 'Yuki Hamada',
-    src: '/audio/shio-to-pixel.mp3',
-    artwork: albumShioPixel,
-    lyrics: null as string | null,
-    color: '#06b6d4', // Cyan
-  },
-  {
-    id: 8,
-    title: '結び直す朝',
-    artist: 'Yuki Hamada',
-    src: '/audio/musubinaosu-asa.mp3',
-    artwork: albumMusubinaosu,
-    lyrics: null as string | null,
-    color: '#f97316', // Orange
-  },
-];
+const artworkMap: Record<string, string> = {
+  'album-free-to-change.jpg': albumFreeToChange,
+  'album-hello-2150.jpg': albumHello2150,
+  'album-everybody-bjj.jpg': albumBjj,
+  'album-i-love-you.jpg': albumILoveYou,
+  'album-attention.jpg': albumAttention,
+  'album-koi-jujutsu.jpg': albumKoiJujutsu,
+  'album-shio-pixel.jpg': albumShioPixel,
+  'album-musubinaosu.jpg': albumMusubinaosu,
+};
+
+interface Track {
+  id: string;
+  title: string;
+  artist: string;
+  src: string;
+  artwork: string;
+  color: string;
+  lyrics?: string | null;
+}
 
 // Store lyrics in memory
-const lyricsCache: Record<number, string> = {};
+const lyricsCache: Record<string, string> = {};
 
 type RepeatMode = 'off' | 'all' | 'one';
 
@@ -115,7 +62,7 @@ const EQ_PRESETS: Record<string, number[]> = {
 };
 
 // Load play counts from localStorage
-const getPlayCounts = (): Record<number, number> => {
+const getPlayCounts = (): Record<string, number> => {
   try {
     const stored = localStorage.getItem('musicPlayCounts');
     return stored ? JSON.parse(stored) : {};
@@ -124,7 +71,7 @@ const getPlayCounts = (): Record<number, number> => {
   }
 };
 
-const savePlayCount = (trackId: number) => {
+const savePlayCount = (trackId: string) => {
   const counts = getPlayCounts();
   counts[trackId] = (counts[trackId] || 0) + 1;
   localStorage.setItem('musicPlayCounts', JSON.stringify(counts));
@@ -133,20 +80,25 @@ const savePlayCount = (trackId: number) => {
 
 const MusicPlayer = () => {
   const { setIsPlaying: setGlobalIsPlaying, setAnalyzerData: setGlobalAnalyzerData, setCurrentColor } = useMusicPlayer();
+  
+  // Track data from database
+  const [tracks, setTracks] = useState<Track[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
   const [isPlaying, setIsPlayingLocal] = useState(false);
-  const [currentTrack, setCurrentTrack] = useState(() => Math.floor(Math.random() * tracks.length));
+  const [currentTrack, setCurrentTrack] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.7);
   const [isMuted, setIsMuted] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
-  const [isShuffle, setIsShuffle] = useState(true); // Default to shuffle ON
-  const [repeatMode, setRepeatMode] = useState<RepeatMode>('all'); // Default to repeat all
+  const [isShuffle, setIsShuffle] = useState(true);
+  const [repeatMode, setRepeatMode] = useState<RepeatMode>('all');
   const [analyzerData, setAnalyzerData] = useState<number[]>(new Array(32).fill(0));
   const [isChangingTrack, setIsChangingTrack] = useState(false);
-  const [displayedTrack, setDisplayedTrack] = useState(() => Math.floor(Math.random() * tracks.length));
-  const [playCounts, setPlayCounts] = useState<Record<number, number>>(getPlayCounts);
+  const [displayedTrack, setDisplayedTrack] = useState(0);
+  const [playCounts, setPlayCounts] = useState<Record<string, number>>(getPlayCounts);
   const [showEqualizer, setShowEqualizer] = useState(false);
   const [eqValues, setEqValues] = useState<number[]>([0, 0, 0, 0, 0, 0, 0, 0]);
   const [eqPreset, setEqPreset] = useState<string>('flat');
@@ -155,10 +107,48 @@ const MusicPlayer = () => {
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [transcribeError, setTranscribeError] = useState<string | null>(null);
 
+  // Fetch tracks from database
+  useEffect(() => {
+    const fetchTracks = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('music_tracks')
+          .select('*')
+          .eq('is_active', true)
+          .order('display_order');
+        
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          const mappedTracks: Track[] = data.map(t => ({
+            id: t.id,
+            title: t.title,
+            artist: t.artist,
+            src: t.src,
+            artwork: artworkMap[t.artwork || ''] || t.artwork || albumFreeToChange,
+            color: t.color || '#3b82f6',
+          }));
+          setTracks(mappedTracks);
+          const randomIndex = Math.floor(Math.random() * mappedTracks.length);
+          setCurrentTrack(randomIndex);
+          setDisplayedTrack(randomIndex);
+        }
+      } catch (error) {
+        console.error('Error fetching tracks:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchTracks();
+  }, []);
+
   // Update color when track changes
   useEffect(() => {
-    setCurrentColor(tracks[currentTrack].color);
-  }, [currentTrack, setCurrentColor]);
+    if (tracks.length > 0 && tracks[currentTrack]) {
+      setCurrentColor(tracks[currentTrack].color);
+    }
+  }, [currentTrack, tracks, setCurrentColor]);
 
   // Wrapper for setIsPlaying that also updates global state
   const setIsPlaying = (playing: boolean) => {
@@ -184,7 +174,6 @@ const MusicPlayer = () => {
       }
     };
     
-    // Delay adding listener to prevent immediate close
     const timeoutId = setTimeout(() => {
       document.addEventListener('mousedown', handleClickOutside);
     }, 100);
@@ -194,6 +183,7 @@ const MusicPlayer = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isExpanded]);
+
   const initializeAudioContext = useCallback(() => {
     if (!audioRef.current || audioContextRef.current) return;
 
@@ -203,7 +193,6 @@ const MusicPlayer = () => {
     
     const source = audioContext.createMediaElementSource(audioRef.current);
     
-    // Create EQ filters
     const filters = EQ_BANDS.map((band, index) => {
       const filter = audioContext.createBiquadFilter();
       filter.type = index === 0 ? 'lowshelf' : index === EQ_BANDS.length - 1 ? 'highshelf' : 'peaking';
@@ -213,7 +202,6 @@ const MusicPlayer = () => {
       return filter;
     });
     
-    // Chain filters: source -> filter1 -> filter2 -> ... -> analyzer -> destination
     source.connect(filters[0]);
     for (let i = 0; i < filters.length - 1; i++) {
       filters[i].connect(filters[i + 1]);
@@ -269,6 +257,7 @@ const MusicPlayer = () => {
   }, [volume, isMuted]);
 
   const getNextTrack = useCallback(() => {
+    if (tracks.length === 0) return 0;
     if (isShuffle) {
       let newTrack = Math.floor(Math.random() * tracks.length);
       while (newTrack === currentTrack && tracks.length > 1) {
@@ -277,11 +266,11 @@ const MusicPlayer = () => {
       return newTrack;
     }
     return currentTrack < tracks.length - 1 ? currentTrack + 1 : 0;
-  }, [isShuffle, currentTrack]);
+  }, [isShuffle, currentTrack, tracks.length]);
 
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio) return;
+    if (!audio || tracks.length === 0) return;
 
     const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
     const handleLoadedMetadata = () => setDuration(audio.duration);
@@ -308,11 +297,12 @@ const MusicPlayer = () => {
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       audio.removeEventListener('ended', handleEnded);
     };
-  }, [currentTrack, repeatMode, isShuffle, getNextTrack]);
+  }, [currentTrack, repeatMode, isShuffle, getNextTrack, tracks.length]);
 
   // Listen for external toggle event
   useEffect(() => {
     const handleToggleMusic = () => {
+      if (tracks.length === 0) return;
       if (!isPlaying) {
         const trackId = tracks[currentTrack].id;
         const newCounts = savePlayCount(trackId);
@@ -323,7 +313,6 @@ const MusicPlayer = () => {
       setIsVisible(true);
     };
 
-    // Listen for specific track play request
     const handlePlaySpecificTrack = (event: CustomEvent<{ trackIndex: number }>) => {
       const { trackIndex } = event.detail;
       if (trackIndex >= 0 && trackIndex < tracks.length) {
@@ -344,21 +333,21 @@ const MusicPlayer = () => {
       window.removeEventListener('toggleMusicPlayer', handleToggleMusic);
       window.removeEventListener('playSpecificTrack', handlePlaySpecificTrack as EventListener);
     };
-  }, [currentTrack, isPlaying]);
+  }, [currentTrack, isPlaying, tracks]);
 
   useEffect(() => {
-    if (audioRef.current) {
+    if (audioRef.current && tracks.length > 0) {
       if (isPlaying) {
         audioRef.current.play();
       } else {
         audioRef.current.pause();
       }
     }
-  }, [isPlaying, currentTrack]);
+  }, [isPlaying, currentTrack, tracks.length]);
 
   const togglePlay = () => {
+    if (tracks.length === 0) return;
     if (!isPlaying) {
-      // Record play count when starting to play
       const trackId = tracks[currentTrack].id;
       const newCounts = savePlayCount(trackId);
       setPlayCounts(newCounts);
@@ -379,6 +368,7 @@ const MusicPlayer = () => {
   }, [currentTrack]);
 
   const handlePrevTrack = () => {
+    if (tracks.length === 0) return;
     if (currentTime > 3) {
       if (audioRef.current) audioRef.current.currentTime = 0;
     } else {
@@ -388,6 +378,7 @@ const MusicPlayer = () => {
   };
 
   const handleNextTrack = () => {
+    if (tracks.length === 0) return;
     changeTrackWithAnimation(getNextTrack());
   };
 
@@ -436,9 +427,9 @@ const MusicPlayer = () => {
 
   // Transcribe lyrics using ElevenLabs
   const transcribeLyrics = async () => {
+    if (tracks.length === 0) return;
     const trackId = tracks[currentTrack].id;
     
-    // Check cache first
     if (lyricsCache[trackId]) {
       setCurrentLyrics(lyricsCache[trackId]);
       setShowLyrics(true);
@@ -449,15 +440,12 @@ const MusicPlayer = () => {
     setTranscribeError(null);
 
     try {
-      // Fetch the audio file
       const audioResponse = await fetch(tracks[currentTrack].src);
       const audioBlob = await audioResponse.blob();
       
-      // Create FormData with the audio file
       const formData = new FormData();
       formData.append('audio', audioBlob, `${tracks[currentTrack].title}.mp3`);
 
-      // Call the transcription edge function
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/transcribe-lyrics`,
         {
@@ -477,7 +465,6 @@ const MusicPlayer = () => {
       const data = await response.json();
       const lyrics = data.text || 'No lyrics detected';
       
-      // Cache the lyrics
       lyricsCache[trackId] = lyrics;
       setCurrentLyrics(lyrics);
       setShowLyrics(true);
@@ -488,6 +475,11 @@ const MusicPlayer = () => {
       setIsTranscribing(false);
     }
   };
+
+  // Loading state
+  if (isLoading || tracks.length === 0) {
+    return null;
+  }
 
   const track = tracks[currentTrack];
 
@@ -574,7 +566,6 @@ const MusicPlayer = () => {
               {/* Album Art with Glow */}
               <div className="px-5 py-4">
                 <div className="relative mx-auto w-48 h-48">
-                  {/* Glow background */}
                   <motion.div
                     className="absolute inset-0 rounded-3xl blur-2xl"
                     style={{ backgroundColor: track.color }}
@@ -585,7 +576,6 @@ const MusicPlayer = () => {
                     transition={{ duration: 3, repeat: Infinity }}
                   />
                   
-                  {/* Album art container */}
                   <AnimatePresence mode="wait">
                     <motion.div
                       key={displayedTrack}
@@ -604,7 +594,6 @@ const MusicPlayer = () => {
                         className="w-full h-full object-cover"
                       />
                       
-                      {/* Vinyl overlay when playing */}
                       {isPlaying && (
                         <motion.div
                           className="absolute inset-0 bg-gradient-to-br from-black/20 via-transparent to-black/30"
@@ -615,7 +604,6 @@ const MusicPlayer = () => {
                     </motion.div>
                   </AnimatePresence>
                   
-                  {/* Spinning vinyl peek */}
                   {isPlaying && (
                     <motion.div
                       className="absolute -right-3 top-1/2 -translate-y-1/2 w-12 h-24 overflow-hidden"
@@ -680,7 +668,7 @@ const MusicPlayer = () => {
                 </div>
               )}
 
-              {/* Progress Bar - Modern Style */}
+              {/* Progress Bar */}
               <div className="px-5 mb-4">
                 <div className="relative h-1.5 bg-white/10 rounded-full overflow-hidden">
                   <motion.div
@@ -705,7 +693,7 @@ const MusicPlayer = () => {
                 </div>
               </div>
 
-              {/* Controls - Modern circular layout */}
+              {/* Controls */}
               <div className="px-5 flex items-center justify-center gap-3 mb-5">
                 <motion.button
                   onClick={() => setIsShuffle(!isShuffle)}
@@ -773,7 +761,7 @@ const MusicPlayer = () => {
                 </motion.button>
               </div>
 
-              {/* Volume & Controls Row - Minimal style */}
+              {/* Volume & Controls Row */}
               <div className="px-5 flex items-center justify-center gap-4 mb-4">
                 <div className="flex items-center gap-2 flex-1">
                   <motion.button
@@ -881,7 +869,7 @@ const MusicPlayer = () => {
                 )}
               </AnimatePresence>
 
-              {/* Equalizer - Modern style */}
+              {/* Equalizer */}
               <AnimatePresence>
                 {showEqualizer && (
                   <motion.div
@@ -940,7 +928,7 @@ const MusicPlayer = () => {
                 )}
               </AnimatePresence>
 
-              {/* Track List - Modern cards */}
+              {/* Track List */}
               <div className="px-5 pb-5">
                 <div className="pt-4 border-t border-white/10 max-h-36 overflow-y-auto scrollbar-thin">
                   <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-3">Playlist</p>
@@ -1026,7 +1014,6 @@ const MusicPlayer = () => {
               onClick={() => setIsExpanded(true)}
               whileHover={{ scale: 1.03, boxShadow: `0 20px 40px -10px ${track.color}50` }}
             >
-              {/* Album art thumbnail */}
               <motion.div
                 className="w-12 h-12 rounded-xl flex-shrink-0 overflow-hidden relative shadow-lg"
                 animate={isPlaying ? { scale: [1, 1.05, 1] } : {}}

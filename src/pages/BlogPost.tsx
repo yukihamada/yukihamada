@@ -162,9 +162,9 @@ const BlogPost = () => {
                   className="w-14 h-14 rounded-full object-cover ring-2 ring-primary/30"
                 />
                 <div>
-                  <p className="font-semibold text-foreground">Yuki Nagao</p>
+                  <p className="font-semibold text-foreground">Yuki Hamada</p>
                   <p className="text-sm text-muted-foreground">
-                    {language === 'ja' ? 'AIイネーブラー・柔術家・シンガーソングライター' : 'AI Enabler・BJJ Practitioner・Singer-Songwriter'}
+                    {language === 'ja' ? '株式会社イネブラ・イノベーター' : 'Enebular Inc.・Innovator'}
                   </p>
                 </div>
               </div>

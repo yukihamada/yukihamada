@@ -478,7 +478,12 @@ const MusicPlayer = () => {
       );
 
       if (!response.ok) {
-        throw new Error('Failed to transcribe');
+        const errorData = await response.json().catch(() => ({} as any));
+        const errorMsg = (errorData?.error as string | undefined) || (errorData?.detail?.message as string | undefined) || 'Failed to transcribe';
+        if (String(errorMsg).includes('missing_permissions') || String(errorMsg).includes('speech_to_text')) {
+          throw new Error('歌詞抽出に必要なspeech_to_text権限がAPIキーにありません（ElevenLabsのコネクター設定で権限付きキーに更新してください）。');
+        }
+        throw new Error(errorMsg);
       }
 
       const data = await response.json();

@@ -914,7 +914,7 @@ const AdminDashboard = () => {
   return (
     <>
       <Navigation />
-      <main className="min-h-screen pt-20 pb-16 bg-background">
+      <main className="min-h-screen pt-20 pb-16 bg-background relative z-10">
         <div className="container mx-auto px-4">
           {/* Header */}
           <motion.div

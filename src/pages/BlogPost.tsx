@@ -18,6 +18,7 @@ import DOMPurify from 'dompurify';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useChat } from '@/contexts/ChatContext';
 import { calculateReadingTime, formatReadingTime } from '@/lib/readingTime';
+import ShareCounts from '@/components/ShareCounts';
 import jiuflowHero from '@/assets/jiuflow-hero.png';
 import jiuflowLesson from '@/assets/jiuflow-lesson.png';
 import yukiProfile from '@/assets/yuki-profile.jpg';
@@ -166,6 +167,7 @@ const BlogPost = () => {
                 {formatReadingTime(calculateReadingTime(content.content, language), language)}
               </span>
               <BlogViewStats postSlug={post.slug} />
+              <ShareCounts postSlug={post.slug} />
             </div>
 
             {/* Title - Prominent */}

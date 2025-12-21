@@ -95,6 +95,36 @@ export type Database = {
         }
         Relationships: []
       }
+      blog_share_counts: {
+        Row: {
+          created_at: string
+          facebook_count: number
+          hatena_count: number
+          id: string
+          post_slug: string
+          twitter_count: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          facebook_count?: number
+          hatena_count?: number
+          id?: string
+          post_slug: string
+          twitter_count?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          facebook_count?: number
+          hatena_count?: number
+          id?: string
+          post_slug?: string
+          twitter_count?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       blog_suggested_questions: {
         Row: {
           created_at: string

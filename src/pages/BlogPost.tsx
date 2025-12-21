@@ -202,7 +202,9 @@ const BlogPost = () => {
               {content.excerpt}
             </p>
 
-            <ShareButtons title={content.title} url={window.location.href} />
+            <div className="mb-8">
+              <ShareButtons title={content.title} url={window.location.href} />
+            </div>
 
             <BlogSummary 
               postSlug={post.slug}

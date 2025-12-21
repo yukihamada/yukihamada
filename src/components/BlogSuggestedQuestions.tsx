@@ -1,5 +1,6 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { MessageCircle, Sparkles } from 'lucide-react';
+import { MessageCircle, Sparkles, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useChat } from '@/contexts/ChatContext';
@@ -7,66 +8,77 @@ import { useChat } from '@/contexts/ChatContext';
 interface BlogSuggestedQuestionsProps {
   blogTitle: string;
   blogCategory: string;
+  postSlug: string;
+  content: string;
 }
 
-const BlogSuggestedQuestions = ({ blogTitle, blogCategory }: BlogSuggestedQuestionsProps) => {
+const BlogSuggestedQuestions = ({ blogTitle, blogCategory, postSlug, content }: BlogSuggestedQuestionsProps) => {
   const { language } = useLanguage();
   const { openChat, setPendingMessage } = useChat();
+  const [questions, setQuestions] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Generate contextual questions based on category
-  const getQuestions = () => {
-    const baseQuestions = language === 'ja' ? [
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/blog-ai`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            },
+            body: JSON.stringify({
+              action: 'questions',
+              postSlug,
+              title: blogTitle,
+              category: blogCategory,
+              content: content.substring(0, 3000),
+            }),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch questions');
+        }
+
+        const data = await response.json();
+        const fetchedQuestions = language === 'ja' ? data.questions_ja : data.questions_en;
+        setQuestions(Array.isArray(fetchedQuestions) ? fetchedQuestions : []);
+      } catch (err) {
+        console.error('Error fetching questions:', err);
+        // Fallback to static questions
+        setQuestions(getStaticQuestions());
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchQuestions();
+  }, [postSlug, blogTitle, blogCategory, content, language]);
+
+  const getStaticQuestions = () => {
+    return language === 'ja' ? [
       `この記事の内容をもっと詳しく教えて`,
       `${blogTitle}について質問があります`,
       `関連するおすすめの記事はありますか？`,
+      `この内容を実践するにはどうすればいい？`,
     ] : [
       `Can you explain more about this article?`,
       `I have a question about "${blogTitle}"`,
       `Are there any related articles you recommend?`,
+      `How can I apply this in practice?`,
     ];
-
-    // Add category-specific questions
-    const categoryQuestions: Record<string, { ja: string[]; en: string[] }> = {
-      'AI': {
-        ja: ['AIの今後の発展についてどう思いますか？', 'この技術を実際に活用する方法は？'],
-        en: ['What do you think about the future of AI?', 'How can I apply this technology practically?'],
-      },
-      '柔術': {
-        ja: ['柔術を始めるにはどうすればいい？', '初心者へのアドバイスは？'],
-        en: ['How can I start learning BJJ?', 'Any advice for beginners?'],
-      },
-      'BJJ': {
-        ja: ['柔術を始めるにはどうすればいい？', '初心者へのアドバイスは？'],
-        en: ['How can I start learning BJJ?', 'Any advice for beginners?'],
-      },
-      '音楽': {
-        ja: ['この曲の制作背景を教えて', '音楽制作のプロセスについて聞きたい'],
-        en: ['Tell me about the background of this song', 'I want to know about your music production process'],
-      },
-      'Music': {
-        ja: ['この曲の制作背景を教えて', '音楽制作のプロセスについて聞きたい'],
-        en: ['Tell me about the background of this song', 'I want to know about your music production process'],
-      },
-      'テクノロジー': {
-        ja: ['この技術のビジネス応用について教えて', '今後のトレンドはどうなると思う？'],
-        en: ['Tell me about business applications of this technology', 'What do you think future trends will be?'],
-      },
-      'Technology': {
-        ja: ['この技術のビジネス応用について教えて', '今後のトレンドはどうなると思う？'],
-        en: ['Tell me about business applications of this technology', 'What do you think future trends will be?'],
-      },
-    };
-
-    const extraQuestions = categoryQuestions[blogCategory]?.[language === 'ja' ? 'ja' : 'en'] || [];
-    return [...baseQuestions, ...extraQuestions].slice(0, 4);
   };
-
-  const questions = getQuestions();
 
   const handleQuestionClick = (question: string) => {
     setPendingMessage(question);
     openChat();
   };
+
+  const displayQuestions = questions.length > 0 ? questions : getStaticQuestions();
 
   return (
     <motion.div
@@ -94,28 +106,37 @@ const BlogSuggestedQuestions = ({ blogTitle, blogCategory }: BlogSuggestedQuesti
       </div>
 
       <div className="grid gap-3 mb-6">
-        {questions.map((question, index) => (
-          <motion.button
-            key={index}
-            onClick={() => handleQuestionClick(question)}
-            className="w-full text-left p-4 rounded-xl bg-background/50 hover:bg-background border border-border/50 hover:border-primary/30 transition-all group"
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: index * 0.1 }}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <div className="flex items-center gap-3">
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center transition-colors">
-                <MessageCircle className="h-4 w-4 text-primary" />
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            <span className="ml-2 text-muted-foreground">
+              {language === 'ja' ? '質問を生成中...' : 'Generating questions...'}
+            </span>
+          </div>
+        ) : (
+          displayQuestions.map((question, index) => (
+            <motion.button
+              key={index}
+              onClick={() => handleQuestionClick(question)}
+              className="w-full text-left p-4 rounded-xl bg-background/50 hover:bg-background border border-border/50 hover:border-primary/30 transition-all group"
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.1 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 group-hover:bg-primary/20 flex items-center justify-center transition-colors">
+                  <MessageCircle className="h-4 w-4 text-primary" />
+                </div>
+                <span className="text-foreground group-hover:text-primary transition-colors">
+                  {question}
+                </span>
               </div>
-              <span className="text-foreground group-hover:text-primary transition-colors">
-                {question}
-              </span>
-            </div>
-          </motion.button>
-        ))}
+            </motion.button>
+          ))
+        )}
       </div>
 
       <div className="text-center">

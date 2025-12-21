@@ -12,6 +12,7 @@ import BlogOGP from '@/components/BlogOGP';
 import ShareButtons from '@/components/ShareButtons';
 import { BlogComments } from '@/components/BlogComments';
 import BlogSuggestedQuestions from '@/components/BlogSuggestedQuestions';
+import BlogSummary from '@/components/BlogSummary';
 import DOMPurify from 'dompurify';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useChat } from '@/contexts/ChatContext';
@@ -168,6 +169,13 @@ const BlogPost = () => {
             </p>
 
             <ShareButtons title={content.title} url={window.location.href} />
+
+            <BlogSummary 
+              postSlug={post.slug}
+              title={content.title}
+              category={content.category}
+              content={content.content}
+            />
           </motion.header>
 
           <motion.div
@@ -231,7 +239,9 @@ const BlogPost = () => {
               
               <BlogSuggestedQuestions 
                 blogTitle={content.title} 
-                blogCategory={content.category} 
+                blogCategory={content.category}
+                postSlug={post.slug}
+                content={content.content}
               />
 
               <BlogComments blogSlug={post.slug} />

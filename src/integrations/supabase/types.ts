@@ -95,6 +95,60 @@ export type Database = {
         }
         Relationships: []
       }
+      blog_suggested_questions: {
+        Row: {
+          created_at: string
+          id: string
+          post_slug: string
+          questions_en: Json
+          questions_ja: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_slug: string
+          questions_en?: Json
+          questions_ja?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_slug?: string
+          questions_en?: Json
+          questions_ja?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      blog_summaries: {
+        Row: {
+          created_at: string
+          id: string
+          post_slug: string
+          summary_en: string
+          summary_ja: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_slug: string
+          summary_en: string
+          summary_ja: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_slug?: string
+          summary_en?: string
+          summary_ja?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       blog_views: {
         Row: {
           created_at: string

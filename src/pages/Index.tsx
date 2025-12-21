@@ -8,6 +8,7 @@ import BlogSection from '@/components/BlogSection';
 import HobbiesSection from '@/components/HobbiesSection';
 import Footer from '@/components/Footer';
 import OrganicBackground from '@/components/OrganicBackground';
+import TodaysSong from '@/components/TodaysSong';
 
 const Index = () => {
 
@@ -25,6 +26,7 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <OrganicBackground />
       <Navigation />
+      <TodaysSong />
       <main className="relative z-10">
         <HeroSection onMusicPlay={handleMusicPlay} />
         <EnablerSection />

@@ -127,35 +127,58 @@ const Community = () => {
   const t = texts[language];
 
   useEffect(() => {
+    console.log('Community: Starting fetchTopics');
     fetchTopics();
   }, []);
 
   const fetchTopics = async () => {
+    console.log('Community: fetchTopics called');
     setIsLoading(true);
-    const { data, error } = await supabase
-      .from('forum_topics')
-      .select('*')
-      .order('is_pinned', { ascending: false })
-      .order('created_at', { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from('forum_topics')
+        .select('*')
+        .order('is_pinned', { ascending: false })
+        .order('created_at', { ascending: false });
 
-    if (!error && data) {
-      const topicsWithData = await Promise.all(
-        data.map(async (topic) => {
-          const { count } = await supabase
-            .from('forum_comments')
-            .select('*', { count: 'exact', head: true })
-            .eq('topic_id', topic.id);
-          
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('display_name, avatar_url')
-            .eq('user_id', topic.user_id)
-            .maybeSingle();
-          
-          return { ...topic, comment_count: count || 0, profiles: profile };
-        })
-      );
-      setTopics(topicsWithData as Topic[]);
+      console.log('Community: forum_topics result', { data, error });
+
+      if (error) {
+        console.error('Error fetching topics:', error);
+        setIsLoading(false);
+        return;
+      }
+
+      if (data) {
+        console.log('Community: Processing topics, count:', data.length);
+        const topicsWithData = await Promise.all(
+          data.map(async (topic) => {
+            const { count } = await supabase
+              .from('forum_comments')
+              .select('*', { count: 'exact', head: true })
+              .eq('topic_id', topic.id);
+            
+            // Profile fetch may fail due to RLS, handle gracefully
+            let profile = null;
+            try {
+              const { data: profileData } = await supabase
+                .from('profiles')
+                .select('display_name, avatar_url')
+                .eq('user_id', topic.user_id)
+                .maybeSingle();
+              profile = profileData;
+            } catch (e) {
+              console.log('Could not fetch profile for topic author');
+            }
+            
+            return { ...topic, comment_count: count || 0, profiles: profile };
+          })
+        );
+        console.log('Community: Setting topics', topicsWithData);
+        setTopics(topicsWithData as Topic[]);
+      }
+    } catch (err) {
+      console.error('Error in fetchTopics:', err);
     }
     setIsLoading(false);
   };

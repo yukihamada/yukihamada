@@ -324,7 +324,7 @@ const Navigation = () => {
                       variant="ghost"
                       size="sm"
                       className="rounded-full h-8 px-3 text-muted-foreground hover:text-foreground"
-                      onClick={() => navigate('/chat-admin')}
+                      onClick={() => navigate('/admin')}
                     >
                       <Settings className="h-4 w-4" />
                       <span className="ml-1.5 hidden lg:inline">{language === 'ja' ? '管理' : 'Admin'}</span>

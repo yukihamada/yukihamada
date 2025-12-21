@@ -185,7 +185,7 @@ const Footer = () => {
                 whileHover={{ scale: 1.05 }}
               >
                 <Link
-                  to="/chat-admin"
+                  to="/admin"
                   className="text-muted-foreground hover:text-primary text-sm flex items-center gap-1 transition-colors"
                 >
                   <Settings className="h-3 w-3" />

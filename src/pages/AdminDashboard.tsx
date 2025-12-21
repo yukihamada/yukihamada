@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
@@ -383,6 +383,8 @@ const AdminDashboard = () => {
   const [editingTrack, setEditingTrack] = useState<Partial<MusicTrack> | null>(null);
   const [isTranscribingLyrics, setIsTranscribingLyrics] = useState(false);
   const [lyricsText, setLyricsText] = useState(''); // For editing lyrics as text
+  const [lyricsPreviewTime, setLyricsPreviewTime] = useState(0);
+  const lyricsAudioRef = useRef<HTMLAudioElement | null>(null);
 
   // AI Prompts state
   const [aiPrompts, setAiPrompts] = useState<AIPrompt[]>([]);
@@ -2207,10 +2209,10 @@ const AdminDashboard = () => {
                       </div>
                     </div>
                     
-                    {/* Lyrics Section */}
-                    <div className="space-y-2">
+                    {/* Lyrics Section with Preview */}
+                    <div className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <Label>歌詞 (タイムスタンプ形式: 0:00 歌詞テキスト)</Label>
+                        <Label className="text-base font-medium">歌詞編集・プレビュー</Label>
                         {editingTrack.src && (
                           <Button 
                             type="button" 
@@ -2233,16 +2235,113 @@ const AdminDashboard = () => {
                           </Button>
                         )}
                       </div>
-                      <Textarea
-                        value={lyricsText}
-                        onChange={(e) => setLyricsText(e.target.value)}
-                        placeholder="0:00 最初の歌詞&#10;0:15 次の歌詞&#10;..."
-                        rows={8}
-                        className="font-mono text-sm"
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        各行を「分:秒 歌詞」形式で入力するか、AIで自動抽出できます
-                      </p>
+                      
+                      {/* Audio Player for Preview */}
+                      {editingTrack.src && (
+                        <div className="p-3 bg-muted/30 rounded-lg border">
+                          <div className="flex items-center gap-3">
+                            <div 
+                              className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+                              style={{ backgroundColor: `${editingTrack.color || '#3b82f6'}20` }}
+                            >
+                              <Music className="w-5 h-5" style={{ color: editingTrack.color || '#3b82f6' }} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium truncate">{editingTrack.title || '新規トラック'}</p>
+                              <audio 
+                                ref={lyricsAudioRef}
+                                src={editingTrack.src}
+                                className="w-full h-8 mt-1"
+                                controls
+                                onTimeUpdate={(e) => setLyricsPreviewTime(e.currentTarget.currentTime)}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        {/* Editor */}
+                        <div className="space-y-2">
+                          <Label className="text-sm text-muted-foreground">テキスト編集（分:秒 歌詞）</Label>
+                          <Textarea
+                            value={lyricsText}
+                            onChange={(e) => setLyricsText(e.target.value)}
+                            placeholder="0:00 最初の歌詞&#10;0:15 次の歌詞&#10;0:30 続きの歌詞..."
+                            rows={12}
+                            className="font-mono text-sm"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            各行を「分:秒 歌詞」形式で入力（例: 1:23 歌詞テキスト）
+                          </p>
+                        </div>
+
+                        {/* Preview */}
+                        <div className="space-y-2">
+                          <Label className="text-sm text-muted-foreground">プレビュー（現在: {Math.floor(lyricsPreviewTime / 60)}:{String(Math.floor(lyricsPreviewTime % 60)).padStart(2, '0')}）</Label>
+                          <div className="border rounded-lg h-[288px] overflow-y-auto bg-background">
+                            {lyricsText.trim() ? (
+                              <div className="p-3 space-y-1">
+                                {lyricsText.split('\n').filter(line => line.trim()).map((line, idx) => {
+                                  const match = line.match(/^(\d+):(\d{1,2})\s+(.+)$/);
+                                  if (!match) {
+                                    return (
+                                      <div key={idx} className="p-2 rounded text-sm text-muted-foreground italic">
+                                        {line} <span className="text-xs text-destructive ml-2">（形式エラー）</span>
+                                      </div>
+                                    );
+                                  }
+                                  const minutes = parseInt(match[1]);
+                                  const seconds = parseInt(match[2]);
+                                  const text = match[3];
+                                  const lineTime = minutes * 60 + seconds;
+                                  
+                                  // Find next line time for highlighting current
+                                  const nextLine = lyricsText.split('\n').filter(l => l.trim())[idx + 1];
+                                  const nextMatch = nextLine?.match(/^(\d+):(\d{1,2})\s+/);
+                                  const nextTime = nextMatch ? parseInt(nextMatch[1]) * 60 + parseInt(nextMatch[2]) : Infinity;
+                                  
+                                  const isActive = lyricsPreviewTime >= lineTime && lyricsPreviewTime < nextTime;
+                                  const isPast = lyricsPreviewTime >= nextTime;
+                                  
+                                  return (
+                                    <div 
+                                      key={idx} 
+                                      className={`p-2 rounded-lg text-sm flex items-start gap-3 cursor-pointer transition-colors ${
+                                        isActive 
+                                          ? 'bg-primary/20 text-foreground font-medium' 
+                                          : isPast 
+                                            ? 'text-muted-foreground/60' 
+                                            : 'text-foreground/80 hover:bg-muted/50'
+                                      }`}
+                                      onClick={() => {
+                                        if (lyricsAudioRef.current) {
+                                          lyricsAudioRef.current.currentTime = lineTime;
+                                        }
+                                      }}
+                                    >
+                                      <span className="text-xs font-mono text-muted-foreground shrink-0 w-10">
+                                        {minutes}:{String(seconds).padStart(2, '0')}
+                                      </span>
+                                      <span className="flex-1">{text}</span>
+                                      {isActive && (
+                                        <span className="w-2 h-2 rounded-full bg-primary animate-pulse shrink-0 mt-1.5" />
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
+                                歌詞を入力またはAIで抽出してください
+                              </div>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            クリックでその位置にジャンプ・再生中の歌詞がハイライトされます
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

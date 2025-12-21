@@ -12,14 +12,14 @@ serve(async (req) => {
   }
 
   try {
-    // Try multiple possible secret names for ElevenLabs API key
-    const ELEVENLABS_API_KEY = Deno.env.get('ELEVENLABS_API_KEY_1') || Deno.env.get('ELEVENLABS_API_KEY');
+    const ELEVENLABS_API_KEY = Deno.env.get('ELEVENLABS_API_KEY');
     
     if (!ELEVENLABS_API_KEY) {
+      console.error('ELEVENLABS_API_KEY is not configured');
       throw new Error('ELEVENLABS_API_KEY is not configured');
     }
     
-    console.log('Using ElevenLabs API key:', ELEVENLABS_API_KEY.substring(0, 8) + '...');
+    console.log('ElevenLabs API key found, proceeding with transcription...');
 
     const formData = await req.formData();
     const audioFile = formData.get('audio') as File;

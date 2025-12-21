@@ -43,8 +43,28 @@ const convertDBToAppFormat = (dbPost: BlogPostDB): BlogPost => ({
   },
 });
 
+// Parse date string to comparable format (handles both Japanese and English dates)
+const parseDateString = (dateStr: string): Date => {
+  // Japanese format: "2025年12月21日"
+  const jaMatch = dateStr.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
+  if (jaMatch) {
+    return new Date(parseInt(jaMatch[1]), parseInt(jaMatch[2]) - 1, parseInt(jaMatch[3]));
+  }
+  // English format: "December 21, 2025"
+  return new Date(dateStr);
+};
+
+// Sort posts by date (newest first)
+const sortPostsByDate = (posts: BlogPost[]): BlogPost[] => {
+  return [...posts].sort((a, b) => {
+    const dateA = parseDateString(a.ja.date);
+    const dateB = parseDateString(b.ja.date);
+    return dateB.getTime() - dateA.getTime();
+  });
+};
+
 export const useBlogPosts = () => {
-  const [posts, setPosts] = useState<BlogPost[]>(staticBlogPosts);
+  const [posts, setPosts] = useState<BlogPost[]>(sortPostsByDate(staticBlogPosts));
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -62,11 +82,15 @@ export const useBlogPosts = () => {
         if (data && data.length > 0) {
           const convertedPosts = data.map(convertDBToAppFormat);
           setPosts(convertedPosts);
+        } else {
+          // Use sorted static posts as fallback
+          setPosts(sortPostsByDate(staticBlogPosts));
         }
       } catch (err) {
         console.error('Error fetching blog posts:', err);
         setError(err as Error);
-        // Fallback to static posts on error
+        // Fallback to sorted static posts on error
+        setPosts(sortPostsByDate(staticBlogPosts));
       } finally {
         setIsLoading(false);
       }

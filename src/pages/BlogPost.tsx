@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Calendar, Tag, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Calendar, Tag, RefreshCw, Twitter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useBlogPost, useBlogPosts } from '@/hooks/useBlogPosts';
 import Navigation from '@/components/Navigation';
@@ -150,18 +150,29 @@ const BlogPost = () => {
             transition={{ duration: 0.6 }}
           >
             {/* Author section */}
-            <div className="flex items-center gap-4 mb-6 p-4 glass rounded-2xl">
-              <img 
-                src={yukiProfile} 
-                alt="Yuki Nagao" 
-                className="w-14 h-14 rounded-full object-cover ring-2 ring-primary/30"
-              />
-              <div>
-                <p className="font-semibold text-foreground">Yuki Nagao</p>
-                <p className="text-sm text-muted-foreground">
-                  {language === 'ja' ? 'AIイネーブラー・柔術家・シンガーソングライター' : 'AI Enabler・BJJ Practitioner・Singer-Songwriter'}
-                </p>
+            <div className="flex items-center justify-between gap-4 mb-6 p-4 glass rounded-2xl">
+              <div className="flex items-center gap-4">
+                <img 
+                  src={yukiProfile} 
+                  alt="Yuki Nagao" 
+                  className="w-14 h-14 rounded-full object-cover ring-2 ring-primary/30"
+                />
+                <div>
+                  <p className="font-semibold text-foreground">Yuki Nagao</p>
+                  <p className="text-sm text-muted-foreground">
+                    {language === 'ja' ? 'AIイネーブラー・柔術家・シンガーソングライター' : 'AI Enabler・BJJ Practitioner・Singer-Songwriter'}
+                  </p>
+                </div>
               </div>
+              <a
+                href="https://x.com/nagaoyuki"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-foreground text-background hover:bg-foreground/90 transition-colors text-sm font-medium"
+              >
+                <Twitter className="h-4 w-4" />
+                <span className="hidden sm:inline">{language === 'ja' ? 'フォロー' : 'Follow'}</span>
+              </a>
             </div>
 
             <div className="flex flex-wrap items-center gap-3 mb-4">

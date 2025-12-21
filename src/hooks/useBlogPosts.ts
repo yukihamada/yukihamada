@@ -54,6 +54,16 @@ const parseDateString = (dateStr: string): Date => {
   return new Date(dateStr);
 };
 
+// Filter out future-dated posts
+const filterFuturePosts = (posts: BlogPost[]): BlogPost[] => {
+  const now = new Date();
+  now.setHours(0, 0, 0, 0); // Compare dates only, not time
+  return posts.filter(post => {
+    const postDate = parseDateString(post.ja.date);
+    return postDate <= now;
+  });
+};
+
 // Sort posts by date (newest first)
 const sortPostsByDate = (posts: BlogPost[]): BlogPost[] => {
   return [...posts].sort((a, b) => {
@@ -63,8 +73,13 @@ const sortPostsByDate = (posts: BlogPost[]): BlogPost[] => {
   });
 };
 
+// Filter and sort posts
+const processPublicPosts = (posts: BlogPost[]): BlogPost[] => {
+  return sortPostsByDate(filterFuturePosts(posts));
+};
+
 export const useBlogPosts = () => {
-  const [posts, setPosts] = useState<BlogPost[]>(sortPostsByDate(staticBlogPosts));
+  const [posts, setPosts] = useState<BlogPost[]>(processPublicPosts(staticBlogPosts));
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -81,16 +96,16 @@ export const useBlogPosts = () => {
 
         if (data && data.length > 0) {
           const convertedPosts = data.map(convertDBToAppFormat);
-          setPosts(convertedPosts);
+          setPosts(processPublicPosts(convertedPosts));
         } else {
-          // Use sorted static posts as fallback
-          setPosts(sortPostsByDate(staticBlogPosts));
+          // Use processed static posts as fallback
+          setPosts(processPublicPosts(staticBlogPosts));
         }
       } catch (err) {
         console.error('Error fetching blog posts:', err);
         setError(err as Error);
-        // Fallback to sorted static posts on error
-        setPosts(sortPostsByDate(staticBlogPosts));
+        // Fallback to processed static posts on error
+        setPosts(processPublicPosts(staticBlogPosts));
       } finally {
         setIsLoading(false);
       }

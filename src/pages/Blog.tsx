@@ -180,18 +180,16 @@ const Blog = () => {
                     }}
                     transition={{ type: "spring", stiffness: 300 }}
                   >
-                    {post.image && (
-                      <div className="aspect-video overflow-hidden">
-                        <OptimizedImage
-                          src={post.image}
-                          alt={content.title}
-                          width={400}
-                          height={225}
-                          loading="lazy"
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                      </div>
-                    )}
+                    <div className="aspect-video overflow-hidden bg-muted">
+                      <OptimizedImage
+                        src={post.image || '/placeholder.svg'}
+                        alt={content.title}
+                        width={400}
+                        height={225}
+                        loading="lazy"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
                     
                     <div className="p-6 flex flex-col flex-grow">
                       <div className="flex items-center gap-2 mb-3 flex-wrap">

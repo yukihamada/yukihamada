@@ -34,15 +34,15 @@ const blogImages: Record<string, string> = {
   'ai-jobs-crossroads': '/images/blog-ai-jobs-crossroads.jpg',
 };
 
-const trackMapping: Record<string, number> = {
-  'shio-to-pixel': 6,
-  'free-to-change': 0,
-  'hello-2150': 1,
-  'everybody-bjj': 2,
-  'i-love-you': 3,
-  'attention': 4,
-  'koi-jujutsu': 5,
-  'musubinaosu': 7,
+const trackMapping: Record<string, { index: number; titleJa: string; titleEn: string }> = {
+  'shio-to-pixel': { index: 6, titleJa: '塩とピクセル', titleEn: 'Salt and Pixels' },
+  'free-to-change': { index: 0, titleJa: 'Free to Change', titleEn: 'Free to Change' },
+  'hello-2150': { index: 1, titleJa: 'Hello 2150', titleEn: 'Hello 2150' },
+  'everybody-bjj': { index: 2, titleJa: 'Everybody say 柔術', titleEn: 'Everybody say BJJ' },
+  'i-love-you': { index: 3, titleJa: 'I Love You', titleEn: 'I Love You' },
+  'attention': { index: 4, titleJa: 'I need your attention', titleEn: 'I need your attention' },
+  'koi-jujutsu': { index: 5, titleJa: 'それ恋じゃなくて柔術', titleEn: "That's not love, it's Jiu-Jitsu" },
+  'musubinaosu': { index: 7, titleJa: '結び直す朝', titleEn: 'Morning to Reconnect' },
 };
 
 const playTrack = (trackIndex: number) => {
@@ -252,9 +252,29 @@ const BlogPost = () => {
                           : '';
                       })
                       .replace(/\[play:([a-zA-Z0-9_-]+)\]/g, (_, trackId) => {
-                        const trackIndex = trackMapping[trackId] ?? 0;
-                        const buttonText = language === 'ja' ? '🎵 塩とピクセル を再生' : '🎵 Play Salt and Pixels';
-                        return `<div class="my-10 flex justify-center"><button data-play-track="${trackIndex}" class="group flex items-center gap-4 px-8 py-5 rounded-2xl bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-semibold text-lg shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-pointer"><span class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="ml-1"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></span><span>${buttonText}</span></button></div>`;
+                        const track = trackMapping[trackId];
+                        const trackIndex = track?.index ?? 0;
+                        const trackTitle = language === 'ja' ? track?.titleJa : track?.titleEn;
+                        return `
+<div class="my-12 flex justify-center">
+  <button data-play-track="${trackIndex}" class="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-card via-card to-muted border border-border/50 p-1 shadow-2xl hover:shadow-primary/20 transition-all duration-500 cursor-pointer hover:scale-[1.02]">
+    <div class="relative flex items-center gap-5 px-8 py-6 rounded-[22px] bg-gradient-to-br from-background/80 to-background/40 backdrop-blur-sm">
+      <div class="relative">
+        <div class="absolute inset-0 bg-primary/30 rounded-full blur-xl group-hover:blur-2xl transition-all duration-500 animate-pulse"></div>
+        <div class="relative w-16 h-16 rounded-full bg-gradient-to-br from-primary via-primary to-primary/70 flex items-center justify-center shadow-lg group-hover:shadow-primary/50 transition-all duration-300 group-hover:scale-110">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" class="text-primary-foreground ml-1 group-hover:scale-110 transition-transform duration-300"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+        </div>
+      </div>
+      <div class="flex flex-col items-start">
+        <span class="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-1">${language === 'ja' ? "🎵 今日の一曲" : "🎵 Today's Song"}</span>
+        <span class="text-xl font-bold text-foreground group-hover:text-primary transition-colors duration-300">${trackTitle || trackId}</span>
+        <span class="text-sm text-muted-foreground mt-0.5">${language === 'ja' ? 'クリックして再生' : 'Click to play'}</span>
+      </div>
+      <div class="absolute -right-20 -top-20 w-40 h-40 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/20 transition-colors duration-500"></div>
+      <div class="absolute -left-10 -bottom-10 w-32 h-32 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/15 transition-colors duration-500"></div>
+    </div>
+  </button>
+</div>`;
                       })
                       .replace(/\n\n/g, '</p><p class="mb-6 text-muted-foreground leading-relaxed text-lg">'),
                     { ADD_ATTR: ['target', 'rel', 'allowfullscreen', 'allow', 'frameborder', 'data-play-track'], ADD_TAGS: ['iframe'] }

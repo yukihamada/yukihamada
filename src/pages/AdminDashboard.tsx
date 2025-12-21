@@ -1124,9 +1124,16 @@ const AdminDashboard = () => {
                       </thead>
                       <tbody>
                         {blogAnalytics.slice(0, 10).map((a) => (
-                          <tr key={a.post_slug} className="border-b border-border/50">
+                          <tr key={a.post_slug} className="border-b border-border/50 hover:bg-muted/50 transition-colors">
                             <td className="p-3">
-                              <div className="max-w-xs truncate">{getPostTitle(a.post_slug)}</div>
+                              <a 
+                                href={`/blog/${a.post_slug}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="max-w-xs truncate block text-primary hover:underline"
+                              >
+                                {getPostTitle(a.post_slug)}
+                              </a>
                             </td>
                             <td className="text-right p-3">{a.view_count}</td>
                             <td className="text-right p-3">{a.unique_visitors}</td>

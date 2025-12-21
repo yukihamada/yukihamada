@@ -9,7 +9,7 @@ import { MusicPlayerProvider } from "@/contexts/MusicPlayerContext";
 import { ChatProvider } from "@/contexts/ChatContext";
 import ScrollToTop from "@/components/ScrollToTop";
 import MusicPlayer from "@/components/MusicPlayer";
-import AudioVisualBackground from "@/components/AudioVisualBackground";
+import LivingGridBackground from "@/components/LivingGridBackground";
 import { AIChatSection } from "@/components/AIChatSection";
 import Index from "./pages/Index";
 import Blog from "./pages/Blog";
@@ -35,7 +35,7 @@ const App = () => (
               <Sonner />
               <BrowserRouter>
                 <ScrollToTop />
-                <AudioVisualBackground />
+                <LivingGridBackground />
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/blog" element={<Blog />} />
@@ -46,6 +46,7 @@ const App = () => (
                   <Route path="/admin" element={<AdminDashboard />} />
                   <Route path="/admin/chat" element={<ChatAdmin />} />
                   <Route path="/admin/blog" element={<BlogAdmin />} />
+                  <Route path="/chat-admin" element={<ChatAdmin />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>

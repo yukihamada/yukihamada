@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { 
   MessageCircle, User, Bot, ChevronRight, ArrowLeft, Trash2, RefreshCw, 
-  BarChart3, Eye, Heart, TrendingUp, LogOut, Lock, Users
+  BarChart3, Eye, Heart, TrendingUp, LogOut, Lock, Users, Shield, UserPlus, UserMinus
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { blogPosts } from '@/data/blogPosts';
 import { Session } from '@supabase/supabase-js';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type Conversation = {
   id: string;
@@ -39,6 +40,15 @@ type BlogAnalytics = {
   last_view_at: string | null;
 };
 
+type UserWithRole = {
+  id: string;
+  email: string;
+  created_at: string;
+  last_sign_in_at: string | null;
+  role: 'admin' | 'moderator' | 'user' | null;
+  display_name: string | null;
+};
+
 const ChatAdmin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -62,6 +72,11 @@ const ChatAdmin = () => {
   // Analytics state
   const [blogAnalytics, setBlogAnalytics] = useState<BlogAnalytics[]>([]);
   const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(false);
+  
+  // User management state
+  const [users, setUsers] = useState<UserWithRole[]>([]);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+  const [newAdminEmail, setNewAdminEmail] = useState('');
 
   // Check auth and admin status
   useEffect(() => {
@@ -226,10 +241,98 @@ const ChatAdmin = () => {
     }
   };
 
+  // Fetch users with roles
+  const fetchUsers = async () => {
+    setIsLoadingUsers(true);
+    
+    // Get all profiles
+    const { data: profiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (profilesError) {
+      console.error('Error fetching profiles:', profilesError);
+      setIsLoadingUsers(false);
+      return;
+    }
+    
+    // Get all user roles
+    const { data: roles, error: rolesError } = await supabase
+      .from('user_roles')
+      .select('*');
+    
+    if (rolesError) {
+      console.error('Error fetching roles:', rolesError);
+    }
+    
+    // Combine data
+    const usersWithRoles: UserWithRole[] = (profiles || []).map(profile => {
+      const userRole = roles?.find(r => r.user_id === profile.user_id);
+      return {
+        id: profile.user_id,
+        email: profile.user_id, // We'll show user_id since we don't have direct access to auth.users
+        created_at: profile.created_at,
+        last_sign_in_at: null,
+        role: userRole?.role as 'admin' | 'moderator' | 'user' | null,
+        display_name: profile.display_name,
+      };
+    });
+    
+    setUsers(usersWithRoles);
+    setIsLoadingUsers(false);
+  };
+
+  // Add role to user
+  const addUserRole = async (userId: string, role: 'admin' | 'moderator' | 'user') => {
+    const { error } = await supabase
+      .from('user_roles')
+      .upsert({ user_id: userId, role }, { onConflict: 'user_id,role' });
+    
+    if (error) {
+      console.error('Error adding role:', error);
+      toast({
+        title: "エラー",
+        description: "ロールの追加に失敗しました",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "成功",
+        description: `ロールを${role}に変更しました`,
+      });
+      fetchUsers();
+    }
+  };
+
+  // Remove role from user
+  const removeUserRole = async (userId: string) => {
+    const { error } = await supabase
+      .from('user_roles')
+      .delete()
+      .eq('user_id', userId);
+    
+    if (error) {
+      console.error('Error removing role:', error);
+      toast({
+        title: "エラー",
+        description: "ロールの削除に失敗しました",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "成功",
+        description: "ロールを削除しました",
+      });
+      fetchUsers();
+    }
+  };
+
   useEffect(() => {
     if (isAdmin) {
       fetchConversations();
       fetchBlogAnalytics();
+      fetchUsers();
     }
   }, [isAdmin]);
 
@@ -393,14 +496,18 @@ const ChatAdmin = () => {
 
       <div className="container mx-auto px-4 py-6">
         <Tabs defaultValue="analytics" className="space-y-6">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsList className="grid w-full max-w-lg grid-cols-3">
             <TabsTrigger value="analytics" className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4" />
-              アクセス解析
+              <span className="hidden sm:inline">アクセス解析</span>
             </TabsTrigger>
             <TabsTrigger value="chat" className="flex items-center gap-2">
               <MessageCircle className="w-4 h-4" />
-              チャット管理
+              <span className="hidden sm:inline">チャット管理</span>
+            </TabsTrigger>
+            <TabsTrigger value="users" className="flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              <span className="hidden sm:inline">ユーザー管理</span>
             </TabsTrigger>
           </TabsList>
 
@@ -665,6 +772,171 @@ const ChatAdmin = () => {
                       ))}
                     </div>
                   )}
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Users Tab */}
+          <TabsContent value="users" className="space-y-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-semibold flex items-center gap-2">
+                <Users className="w-4 h-4" />
+                ユーザー管理
+              </h2>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={fetchUsers}
+                className="flex items-center gap-2"
+              >
+                <RefreshCw className={`w-4 h-4 ${isLoadingUsers ? 'animate-spin' : ''}`} />
+                更新
+              </Button>
+            </div>
+
+            {/* Users Table */}
+            <div className="bg-card rounded-xl border border-border overflow-hidden">
+              <div className="p-4 border-b border-border bg-muted/30">
+                <h3 className="font-semibold flex items-center gap-2">
+                  <Shield className="w-4 h-4" />
+                  登録ユーザー一覧
+                  <span className="text-xs text-muted-foreground ml-2">
+                    {users.length}人
+                  </span>
+                </h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-border bg-muted/20">
+                      <th className="text-left p-4 font-medium">ユーザー</th>
+                      <th className="text-left p-4 font-medium">ロール</th>
+                      <th className="text-left p-4 font-medium whitespace-nowrap">登録日</th>
+                      <th className="text-right p-4 font-medium">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {isLoadingUsers ? (
+                      <tr>
+                        <td colSpan={4} className="p-8 text-center">
+                          <RefreshCw className="w-6 h-6 animate-spin mx-auto text-muted-foreground" />
+                        </td>
+                      </tr>
+                    ) : users.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="p-8 text-center text-muted-foreground">
+                          登録ユーザーがいません
+                        </td>
+                      </tr>
+                    ) : (
+                      users.map((user) => (
+                        <tr key={user.id} className="border-b border-border/50 hover:bg-muted/30">
+                          <td className="p-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                <User className="w-5 h-5 text-primary" />
+                              </div>
+                              <div>
+                                <div className="font-medium">
+                                  {user.display_name || '名前未設定'}
+                                </div>
+                                <div className="text-xs text-muted-foreground truncate max-w-[200px]">
+                                  {user.id.substring(0, 8)}...
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <Select
+                              value={user.role || 'none'}
+                              onValueChange={(value) => {
+                                if (value === 'none') {
+                                  removeUserRole(user.id);
+                                } else {
+                                  addUserRole(user.id, value as 'admin' | 'moderator' | 'user');
+                                }
+                              }}
+                            >
+                              <SelectTrigger className="w-32">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="none">
+                                  <span className="text-muted-foreground">なし</span>
+                                </SelectItem>
+                                <SelectItem value="user">
+                                  <span className="flex items-center gap-2">
+                                    <User className="w-3 h-3" />
+                                    ユーザー
+                                  </span>
+                                </SelectItem>
+                                <SelectItem value="moderator">
+                                  <span className="flex items-center gap-2">
+                                    <Shield className="w-3 h-3 text-blue-500" />
+                                    モデレーター
+                                  </span>
+                                </SelectItem>
+                                <SelectItem value="admin">
+                                  <span className="flex items-center gap-2">
+                                    <Shield className="w-3 h-3 text-primary" />
+                                    管理者
+                                  </span>
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </td>
+                          <td className="p-4 text-sm text-muted-foreground whitespace-nowrap">
+                            {format(new Date(user.created_at), 'yyyy/MM/dd', { locale: ja })}
+                          </td>
+                          <td className="p-4 text-right">
+                            {user.role && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-destructive hover:text-destructive"
+                                onClick={() => {
+                                  if (confirm('このユーザーのロールを削除しますか？')) {
+                                    removeUserRole(user.id);
+                                  }
+                                }}
+                              >
+                                <UserMinus className="w-4 h-4" />
+                              </Button>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Role Legend */}
+            <div className="bg-card rounded-xl border border-border p-4">
+              <h4 className="font-medium mb-3">ロールについて</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div className="flex items-start gap-2">
+                  <Shield className="w-4 h-4 text-primary mt-0.5" />
+                  <div>
+                    <span className="font-medium">管理者</span>
+                    <p className="text-muted-foreground">全ての機能にアクセス可能</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Shield className="w-4 h-4 text-blue-500 mt-0.5" />
+                  <div>
+                    <span className="font-medium">モデレーター</span>
+                    <p className="text-muted-foreground">コンテンツの管理が可能</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <User className="w-4 h-4 text-muted-foreground mt-0.5" />
+                  <div>
+                    <span className="font-medium">ユーザー</span>
+                    <p className="text-muted-foreground">一般的な機能のみ利用可能</p>
+                  </div>
                 </div>
               </div>
             </div>

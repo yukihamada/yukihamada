@@ -11,6 +11,8 @@ interface ChatContextType {
   setPageContext: (context: PageContext) => void;
   currentBlogTitle?: string;
   setCurrentBlogTitle: (title: string | undefined) => void;
+  pendingMessage?: string;
+  setPendingMessage: (message: string | undefined) => void;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -19,6 +21,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [pageContext, setPageContext] = useState<PageContext>('home');
   const [currentBlogTitle, setCurrentBlogTitle] = useState<string | undefined>(undefined);
+  const [pendingMessage, setPendingMessage] = useState<string | undefined>(undefined);
 
   const openChat = useCallback(() => setIsOpen(true), []);
   const closeChat = useCallback(() => setIsOpen(false), []);
@@ -34,6 +37,8 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       setPageContext,
       currentBlogTitle,
       setCurrentBlogTitle,
+      pendingMessage,
+      setPendingMessage,
     }}>
       {children}
     </ChatContext.Provider>

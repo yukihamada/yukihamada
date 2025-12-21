@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Calendar, Tag, MessageCircle, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Calendar, Tag, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useBlogPost, useBlogPosts } from '@/hooks/useBlogPosts';
 import Navigation from '@/components/Navigation';
@@ -11,6 +11,7 @@ import BlogViewStats from '@/components/BlogViewStats';
 import BlogOGP from '@/components/BlogOGP';
 import ShareButtons from '@/components/ShareButtons';
 import { BlogComments } from '@/components/BlogComments';
+import BlogSuggestedQuestions from '@/components/BlogSuggestedQuestions';
 import DOMPurify from 'dompurify';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useChat } from '@/contexts/ChatContext';
@@ -49,7 +50,7 @@ const BlogPost = () => {
   const { posts: allPosts } = useBlogPosts();
   const contentRef = useRef<HTMLDivElement>(null);
   const { language } = useLanguage();
-  const { openChat, setPageContext, setCurrentBlogTitle } = useChat();
+  const { setPageContext, setCurrentBlogTitle } = useChat();
 
   useEffect(() => {
     setPageContext('blog-post');
@@ -228,27 +229,10 @@ const BlogPost = () => {
               <LikeButton postSlug={post.slug} />
               <ShareButtons title={content.title} url={window.location.href} />
               
-              <motion.div
-                className="w-full mt-8 p-6 rounded-2xl bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-              >
-                <div className="text-center">
-                  <p className="text-foreground font-medium mb-3">
-                    {language === 'ja' 
-                      ? 'この記事について質問がありますか？' 
-                      : 'Have questions about this article?'}
-                  </p>
-                  <Button 
-                    onClick={openChat}
-                    className="gradient-bg text-primary-foreground hover:opacity-90"
-                  >
-                    <MessageCircle className="mr-2 h-4 w-4" />
-                    {language === 'ja' ? '濱田に聞いてみる' : 'Ask Yuki'}
-                  </Button>
-                </div>
-              </motion.div>
+              <BlogSuggestedQuestions 
+                blogTitle={content.title} 
+                blogCategory={content.category} 
+              />
 
               <BlogComments blogSlug={post.slug} />
             </div>

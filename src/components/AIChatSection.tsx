@@ -189,7 +189,7 @@ const VoiceInputButton = ({ onTranscript, isDisabled, texts }: VoiceInputProps) 
 
 export const AIChatSection = () => {
   const { toast } = useToast();
-  const { isOpen, toggleChat, openChat, pageContext, currentBlogTitle } = useChat();
+  const { isOpen, toggleChat, openChat, pageContext, currentBlogTitle, pendingMessage, setPendingMessage } = useChat();
   const { language } = useLanguage();
   const [messages, setMessages] = useState<Message[]>(() => loadMessagesFromStorage());
   const [input, setInput] = useState('');
@@ -714,6 +714,19 @@ export const AIChatSection = () => {
     }
   };
 
+  // Handle pending message from suggested questions
+  useEffect(() => {
+    if (pendingMessage && isOpen && !isLoading) {
+      setInput(pendingMessage);
+      setPendingMessage(undefined);
+      // Auto-send after a short delay
+      setTimeout(() => {
+        const sendButton = document.querySelector('[data-send-button]') as HTMLButtonElement;
+        if (sendButton) sendButton.click();
+      }, 100);
+    }
+  }, [pendingMessage, isOpen, isLoading, setPendingMessage]);
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -1101,6 +1114,7 @@ export const AIChatSection = () => {
                   onClick={handleSend}
                   disabled={!input.trim() || isLoading}
                   size="icon"
+                  data-send-button
                   className="rounded-full w-12 h-12 md:w-10 md:h-10 bg-primary hover:bg-primary/90 flex-shrink-0"
                 >
                   {isLoading ? (

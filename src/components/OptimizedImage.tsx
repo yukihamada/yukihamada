@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface OptimizedImageProps {
   src: string;
@@ -24,38 +24,34 @@ const OptimizedImage = ({
 }: OptimizedImageProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [currentSrc, setCurrentSrc] = useState(src);
 
-  // Generate WebP source if the image is from public folder
-  const getWebPSrc = (originalSrc: string) => {
-    if (originalSrc.startsWith('/images/') && (originalSrc.endsWith('.jpg') || originalSrc.endsWith('.png'))) {
-      return originalSrc.replace(/\.(jpg|png)$/, '.webp');
-    }
-    return null;
-  };
+  // Reset state when src changes
+  useEffect(() => {
+    setHasError(false);
+    setIsLoaded(false);
+    setCurrentSrc(src);
+  }, [src]);
 
-  const webpSrc = getWebPSrc(src);
+  const imageSrc = hasError ? '/placeholder.svg' : currentSrc;
 
   return (
-    <picture>
-      {webpSrc && (
-        <source srcSet={webpSrc} type="image/webp" />
-      )}
-      <img
-        src={src}
-        alt={alt}
-        className={`${className} ${isLoaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}
-        width={width}
-        height={height}
-        loading={loading}
-        decoding="async"
-        fetchPriority={fetchPriority}
-        onLoad={() => setIsLoaded(true)}
-        onError={() => {
+    <img
+      src={imageSrc}
+      alt={alt}
+      className={`${className} transition-opacity duration-300 ${isLoaded ? 'opacity-100' : 'opacity-50'}`}
+      width={width}
+      height={height}
+      loading={loading}
+      decoding="async"
+      onLoad={() => setIsLoaded(true)}
+      onError={() => {
+        if (!hasError) {
           setHasError(true);
           setIsLoaded(true);
-        }}
-      />
-    </picture>
+        }
+      }}
+    />
   );
 };
 

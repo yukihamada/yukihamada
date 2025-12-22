@@ -436,57 +436,65 @@ const BlogAdmin = () => {
                         <Label htmlFor="featured">注目記事</Label>
                       </div>
                       
-                      <div className="flex items-center gap-3 p-3 border rounded-lg bg-muted/30">
-                        <div className="flex items-center gap-2">
-                          <Switch
-                            id="schedule_toggle"
-                            checked={editingPost.published_at ? isScheduledPost(editingPost.published_at) : false}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                // Set to tomorrow 9:00 AM
+                      <div className="flex flex-col gap-3 p-3 border rounded-lg bg-muted/30">
+                        <div className="flex items-center gap-4">
+                          <Label className="font-medium whitespace-nowrap">公開設定:</Label>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setEditingPost({ ...editingPost, published_at: formatDateTimeLocal(new Date()) })}
+                              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                                editingPost.published_at && !isScheduledPost(editingPost.published_at)
+                                  ? 'bg-green-500 text-white'
+                                  : 'bg-muted hover:bg-muted/80 text-muted-foreground'
+                              }`}
+                            >
+                              <span className="flex items-center gap-1">
+                                <Eye className="h-3.5 w-3.5" />
+                                今すぐ公開
+                              </span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
                                 const tomorrow = new Date();
                                 tomorrow.setDate(tomorrow.getDate() + 1);
                                 tomorrow.setHours(9, 0, 0, 0);
                                 setEditingPost({ ...editingPost, published_at: formatDateTimeLocal(tomorrow) });
-                              } else {
-                                // Set to now (immediate publish)
-                                setEditingPost({ ...editingPost, published_at: formatDateTimeLocal(new Date()) });
-                              }
-                            }}
-                          />
-                          <Label htmlFor="schedule_toggle" className="font-medium">
-                            {editingPost.published_at && isScheduledPost(editingPost.published_at) ? (
-                              <span className="flex items-center gap-1 text-amber-600">
-                                <CalendarClock className="h-4 w-4" />
+                              }}
+                              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                                editingPost.published_at && isScheduledPost(editingPost.published_at)
+                                  ? 'bg-amber-500 text-white'
+                                  : 'bg-muted hover:bg-muted/80 text-muted-foreground'
+                              }`}
+                            >
+                              <span className="flex items-center gap-1">
+                                <CalendarClock className="h-3.5 w-3.5" />
                                 予約公開
                               </span>
-                            ) : (
-                              <span className="flex items-center gap-1 text-green-600">
-                                <Eye className="h-4 w-4" />
-                                今すぐ公開
-                              </span>
-                            )}
-                          </Label>
+                            </button>
+                          </div>
                         </div>
                         
-                        {editingPost.published_at && isScheduledPost(editingPost.published_at) && (
-                          <div className="flex items-center gap-2 border-l pl-3">
-                            <Label htmlFor="published_at" className="whitespace-nowrap text-sm">公開日時:</Label>
-                            <Input
-                              id="published_at"
-                              type="datetime-local"
-                              value={formatDateTimeLocal(new Date(editingPost.published_at))}
-                              onChange={(e) => setEditingPost({ ...editingPost, published_at: e.target.value })}
-                              className="w-auto h-8 text-sm"
-                            />
-                          </div>
-                        )}
-                        
-                        {editingPost.published_at && !isScheduledPost(editingPost.published_at) && (
-                          <span className="text-xs text-muted-foreground border-l pl-3">
-                            保存後すぐに公開されます
-                          </span>
-                        )}
+                        <div className="flex items-center gap-2">
+                          <Label htmlFor="published_at" className="whitespace-nowrap text-sm">公開日時:</Label>
+                          <Input
+                            id="published_at"
+                            type="datetime-local"
+                            value={editingPost.published_at ? formatDateTimeLocal(new Date(editingPost.published_at)) : ''}
+                            onChange={(e) => setEditingPost({ ...editingPost, published_at: e.target.value })}
+                            className="w-auto h-8 text-sm"
+                          />
+                          {editingPost.published_at && (
+                            <span className={`text-xs px-2 py-1 rounded ${
+                              isScheduledPost(editingPost.published_at)
+                                ? 'bg-amber-100 text-amber-700'
+                                : 'bg-green-100 text-green-700'
+                            }`}>
+                              {isScheduledPost(editingPost.published_at) ? '未公開（予約中）' : '公開済み'}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
 

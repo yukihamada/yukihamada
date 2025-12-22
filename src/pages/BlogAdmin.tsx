@@ -426,7 +426,7 @@ const BlogAdmin = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-6 flex-wrap">
                       <div className="flex items-center space-x-2">
                         <Switch
                           id="featured"
@@ -435,19 +435,56 @@ const BlogAdmin = () => {
                         />
                         <Label htmlFor="featured">注目記事</Label>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Label htmlFor="published_at" className="whitespace-nowrap">公開日時</Label>
-                        <Input
-                          id="published_at"
-                          type="datetime-local"
-                          value={editingPost.published_at ? formatDateTimeLocal(new Date(editingPost.published_at)) : formatDateTimeLocal(new Date())}
-                          onChange={(e) => setEditingPost({ ...editingPost, published_at: e.target.value })}
-                          className="w-auto"
-                        />
+                      
+                      <div className="flex items-center gap-3 p-3 border rounded-lg bg-muted/30">
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            id="schedule_toggle"
+                            checked={editingPost.published_at ? isScheduledPost(editingPost.published_at) : false}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                // Set to tomorrow 9:00 AM
+                                const tomorrow = new Date();
+                                tomorrow.setDate(tomorrow.getDate() + 1);
+                                tomorrow.setHours(9, 0, 0, 0);
+                                setEditingPost({ ...editingPost, published_at: formatDateTimeLocal(tomorrow) });
+                              } else {
+                                // Set to now (immediate publish)
+                                setEditingPost({ ...editingPost, published_at: formatDateTimeLocal(new Date()) });
+                              }
+                            }}
+                          />
+                          <Label htmlFor="schedule_toggle" className="font-medium">
+                            {editingPost.published_at && isScheduledPost(editingPost.published_at) ? (
+                              <span className="flex items-center gap-1 text-amber-600">
+                                <CalendarClock className="h-4 w-4" />
+                                予約公開
+                              </span>
+                            ) : (
+                              <span className="flex items-center gap-1 text-green-600">
+                                <Eye className="h-4 w-4" />
+                                今すぐ公開
+                              </span>
+                            )}
+                          </Label>
+                        </div>
+                        
                         {editingPost.published_at && isScheduledPost(editingPost.published_at) && (
-                          <span className="text-xs bg-amber-500 text-white px-2 py-0.5 rounded flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            予約投稿
+                          <div className="flex items-center gap-2 border-l pl-3">
+                            <Label htmlFor="published_at" className="whitespace-nowrap text-sm">公開日時:</Label>
+                            <Input
+                              id="published_at"
+                              type="datetime-local"
+                              value={formatDateTimeLocal(new Date(editingPost.published_at))}
+                              onChange={(e) => setEditingPost({ ...editingPost, published_at: e.target.value })}
+                              className="w-auto h-8 text-sm"
+                            />
+                          </div>
+                        )}
+                        
+                        {editingPost.published_at && !isScheduledPost(editingPost.published_at) && (
+                          <span className="text-xs text-muted-foreground border-l pl-3">
+                            保存後すぐに公開されます
                           </span>
                         )}
                       </div>

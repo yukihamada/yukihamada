@@ -435,6 +435,35 @@ export type Database = {
         }
         Relationships: []
       }
+      music_play_counts: {
+        Row: {
+          created_at: string
+          id: string
+          track_id: string
+          visitor_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          track_id: string
+          visitor_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          track_id?: string
+          visitor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "music_play_counts_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "music_tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       music_tracks: {
         Row: {
           artist: string
@@ -546,6 +575,14 @@ export type Database = {
       }
       get_blog_like_count: { Args: { p_post_slug: string }; Returns: number }
       get_blog_view_count: { Args: { p_post_slug: string }; Returns: number }
+      get_music_play_counts: {
+        Args: never
+        Returns: {
+          play_count: number
+          track_id: string
+          unique_listeners: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

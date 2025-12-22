@@ -613,15 +613,20 @@ const BlogAdmin = () => {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                   >
-                    <Card>
+                    <Card className={isScheduledPost(post.published_at) ? 'border-amber-500/50 bg-amber-50/5' : ''}>
                       <CardContent className="py-4">
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
-                              {isScheduledPost(post.published_at) && (
+                              {isScheduledPost(post.published_at) ? (
                                 <span className="text-xs bg-amber-500 text-white px-2 py-0.5 rounded flex items-center gap-1">
-                                  <Clock className="h-3 w-3" />
-                                  予約
+                                  <CalendarClock className="h-3 w-3" />
+                                  予約公開
+                                </span>
+                              ) : (
+                                <span className="text-xs bg-green-500 text-white px-2 py-0.5 rounded flex items-center gap-1">
+                                  <Eye className="h-3 w-3" />
+                                  公開中
                                 </span>
                               )}
                               {post.featured && (
@@ -632,17 +637,42 @@ const BlogAdmin = () => {
                               <span className="text-xs text-muted-foreground">{post.category_ja}</span>
                             </div>
                             <h3 className="font-semibold">{post.title_ja}</h3>
-                            <p className="text-sm text-muted-foreground">
-                              {post.published_at 
-                                ? new Date(post.published_at).toLocaleString('ja-JP', { 
-                                    year: 'numeric', 
-                                    month: 'long', 
-                                    day: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                  })
-                                : post.date_ja}
-                            </p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <p className="text-sm text-muted-foreground">
+                                {post.published_at 
+                                  ? new Date(post.published_at).toLocaleString('ja-JP', { 
+                                      year: 'numeric', 
+                                      month: 'long', 
+                                      day: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit'
+                                    })
+                                  : post.date_ja}
+                              </p>
+                              {isScheduledPost(post.published_at) && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-6 text-xs px-2 border-green-500 text-green-600 hover:bg-green-50"
+                                  onClick={async () => {
+                                    const { error } = await supabase
+                                      .from('blog_posts')
+                                      .update({ published_at: new Date().toISOString() })
+                                      .eq('id', post.id);
+                                    if (error) {
+                                      toast.error('公開に失敗しました');
+                                    } else {
+                                      toast.success('記事を公開しました！');
+                                      setPosts(prev => prev.map(p => 
+                                        p.id === post.id ? { ...p, published_at: new Date().toISOString() } : p
+                                      ));
+                                    }
+                                  }}
+                                >
+                                  今すぐ公開
+                                </Button>
+                              )}
+                            </div>
                           </div>
                           <div className="flex gap-1">
                             <Button

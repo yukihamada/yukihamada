@@ -77,10 +77,31 @@ const getPlayCounts = (): Record<string, number> => {
   }
 };
 
+// Get or create visitor ID
+const getVisitorId = (): string => {
+  const stored = localStorage.getItem('visitor_id');
+  if (stored) return stored;
+  
+  const newId = `visitor_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  localStorage.setItem('visitor_id', newId);
+  return newId;
+};
+
 const savePlayCount = (trackId: string) => {
   const counts = getPlayCounts();
   counts[trackId] = (counts[trackId] || 0) + 1;
   localStorage.setItem('musicPlayCounts', JSON.stringify(counts));
+  
+  // Also save to database for admin analytics
+  const visitorId = getVisitorId();
+  import('@/lib/visitorSupabaseClient').then(({ getVisitorSupabaseClient }) => {
+    const client = getVisitorSupabaseClient(visitorId);
+    client.from('music_play_counts').insert({
+      track_id: trackId,
+      visitor_id: visitorId
+    });
+  });
+  
   return counts;
 };
 

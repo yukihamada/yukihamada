@@ -12,7 +12,8 @@ import {
   BarChart3, Eye, Heart, TrendingUp, RefreshCw, ArrowLeft,
   Plus, Edit, Trash2, Save, X, ChevronRight, User, Bot,
   Shield, LogOut, Settings, Columns2, PanelLeft, Music, Calendar, Clock,
-  Globe, Sparkles, History, RotateCcw, Monitor, Smartphone, Tablet, GitCompare
+  Globe, Sparkles, History, RotateCcw, Monitor, Smartphone, Tablet, GitCompare,
+  Play, Headphones
 } from 'lucide-react';
 import MarkdownPreview from '@/components/MarkdownPreview';
 import { Button } from '@/components/ui/button';
@@ -125,6 +126,12 @@ interface MusicTrack {
   lyrics: LyricLine[] | null;
   created_at: string;
   updated_at: string;
+}
+
+interface MusicPlayCount {
+  track_id: string;
+  play_count: number;
+  unique_listeners: number;
 }
 
 interface AIPrompt {
@@ -399,6 +406,7 @@ const AdminDashboard = () => {
   const [lyricsText, setLyricsText] = useState(''); // For editing lyrics as text
   const [lyricsPreviewTime, setLyricsPreviewTime] = useState(0);
   const lyricsAudioRef = useRef<HTMLAudioElement | null>(null);
+  const [musicPlayCounts, setMusicPlayCounts] = useState<MusicPlayCount[]>([]);
 
   // AI Prompts state
   const [aiPrompts, setAiPrompts] = useState<AIPrompt[]>([]);
@@ -442,7 +450,8 @@ const AdminDashboard = () => {
         fetchTopics(),
         fetchComments(),
         fetchMusicTracks(),
-        fetchAiPrompts()
+        fetchAiPrompts(),
+        fetchMusicPlayCounts()
       ]);
     }
     setIsLoading(false);
@@ -692,6 +701,21 @@ const AdminDashboard = () => {
       }));
       setMusicTracks(mappedTracks);
     }
+  };
+
+  const fetchMusicPlayCounts = async () => {
+    const { data, error } = await supabase.rpc('get_music_play_counts');
+    if (!error && data) {
+      setMusicPlayCounts(data as MusicPlayCount[]);
+    }
+  };
+
+  const getTrackPlayCount = (trackId: string): { plays: number; listeners: number } => {
+    const count = musicPlayCounts.find(c => c.track_id === trackId);
+    return {
+      plays: count?.play_count ? Number(count.play_count) : 0,
+      listeners: count?.unique_listeners ? Number(count.unique_listeners) : 0
+    };
   };
 
   const handleSaveTrack = async () => {
@@ -1189,6 +1213,10 @@ const AdminDashboard = () => {
                       <span className="text-sm text-muted-foreground">楽曲数</span>
                     </div>
                     <p className="text-3xl font-bold">{musicTracks.filter(t => t.is_active).length}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      <Play className="w-3 h-3 inline mr-1" />
+                      {musicPlayCounts.reduce((sum, c) => sum + Number(c.play_count), 0).toLocaleString()} 再生
+                    </p>
                   </CardContent>
                 </Card>
                 <Card>
@@ -2384,7 +2412,16 @@ const AdminDashboard = () => {
                                 {!track.is_active && <Badge variant="secondary">無効</Badge>}
                               </div>
                               <p className="text-sm text-muted-foreground">{track.artist}</p>
-                              <p className="text-xs text-muted-foreground truncate">{track.src}</p>
+                              <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
+                                <span className="flex items-center gap-1">
+                                  <Play className="w-3 h-3" />
+                                  {getTrackPlayCount(track.id).plays.toLocaleString()} 再生
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <Headphones className="w-3 h-3" />
+                                  {getTrackPlayCount(track.id).listeners.toLocaleString()} 人
+                                </span>
+                              </div>
                             </div>
                             <div className="flex items-center gap-1">
                               <Button

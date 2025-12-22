@@ -9,8 +9,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 const BlogSection = () => {
   const { language } = useLanguage();
   const { posts: blogPosts, isLoading } = useBlogPosts();
-  const featuredPost = blogPosts.find((post) => post.featured);
-  const otherPosts = blogPosts.filter((post) => !post.featured).slice(0, 4);
+  // 最新の記事をfeaturedとして表示（featuredフラグがあれば優先、なければ最新）
+  const featuredPost = blogPosts.find((post) => post.featured) || blogPosts[0];
+  // featuredPost以外の最新4件を表示
+  const otherPosts = blogPosts.filter((post) => post.slug !== featuredPost?.slug).slice(0, 4);
 
   const containerVariants = {
     hidden: { opacity: 0 },

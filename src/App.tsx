@@ -14,11 +14,9 @@ import { AIChatSection } from "@/components/AIChatSection";
 import Index from "./pages/Index";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
-import ChatAdmin from "./pages/ChatAdmin";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import Community from "./pages/Community";
-import BlogAdmin from "./pages/BlogAdmin";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 
@@ -44,9 +42,11 @@ const App = () => (
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/community" element={<Community />} />
                   <Route path="/admin" element={<AdminDashboard />} />
-                  <Route path="/admin/chat" element={<ChatAdmin />} />
-                  <Route path="/admin/blog" element={<BlogAdmin />} />
-                  <Route path="/chat-admin" element={<ChatAdmin />} />
+                  {/* Legacy routes - redirect to main admin */}
+                  <Route path="/admin/blog" element={<AdminDashboard />} />
+                  <Route path="/admin/chat" element={<AdminDashboard />} />
+                  <Route path="/blog-admin" element={<AdminDashboard />} />
+                  <Route path="/chat-admin" element={<AdminDashboard />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>

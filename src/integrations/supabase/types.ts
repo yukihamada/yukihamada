@@ -557,6 +557,10 @@ export type Database = {
         Args: { p_post_slug: string; p_visitor_id: string }
         Returns: boolean
       }
+      increment_topic_view_count: {
+        Args: { topic_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"

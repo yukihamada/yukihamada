@@ -44,6 +44,7 @@ interface BlogPostDB {
   date_en: string;
   category_en: string;
   status: 'draft' | 'published';
+  published_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -332,6 +333,18 @@ const getDiffLines = (oldText: string, newText: string): { type: 'same' | 'added
   return result;
 };
 
+// Helper to format date for datetime-local input
+const formatDateTimeLocal = (date: Date): string => {
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
+
+// Check if a post is scheduled (future)
+const isScheduledPost = (publishedAt: string | null): boolean => {
+  if (!publishedAt) return false;
+  return new Date(publishedAt) > new Date();
+};
+
 const emptyPost: Omit<BlogPostDB, 'id' | 'created_at' | 'updated_at'> = {
   slug: '',
   featured: false,
@@ -346,7 +359,8 @@ const emptyPost: Omit<BlogPostDB, 'id' | 'created_at' | 'updated_at'> = {
   content_en: '',
   date_en: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
   category_en: '',
-  status: 'draft',
+  status: 'published',
+  published_at: formatDateTimeLocal(new Date()),
 };
 
 const AdminDashboard = () => {
@@ -466,7 +480,8 @@ const AdminDashboard = () => {
       content_en: editingPost.content_en,
       date_en: editingPost.date_en,
       category_en: editingPost.category_en,
-      status: editingPost.status || 'draft',
+      status: editingPost.status || 'published',
+      published_at: editingPost.published_at ? new Date(editingPost.published_at).toISOString() : new Date().toISOString(),
     };
 
     if (isCreating) {

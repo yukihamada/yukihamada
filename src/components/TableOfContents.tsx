@@ -20,21 +20,35 @@ const TableOfContents = ({ content }: TableOfContentsProps) => {
   const [activeId, setActiveId] = useState<string>('');
 
   useEffect(() => {
-    // Parse headings from markdown content
-    const headingRegex = /^(#{2,3})\s+(.+)$/gm;
     const items: TocItem[] = [];
-    let match;
-
-    while ((match = headingRegex.exec(content)) !== null) {
-      const level = match[1].length;
-      const text = match[2].replace(/\*\*/g, '').trim();
-      const id = text
-        .toLowerCase()
-        .replace(/[^\w\s\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/g, '')
-        .replace(/\s+/g, '-')
-        .slice(0, 50);
-      
+    
+    // Try parsing HTML headings first (h2, h3 with id attributes)
+    const htmlHeadingRegex = /<h([23])[^>]*id="([^"]+)"[^>]*>([^<]+)<\/h[23]>/gi;
+    let htmlMatch;
+    
+    while ((htmlMatch = htmlHeadingRegex.exec(content)) !== null) {
+      const level = parseInt(htmlMatch[1]);
+      const id = htmlMatch[2];
+      const text = htmlMatch[3].replace(/<[^>]*>/g, '').trim();
       items.push({ id, text, level });
+    }
+    
+    // If no HTML headings found, try markdown format
+    if (items.length === 0) {
+      const markdownRegex = /^(#{2,3})\s+(.+)$/gm;
+      let mdMatch;
+      
+      while ((mdMatch = markdownRegex.exec(content)) !== null) {
+        const level = mdMatch[1].length;
+        const text = mdMatch[2].replace(/\*\*/g, '').trim();
+        const id = text
+          .toLowerCase()
+          .replace(/[^\w\s\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/g, '')
+          .replace(/\s+/g, '-')
+          .slice(0, 50);
+        
+        items.push({ id, text, level });
+      }
     }
 
     setTocItems(items);

@@ -57,9 +57,6 @@ interface Conversation {
   updated_at: string;
   message_count: number;
   last_message: string;
-  ip_address: string | null;
-  user_agent: string | null;
-  hostname: string | null;
 }
 
 interface Message {
@@ -1815,54 +1812,21 @@ const AdminDashboard = () => {
                     <CardTitle className="text-base">会話一覧</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-2">
-                    {conversations.map((conv) => {
-                      const uaInfo = parseUserAgent(conv.user_agent);
-                      const DeviceIcon = uaInfo.icon === 'bot' ? Bot : uaInfo.icon === 'smartphone' ? Smartphone : uaInfo.icon === 'tablet' ? Tablet : Monitor;
-                      return (
+                    {conversations.map((conv) => (
                         <div
                           key={conv.id}
                           className={`p-3 rounded-lg border cursor-pointer transition-colors ${
                             selectedConversation === conv.id ? 'bg-primary/10 border-primary' : 'hover:bg-muted/50'
-                          } ${uaInfo.isBot ? 'border-amber-500/50 bg-amber-500/5' : ''}`}
+                          }`}
                           onClick={() => { setSelectedConversation(conv.id); fetchMessages(conv.id); }}
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <p className="text-sm truncate flex-1">{conv.last_message || '(空)'}</p>
-                                {uaInfo.isBot && (
-                                  <Badge variant="outline" className="text-amber-600 border-amber-500 text-xs shrink-0">
-                                    <Bot className="w-3 h-3 mr-1" />
-                                    Bot
-                                  </Badge>
-                                )}
-                              </div>
+                              <p className="text-sm truncate">{conv.last_message || '(空)'}</p>
                               <p className="text-xs text-muted-foreground">
                                 {format(new Date(conv.updated_at), 'MM/dd HH:mm', { locale: ja })}
                                 ・{conv.message_count}件
                               </p>
-                              {conv.ip_address && (
-                                <div className="flex items-center gap-1 text-xs text-muted-foreground/70 mt-1">
-                                  <Globe className="w-3 h-3" />
-                                  <span className="truncate">
-                                    {conv.hostname ? `${conv.hostname}` : ''}
-                                    {conv.hostname && ' / '}
-                                    <span className="text-green-600 dark:text-green-400">匿名化済み</span>
-                                    <span className="text-muted-foreground/50 ml-1">({conv.ip_address.slice(0, 8)}...)</span>
-                                  </span>
-                                </div>
-                              )}
-                              {conv.user_agent && (
-                                <div className="flex items-center gap-2 text-xs text-muted-foreground/70 mt-1">
-                                  <DeviceIcon className="w-3 h-3" />
-                                  <span>
-                                    {uaInfo.isBot 
-                                      ? uaInfo.botName 
-                                      : `${uaInfo.device} / ${uaInfo.browser} / ${uaInfo.os}`
-                                    }
-                                  </span>
-                                </div>
-                              )}
                             </div>
                             <Button
                               variant="ghost"
@@ -1874,8 +1838,7 @@ const AdminDashboard = () => {
                             </Button>
                           </div>
                         </div>
-                      );
-                    })}
+                      ))}
                   </CardContent>
                 </Card>
                 <Card className="max-h-[600px] overflow-y-auto">

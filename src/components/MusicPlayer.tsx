@@ -88,22 +88,30 @@ const getVisitorId = (): string => {
   return newId;
 };
 
-const savePlayCount = (trackId: string) => {
+// Update local play count (synchronous, for UI)
+const updateLocalPlayCount = (trackId: string): Record<string, number> => {
   const counts = getPlayCounts();
   counts[trackId] = (counts[trackId] || 0) + 1;
   localStorage.setItem('musicPlayCounts', JSON.stringify(counts));
-  
-  // Also save to database for admin analytics
+  return counts;
+};
+
+// Save play count to database (async, for analytics)
+const savePlayCountToDb = async (trackId: string) => {
   const visitorId = getVisitorId();
-  import('@/lib/visitorSupabaseClient').then(({ getVisitorSupabaseClient }) => {
+  try {
+    const { getVisitorSupabaseClient } = await import('@/lib/visitorSupabaseClient');
     const client = getVisitorSupabaseClient(visitorId);
-    client.from('music_play_counts').insert({
+    const { error } = await client.from('music_play_counts').insert({
       track_id: trackId,
       visitor_id: visitorId
     });
-  });
-  
-  return counts;
+    if (error) {
+      console.error('Error saving play count:', error);
+    }
+  } catch (err) {
+    console.error('Error saving play count:', err);
+  }
 };
 
 const MusicPlayer = () => {
@@ -337,8 +345,9 @@ const MusicPlayer = () => {
       if (tracks.length === 0) return;
       if (!isPlaying) {
         const trackId = tracks[currentTrack].id;
-        const newCounts = savePlayCount(trackId);
+        const newCounts = updateLocalPlayCount(trackId);
         setPlayCounts(newCounts);
+        savePlayCountToDb(trackId);
       }
       setIsPlaying(!isPlaying);
       setIsExpanded(true);
@@ -351,8 +360,9 @@ const MusicPlayer = () => {
         setCurrentTrack(trackIndex);
         setDisplayedTrack(trackIndex);
         const trackId = tracks[trackIndex].id;
-        const newCounts = savePlayCount(trackId);
+        const newCounts = updateLocalPlayCount(trackId);
         setPlayCounts(newCounts);
+        savePlayCountToDb(trackId);
         setIsPlaying(true);
         setIsExpanded(true);
         setIsVisible(true);
@@ -381,8 +391,9 @@ const MusicPlayer = () => {
     if (tracks.length === 0) return;
     if (!isPlaying) {
       const trackId = tracks[currentTrack].id;
-      const newCounts = savePlayCount(trackId);
+      const newCounts = updateLocalPlayCount(trackId);
       setPlayCounts(newCounts);
+      savePlayCountToDb(trackId);
     }
     setIsPlaying(!isPlaying);
   };
@@ -1090,8 +1101,9 @@ const MusicPlayer = () => {
                         key={t.id}
                         onClick={() => {
                           changeTrackWithAnimation(index);
-                          const newCounts = savePlayCount(t.id);
+                          const newCounts = updateLocalPlayCount(t.id);
                           setPlayCounts(newCounts);
+                          savePlayCountToDb(t.id);
                           setIsPlaying(true);
                         }}
                         className={`w-full p-2 rounded-xl text-left transition-all flex items-center gap-3 ${

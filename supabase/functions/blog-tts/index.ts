@@ -53,8 +53,56 @@ serve(async (req) => {
 
     console.log(`Cache miss. Generating TTS for language: ${language}, text length: ${text.length}`);
 
-    // Use appropriate voice based on language
-    const voiceId = language === 'ja' ? 'pFZP5JQG7iQjIQuC4Bku' : 'CwhRBWXzGAHq8TQ4Fs17'; // Lily for Japanese, Roger for English
+    // Use Yuki's custom voice for Japanese, Roger for English
+    const voiceId = language === 'ja' ? 'VneiyrGsB8R1ym9S1XYl' : 'CwhRBWXzGAHq8TQ4Fs17';
+
+    // For Japanese, convert to conversational style with hiragana using AI
+    let processedText = text.substring(0, 5000);
+    
+    if (language === 'ja') {
+      console.log('Converting Japanese text to conversational style with hiragana...');
+      
+      const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            {
+              role: 'system',
+              content: `あなたはテキストを音声読み上げ用に変換するアシスタントです。以下のルールに従ってテキストを変換してください：
+
+1. 硬い文章を自然な話し言葉に変換する（例：「である」→「だよね」、「ではないか」→「じゃないかな」）
+2. 漢字をできるだけひらがなに変換して読み間違いを防ぐ（特に固有名詞や専門用語以外）
+3. 数字は読みやすいように変換（例：「2024年」→「にせんにじゅうよねん」）
+4. 記号やURLは省略または説明に置き換える
+5. 一人称は「僕」を使う
+6. 親しみやすく、まるで友達に話しかけるような口調にする
+7. 長すぎる文は適度に区切る
+
+元のテキストの意味は保ちつつ、聞いて自然に感じる日本語に変換してください。`
+            },
+            {
+              role: 'user',
+              content: processedText
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 4000,
+        }),
+      });
+
+      if (aiResponse.ok) {
+        const aiData = await aiResponse.json();
+        processedText = aiData.choices?.[0]?.message?.content || processedText;
+        console.log('Text converted successfully, new length:', processedText.length);
+      } else {
+        console.error('AI conversion failed, using original text:', await aiResponse.text());
+      }
+    }
 
     const response = await fetch(
       `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
@@ -65,13 +113,13 @@ serve(async (req) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          text: text.substring(0, 5000), // Limit text length
+          text: processedText,
           model_id: "eleven_multilingual_v2",
           output_format: "mp3_44100_128",
           voice_settings: {
             stability: 0.5,
-            similarity_boost: 0.75,
-            style: 0.3,
+            similarity_boost: 0.8,
+            style: 0.4,
             use_speaker_boost: true,
           },
         }),

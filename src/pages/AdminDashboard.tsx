@@ -13,7 +13,7 @@ import {
   Plus, Edit, Trash2, Save, X, ChevronRight, User, Bot,
   Shield, LogOut, Settings, Columns2, PanelLeft, Music, Calendar, Clock,
   Globe, Sparkles, History, RotateCcw, Monitor, Smartphone, Tablet, GitCompare,
-  Play, Headphones
+  Play, Headphones, Link, Replace
 } from 'lucide-react';
 import MarkdownPreview from '@/components/MarkdownPreview';
 import { Button } from '@/components/ui/button';
@@ -416,6 +416,11 @@ const AdminDashboard = () => {
   const [promptVersions, setPromptVersions] = useState<AIPromptVersion[]>([]);
   const [showVersionHistory, setShowVersionHistory] = useState<string | null>(null);
   const [comparingVersion, setComparingVersion] = useState<AIPromptVersion | null>(null);
+
+  // Settings state
+  const [affiliateIdJp, setAffiliateIdJp] = useState('yukihamada-22');
+  const [affiliateIdUs, setAffiliateIdUs] = useState('yukihamada-20');
+  const [isReplacingAffiliateLinks, setIsReplacingAffiliateLinks] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -1055,6 +1060,54 @@ const AdminDashboard = () => {
   const totalLikes = blogAnalytics.reduce((sum, a) => sum + a.like_count, 0);
   const totalUniqueVisitors = blogAnalytics.reduce((sum, a) => sum + a.unique_visitors, 0);
 
+  // Replace affiliate links in all blog posts
+  const replaceAffiliateLinks = async () => {
+    if (!confirm(`すべてのブログ記事のAmazonリンクをアフィリエイトID「${affiliateIdJp}」（日本）と「${affiliateIdUs}」（米国）に置換しますか？`)) return;
+    
+    setIsReplacingAffiliateLinks(true);
+    let updatedCount = 0;
+    
+    try {
+      for (const post of posts) {
+        let contentJaUpdated = post.content_ja;
+        let contentEnUpdated = post.content_en;
+        let hasChanges = false;
+        
+        // Replace Japanese Amazon affiliate tags
+        const jpTagRegex = /amazon\.co\.jp([^"'\s]*?)tag=([a-zA-Z0-9_-]+)/g;
+        if (jpTagRegex.test(contentJaUpdated)) {
+          contentJaUpdated = contentJaUpdated.replace(/amazon\.co\.jp([^"'\s]*?)tag=[a-zA-Z0-9_-]+/g, `amazon.co.jp$1tag=${affiliateIdJp}`);
+          hasChanges = true;
+        }
+        
+        // Replace US Amazon affiliate tags
+        const usTagRegex = /amazon\.com([^"'\s]*?)tag=([a-zA-Z0-9_-]+)/g;
+        if (usTagRegex.test(contentEnUpdated)) {
+          contentEnUpdated = contentEnUpdated.replace(/amazon\.com([^"'\s]*?)tag=[a-zA-Z0-9_-]+/g, `amazon.com$1tag=${affiliateIdUs}`);
+          hasChanges = true;
+        }
+        
+        if (hasChanges) {
+          const { error } = await supabase
+            .from('blog_posts')
+            .update({ content_ja: contentJaUpdated, content_en: contentEnUpdated })
+            .eq('id', post.id);
+          
+          if (!error) {
+            updatedCount++;
+          }
+        }
+      }
+      
+      toast.success(`${updatedCount}件の記事を更新しました`);
+      fetchPosts();
+    } catch (error) {
+      toast.error('更新中にエラーが発生しました');
+    } finally {
+      setIsReplacingAffiliateLinks(false);
+    }
+  };
+
   if (authLoading || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -1110,7 +1163,7 @@ const AdminDashboard = () => {
           </motion.div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full max-w-4xl grid-cols-7 bg-muted/50">
+            <TabsList className="grid w-full max-w-5xl grid-cols-8 bg-muted/50">
               <TabsTrigger value="overview" className="flex items-center gap-2">
                 <BarChart3 className="w-4 h-4" />
                 <span className="hidden sm:inline">概要</span>
@@ -1138,6 +1191,10 @@ const AdminDashboard = () => {
               <TabsTrigger value="forum" className="flex items-center gap-2">
                 <MessageSquare className="w-4 h-4" />
                 <span className="hidden sm:inline">フォーラム</span>
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="flex items-center gap-2">
+                <Settings className="w-4 h-4" />
+                <span className="hidden sm:inline">設定</span>
               </TabsTrigger>
             </TabsList>
 
@@ -2524,6 +2581,90 @@ const AdminDashboard = () => {
                   </CardContent>
                 </Card>
               </div>
+            </TabsContent>
+
+            {/* Settings Tab */}
+            <TabsContent value="settings" className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-semibold">サイト設定</h2>
+              </div>
+
+              {/* Affiliate Settings */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Link className="w-5 h-5" />
+                    Amazonアフィリエイト設定
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>日本（amazon.co.jp）アフィリエイトID</Label>
+                      <Input
+                        value={affiliateIdJp}
+                        onChange={(e) => setAffiliateIdJp(e.target.value)}
+                        placeholder="yourname-22"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        例: yukihamada-22
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>米国（amazon.com）アフィリエイトID</Label>
+                      <Input
+                        value={affiliateIdUs}
+                        onChange={(e) => setAffiliateIdUs(e.target.value)}
+                        placeholder="yourname-20"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        例: yukihamada-20
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium">一括置換</h4>
+                        <p className="text-sm text-muted-foreground">
+                          すべてのブログ記事のAmazonリンクを上記のアフィリエイトIDに置換します
+                        </p>
+                      </div>
+                      <Button 
+                        onClick={replaceAffiliateLinks}
+                        disabled={isReplacingAffiliateLinks || !affiliateIdJp}
+                      >
+                        {isReplacingAffiliateLinks ? (
+                          <>
+                            <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                            置換中...
+                          </>
+                        ) : (
+                          <>
+                            <Replace className="mr-2 h-4 w-4" />
+                            一括置換を実行
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t">
+                    <h4 className="font-medium mb-3">リンクの作り方</h4>
+                    <div className="space-y-2 text-sm text-muted-foreground">
+                      <p>1. <a href="https://affiliate.amazon.co.jp/" target="_blank" rel="noopener noreferrer" className="text-primary underline">Amazonアソシエイト</a>に登録</p>
+                      <p>2. 商品ページURLに <code className="bg-muted px-1 rounded">?tag=あなたのID-22</code> を追加</p>
+                      <p>3. ブログ記事内でリンクを使用</p>
+                    </div>
+                    <div className="mt-3 p-3 bg-muted/50 rounded-lg">
+                      <p className="text-xs font-mono break-all">
+                        https://www.amazon.co.jp/dp/B0BQJZXR6M?tag={affiliateIdJp}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
         </div>

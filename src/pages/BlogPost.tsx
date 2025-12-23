@@ -245,34 +245,32 @@ const BlogPost = () => {
             </p>
 
             {/* Author and Actions */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 glass rounded-2xl mb-6">
-              <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between gap-3 p-4 glass rounded-2xl mb-6">
+              <div className="flex items-center gap-3 min-w-0">
                 <OptimizedImage
                   src={yukiProfile}
                   alt="Yuki Hamada"
                   width={48}
                   height={48}
                   loading="eager"
-                  className="w-12 h-12 rounded-full object-cover ring-2 ring-primary/30"
+                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover ring-2 ring-primary/30 flex-shrink-0"
                 />
-                <div>
-                  <p className="font-semibold text-foreground text-sm">Yuki Hamada</p>
-                  <p className="text-xs text-muted-foreground">
+                <div className="min-w-0">
+                  <p className="font-semibold text-foreground text-sm truncate">Yuki Hamada</p>
+                  <p className="text-xs text-muted-foreground truncate">
                     {language === 'ja' ? '株式会社イネブラ' : 'Enebular Inc.'}
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <a
-                  href="https://x.com/yukihamada"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-foreground text-background hover:bg-foreground/90 transition-colors text-xs font-medium"
-                >
-                  <Twitter className="h-3.5 w-3.5" />
-                  <span>{language === 'ja' ? 'フォロー' : 'Follow'}</span>
-                </a>
-              </div>
+              <a
+                href="https://x.com/yukihamada"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-foreground text-background hover:bg-foreground/90 transition-colors text-xs font-medium flex-shrink-0 whitespace-nowrap"
+              >
+                <Twitter className="h-3.5 w-3.5" />
+                <span>{language === 'ja' ? 'フォロー' : 'Follow'}</span>
+              </a>
             </div>
 
             {/* Share Buttons */}

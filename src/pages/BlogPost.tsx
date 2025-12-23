@@ -310,7 +310,8 @@ const BlogPost = () => {
           {/* AI Suggested Questions */}
           <BlogSuggestedQuestions 
             postSlug={post.slug}
-            title={content.title}
+            blogTitle={content.title}
+            blogCategory={content.category}
             content={content.content}
           />
 

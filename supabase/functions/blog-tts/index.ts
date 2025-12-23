@@ -80,7 +80,7 @@ serve(async (req) => {
     console.log(`Cache miss. Generating TTS for language: ${language}, text length: ${text.length}`);
 
     // Use Yuki's custom voice for Japanese, Roger for English
-    const voiceId = language === 'ja' ? 'VneiyrGsB8R1ym9S1XYl' : 'CwhRBWXzGAHq8TQ4Fs17';
+    const voiceId = language === 'ja' ? 'leGYIMqwBZraox9zSQym' : 'CwhRBWXzGAHq8TQ4Fs17';
 
     // Convert text to conversational style using AI for both languages
     let processedText = text.substring(0, 5000);

@@ -56,24 +56,11 @@ serve(async (req) => {
     // Use Yuki's custom voice for Japanese, Roger for English
     const voiceId = language === 'ja' ? 'VneiyrGsB8R1ym9S1XYl' : 'CwhRBWXzGAHq8TQ4Fs17';
 
-    // For Japanese, convert to conversational style with hiragana using AI
+    // Convert text to conversational style using AI for both languages
     let processedText = text.substring(0, 5000);
     
-    if (language === 'ja') {
-      console.log('Converting Japanese text to conversational style with hiragana...');
-      
-      const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: [
-            {
-              role: 'system',
-              content: `あなたはテキストを音声読み上げ用に変換するアシスタントです。以下のルールに従ってテキストを変換してください：
+    const systemPrompt = language === 'ja' 
+      ? `あなたはテキストを音声読み上げ用に変換するアシスタントです。以下のルールに従ってテキストを変換してください：
 
 1. 硬い文章を自然な話し言葉に変換する（例：「である」→「だよね」、「ではないか」→「じゃないかな」）
 2. 漢字をできるだけひらがなに変換して読み間違いを防ぐ（特に固有名詞や専門用語以外）
@@ -84,24 +71,44 @@ serve(async (req) => {
 7. 長すぎる文は適度に区切る
 
 元のテキストの意味は保ちつつ、聞いて自然に感じる日本語に変換してください。`
-            },
-            {
-              role: 'user',
-              content: processedText
-            }
-          ],
-          temperature: 0.7,
-          max_tokens: 4000,
-        }),
-      });
+      : `You are an assistant that converts text for natural speech synthesis. Follow these rules:
 
-      if (aiResponse.ok) {
-        const aiData = await aiResponse.json();
-        processedText = aiData.choices?.[0]?.message?.content || processedText;
-        console.log('Text converted successfully, new length:', processedText.length);
-      } else {
-        console.error('AI conversion failed, using original text:', await aiResponse.text());
-      }
+1. Convert formal writing to natural conversational speech (e.g., "It is important to note" → "Here's the thing")
+2. Use first person "I" and speak directly to the listener as "you"
+3. Add natural filler words and transitions (e.g., "so", "you know", "basically")
+4. Convert numbers and abbreviations to spoken form (e.g., "2024" → "twenty twenty-four")
+5. Remove or describe URLs and symbols
+6. Break long sentences into shorter, more digestible phrases
+7. Make it sound like a friendly conversation, as if talking to a friend
+8. Keep the original meaning while making it sound warm and approachable
+
+Transform the text to feel natural when spoken aloud, like a podcast or casual chat.`;
+
+    console.log(`Converting ${language} text to conversational style...`);
+    
+    const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: processedText }
+        ],
+        temperature: 0.7,
+        max_tokens: 4000,
+      }),
+    });
+
+    if (aiResponse.ok) {
+      const aiData = await aiResponse.json();
+      processedText = aiData.choices?.[0]?.message?.content || processedText;
+      console.log('Text converted successfully, new length:', processedText.length);
+    } else {
+      console.error('AI conversion failed, using original text:', await aiResponse.text());
     }
 
     const response = await fetch(

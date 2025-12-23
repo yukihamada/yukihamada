@@ -400,6 +400,8 @@ const AdminDashboard = () => {
   const [musicTracks, setMusicTracks] = useState<MusicTrack[]>([]);
   const [editingTrack, setEditingTrack] = useState<Partial<MusicTrack> | null>(null);
   const [isTranscribingLyrics, setIsTranscribingLyrics] = useState(false);
+  const [isBatchTranscribing, setIsBatchTranscribing] = useState(false);
+  const [batchTranscribeProgress, setBatchTranscribeProgress] = useState<{ current: number; total: number; currentTrack: string }>({ current: 0, total: 0, currentTrack: '' });
   const [lyricsText, setLyricsText] = useState(''); // For editing lyrics as text
   const [lyricsPreviewTime, setLyricsPreviewTime] = useState(0);
   const lyricsAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -866,6 +868,101 @@ const AdminDashboard = () => {
       toast.error(error.message || '歌詞の抽出に失敗しました');
     } finally {
       setIsTranscribingLyrics(false);
+    }
+  };
+
+  // Batch transcribe all tracks
+  const batchTranscribeAllTracks = async () => {
+    if (!confirm('全曲の歌詞を抽出・AI補正します。既存の歌詞は上書きされます。続行しますか？')) return;
+    
+    setIsBatchTranscribing(true);
+    const tracksToProcess = musicTracks.filter(t => t.is_active && t.src);
+    setBatchTranscribeProgress({ current: 0, total: tracksToProcess.length, currentTrack: '' });
+    
+    let successCount = 0;
+    let failCount = 0;
+    
+    for (let i = 0; i < tracksToProcess.length; i++) {
+      const track = tracksToProcess[i];
+      setBatchTranscribeProgress({ current: i + 1, total: tracksToProcess.length, currentTrack: track.title });
+      
+      try {
+        const audioResponse = await fetch(track.src);
+        const audioBlob = await audioResponse.blob();
+        
+        const formData = new FormData();
+        formData.append('audio', audioBlob, 'track.mp3');
+        formData.append('title', track.title);
+
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/transcribe-lyrics`,
+          {
+            method: 'POST',
+            headers: {
+              'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            },
+            body: formData,
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error('Transcription failed');
+        }
+
+        const data = await response.json();
+        
+        // Use AI-corrected lyrics if available
+        let lyrics: LyricLine[] = [];
+        
+        if (data.correctedLyrics && data.correctedLyrics.length > 0) {
+          lyrics = data.correctedLyrics;
+        } else if (data.words && Array.isArray(data.words)) {
+          let currentLine = { text: '', start: 0, end: 0 };
+          
+          data.words.forEach((word: { text: string; start: number; end: number }, index: number) => {
+            if (index === 0) {
+              currentLine = { text: word.text, start: word.start, end: word.end };
+            } else {
+              const gap = word.start - currentLine.end;
+              if (gap > 1 || /[。、！？.!?,]$/.test(currentLine.text)) {
+                lyrics.push(currentLine);
+                currentLine = { text: word.text, start: word.start, end: word.end };
+              } else {
+                currentLine.text += word.text;
+                currentLine.end = word.end;
+              }
+            }
+          });
+          lyrics.push(currentLine);
+        }
+        
+        if (lyrics.length > 0) {
+          // Save to database
+          const { error: updateError } = await supabase
+            .from('music_tracks')
+            .update({ lyrics: lyrics as unknown as Json })
+            .eq('id', track.id);
+          
+          if (updateError) {
+            throw updateError;
+          }
+          successCount++;
+        }
+      } catch (error) {
+        console.error(`Failed to transcribe ${track.title}:`, error);
+        failCount++;
+      }
+    }
+    
+    setIsBatchTranscribing(false);
+    setBatchTranscribeProgress({ current: 0, total: 0, currentTrack: '' });
+    fetchMusicTracks();
+    
+    if (failCount === 0) {
+      toast.success(`全${successCount}曲の歌詞を抽出・保存しました`);
+    } else {
+      toast.warning(`${successCount}曲成功、${failCount}曲失敗`);
     }
   };
 
@@ -2225,9 +2322,26 @@ const AdminDashboard = () => {
 
             {/* Music Tab */}
             <TabsContent value="music" className="space-y-4">
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center flex-wrap gap-2">
                 <h2 className="text-xl font-semibold">音楽管理</h2>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
+                  <Button 
+                    variant="outline" 
+                    onClick={batchTranscribeAllTracks}
+                    disabled={isBatchTranscribing}
+                  >
+                    {isBatchTranscribing ? (
+                      <>
+                        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                        {batchTranscribeProgress.current}/{batchTranscribeProgress.total} 抽出中...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        全曲歌詞抽出
+                      </>
+                    )}
+                  </Button>
                   <Button variant="outline" onClick={fetchMusicTracks}>
                     <RefreshCw className="mr-2 h-4 w-4" />更新
                   </Button>
@@ -2236,6 +2350,32 @@ const AdminDashboard = () => {
                   </Button>
                 </div>
               </div>
+
+              {isBatchTranscribing && batchTranscribeProgress.currentTrack && (
+                <Card className="border-primary/30 bg-primary/5">
+                  <CardContent className="py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <Music className="w-5 h-5 text-primary animate-pulse" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium">「{batchTranscribeProgress.currentTrack}」を抽出中...</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-primary transition-all duration-300"
+                              style={{ width: `${(batchTranscribeProgress.current / batchTranscribeProgress.total) * 100}%` }}
+                            />
+                          </div>
+                          <span className="text-sm text-muted-foreground">
+                            {batchTranscribeProgress.current}/{batchTranscribeProgress.total}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
               {editingTrack ? (
                 <Card>

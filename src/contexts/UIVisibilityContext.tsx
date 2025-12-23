@@ -35,7 +35,7 @@ export const UIVisibilityProvider = ({ children }: { children: ReactNode }) => {
     const timeout = setTimeout(() => {
       setIsScrolling(false);
       setIsUIVisible(true);
-    }, 150);
+    }, 400);
 
     setScrollTimeout(timeout);
   }, [scrollTimeout]);

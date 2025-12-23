@@ -450,6 +450,29 @@ const Navigation = () => {
                   })
                 )}
                 {singleLinks.map((link, index) => {
+                  const isRoute = 'isRoute' in link && link.isRoute;
+                  
+                  if (isRoute) {
+                    return (
+                      <Link
+                        key={link.name}
+                        to={link.href}
+                        className="group flex items-center gap-4 py-4 border-b border-border/20"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        <motion.span
+                          className="text-2xl font-medium text-foreground group-hover:text-primary transition-colors"
+                          initial={{ opacity: 0, x: -40 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: (index + 4) * 0.08 + 0.2 }}
+                        >
+                          {link.name}
+                        </motion.span>
+                        <span className="ml-auto text-muted-foreground/30 text-sm">→</span>
+                      </Link>
+                    );
+                  }
+                  
                   const href = isHomePage ? link.href : `/${link.href}`;
                   return (
                     <motion.a

@@ -268,29 +268,20 @@ export type Database = {
       chat_conversations: {
         Row: {
           created_at: string
-          hostname: string | null
           id: string
-          ip_address: string | null
           updated_at: string
-          user_agent: string | null
           visitor_id: string
         }
         Insert: {
           created_at?: string
-          hostname?: string | null
           id?: string
-          ip_address?: string | null
           updated_at?: string
-          user_agent?: string | null
           visitor_id: string
         }
         Update: {
           created_at?: string
-          hostname?: string | null
           id?: string
-          ip_address?: string | null
           updated_at?: string
-          user_agent?: string | null
           visitor_id?: string
         }
         Relationships: []

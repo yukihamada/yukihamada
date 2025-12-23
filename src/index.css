@@ -125,6 +125,45 @@
   .section-padding {
     @apply py-24 md:py-32;
   }
+
+  /* Blog quote styles */
+  .blog-quote {
+    @apply relative border-l-4 border-primary pl-6 py-6 my-10 rounded-r-2xl italic;
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.08) 0%, hsl(var(--accent) / 0.05) 100%);
+  }
+
+  .blog-quote::before {
+    content: '"';
+    @apply absolute -top-2 left-3 text-6xl text-primary/30 font-serif leading-none;
+  }
+
+  .blog-quote p {
+    @apply text-lg md:text-xl text-foreground/90 leading-relaxed m-0;
+  }
+
+  /* Highlighted text box */
+  .blog-highlight {
+    @apply relative p-6 my-8 rounded-2xl border overflow-hidden;
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.1) 0%, hsl(var(--accent) / 0.08) 100%);
+    border-color: hsl(var(--primary) / 0.3);
+  }
+
+  .blog-highlight::before {
+    content: '';
+    @apply absolute top-0 left-0 w-1 h-full;
+    background: var(--gradient-primary);
+  }
+
+  /* Key point marker */
+  .blog-keypoint {
+    @apply flex items-start gap-4 p-5 my-6 rounded-xl border border-primary/20;
+    background: hsl(var(--primary) / 0.05);
+  }
+
+  .blog-keypoint-icon {
+    @apply flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-primary-foreground text-sm font-bold;
+    background: var(--gradient-primary);
+  }
 }
 
 /* Smooth scrolling with momentum */

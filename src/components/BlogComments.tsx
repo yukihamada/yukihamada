@@ -59,24 +59,43 @@ export const BlogComments = ({ blogSlug }: BlogCommentsProps) => {
 
   const fetchComments = async () => {
     setIsLoading(true);
-    const { data } = await supabase
-      .from('forum_comments')
-      .select('*')
-      .eq('blog_slug', blogSlug)
-      .order('created_at', { ascending: true });
+    
+    // Use security definer function to get comments with safe profile data
+    const { data, error } = await supabase.rpc('get_forum_comments_safe', {
+      p_topic_id: null,
+      p_blog_slug: blogSlug,
+    });
+
+    if (error) {
+      console.error('Error fetching comments:', error);
+      setIsLoading(false);
+      return;
+    }
 
     if (data) {
-      const commentsWithProfiles = await Promise.all(
-        data.map(async (comment) => {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('public_id, display_name, avatar_url')
-            .eq('user_id', comment.user_id)
-            .maybeSingle();
-          return { ...comment, profiles: profile };
-        })
-      );
-      setComments(commentsWithProfiles as Comment[]);
+      const commentsFormatted = data.map((comment: {
+        id: string;
+        content: string;
+        created_at: string;
+        updated_at: string;
+        topic_id: string | null;
+        blog_slug: string | null;
+        parent_id: string | null;
+        author_public_id: string | null;
+        author_display_name: string | null;
+        author_avatar_url: string | null;
+      }) => ({
+        id: comment.id,
+        content: comment.content,
+        created_at: comment.created_at,
+        user_id: '', // Not exposed for security
+        profiles: {
+          public_id: comment.author_public_id,
+          display_name: comment.author_display_name,
+          avatar_url: comment.author_avatar_url,
+        },
+      }));
+      setComments(commentsFormatted as Comment[]);
     }
     setIsLoading(false);
   };

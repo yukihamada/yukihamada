@@ -135,11 +135,8 @@ const Community = () => {
   const fetchTopics = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('forum_topics')
-        .select('*')
-        .order('is_pinned', { ascending: false })
-        .order('created_at', { ascending: false });
+      // Use security definer function to get topics with safe profile data
+      const { data, error } = await supabase.rpc('get_forum_topics_safe');
 
       if (error) {
         console.error('Error fetching topics:', error);
@@ -148,30 +145,35 @@ const Community = () => {
       }
 
       if (data) {
-        const topicsWithData = await Promise.all(
-          data.map(async (topic) => {
-            const { count } = await supabase
-              .from('forum_comments')
-              .select('*', { count: 'exact', head: true })
-              .eq('topic_id', topic.id);
-            
-            // Profile fetch may fail due to RLS, handle gracefully
-            let profile = null;
-            try {
-              const { data: profileData } = await supabase
-                .from('profiles')
-                .select('public_id, display_name, avatar_url')
-                .eq('user_id', topic.user_id)
-                .maybeSingle();
-              profile = profileData;
-            } catch (e) {
-              console.log('Could not fetch profile for topic author');
-            }
-            
-            return { ...topic, comment_count: count || 0, profiles: profile };
-          })
-        );
-        setTopics(topicsWithData as Topic[]);
+        const topicsFormatted = data.map((topic: {
+          id: string;
+          title: string;
+          content: string;
+          category: string;
+          created_at: string;
+          updated_at: string;
+          view_count: number;
+          is_pinned: boolean;
+          author_public_id: string | null;
+          author_display_name: string | null;
+          author_avatar_url: string | null;
+          comment_count: number;
+        }) => ({
+          id: topic.id,
+          title: topic.title,
+          content: topic.content,
+          category: topic.category,
+          created_at: topic.created_at,
+          view_count: topic.view_count || 0,
+          user_id: '', // Not exposed for security
+          profiles: {
+            public_id: topic.author_public_id,
+            display_name: topic.author_display_name,
+            avatar_url: topic.author_avatar_url,
+          },
+          comment_count: Number(topic.comment_count) || 0,
+        }));
+        setTopics(topicsFormatted as Topic[]);
       }
     } catch (err) {
       console.error('Error in fetchTopics:', err);
@@ -180,24 +182,41 @@ const Community = () => {
   };
 
   const fetchComments = async (topicId: string) => {
-    const { data } = await supabase
-      .from('forum_comments')
-      .select('*')
-      .eq('topic_id', topicId)
-      .order('created_at', { ascending: true });
+    // Use security definer function to get comments with safe profile data
+    const { data, error } = await supabase.rpc('get_forum_comments_safe', {
+      p_topic_id: topicId,
+      p_blog_slug: null,
+    });
+
+    if (error) {
+      console.error('Error fetching comments:', error);
+      return;
+    }
 
     if (data) {
-      const commentsWithProfiles = await Promise.all(
-        data.map(async (comment) => {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('public_id, display_name, avatar_url')
-            .eq('user_id', comment.user_id)
-            .maybeSingle();
-          return { ...comment, profiles: profile };
-        })
-      );
-      setComments(commentsWithProfiles as Comment[]);
+      const commentsFormatted = data.map((comment: {
+        id: string;
+        content: string;
+        created_at: string;
+        updated_at: string;
+        topic_id: string;
+        blog_slug: string | null;
+        parent_id: string | null;
+        author_public_id: string | null;
+        author_display_name: string | null;
+        author_avatar_url: string | null;
+      }) => ({
+        id: comment.id,
+        content: comment.content,
+        created_at: comment.created_at,
+        user_id: '', // Not exposed for security
+        profiles: {
+          public_id: comment.author_public_id,
+          display_name: comment.author_display_name,
+          avatar_url: comment.author_avatar_url,
+        },
+      }));
+      setComments(commentsFormatted as Comment[]);
     }
   };
 

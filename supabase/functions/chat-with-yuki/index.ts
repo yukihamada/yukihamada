@@ -90,55 +90,25 @@ serve(async (req) => {
       );
     }
 
-// Update conversation with visitor info if provided
+// Update conversation with anonymized visitor info if provided
     if (conversationId && visitorId) {
       try {
         const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
         const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
         const supabase = createClient(supabaseUrl, supabaseServiceKey);
         
-        // Try to get hostname from IP using DNS reverse lookup
-        let hostname: string | null = null;
-        if (clientIP && clientIP !== 'anonymous') {
-          try {
-            const dnsResult = await Deno.resolveDns(clientIP.split('.').reverse().join('.') + '.in-addr.arpa', 'PTR');
-            if (dnsResult && dnsResult.length > 0) {
-              hostname = dnsResult[0].replace(/\.$/, ''); // Remove trailing dot
-            }
-          } catch (dnsError) {
-            // DNS lookup failed - try alternative method using external API
-            try {
-              const ipInfoResponse = await fetch(`https://ipinfo.io/${clientIP}/hostname`, {
-                headers: { 'Accept': 'text/plain' }
-              });
-              if (ipInfoResponse.ok) {
-                const hostnameText = await ipInfoResponse.text();
-                if (hostnameText && hostnameText !== clientIP && !hostnameText.includes('error')) {
-                  hostname = hostnameText.trim();
-                }
-              }
-            } catch {
-              // Fallback failed too, hostname remains null
-              console.log(`Could not resolve hostname for IP: ${clientIP}`);
-            }
-          }
-        }
-        
-        // Hash IP address for privacy
+        // Hash IP address for privacy - no longer storing hostname
         const hashedIP = await hashIP(clientIP);
         
+        // Only store hashed IP, no hostname or user_agent for privacy
         await supabase
           .from('chat_conversations')
           .update({ 
             ip_address: hashedIP,
-            user_agent: userAgent,
-            hostname: hostname
+            user_agent: null,
+            hostname: null
           })
           .eq('id', conversationId);
-          
-        if (hostname) {
-          console.log(`Resolved hostname for hashed IP ${hashedIP}: ${hostname}`);
-        }
       } catch (e) {
         console.error('Failed to update conversation with visitor info:', e);
       }

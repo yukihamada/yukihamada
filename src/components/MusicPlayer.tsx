@@ -498,6 +498,7 @@ const MusicPlayer = () => {
       
       const formData = new FormData();
       formData.append('audio', audioBlob, `${track.title}.mp3`);
+      formData.append('title', track.title);
 
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/transcribe-lyrics`,
@@ -522,19 +523,28 @@ const MusicPlayer = () => {
 
       const data = await response.json();
       
-      // Convert ElevenLabs response to LyricLine format
-      const lyrics: LyricLine[] = data.words?.map((word: { text: string; start: number; end: number }) => ({
-        text: word.text,
-        start: word.start,
-        end: word.end,
-      })) || [];
+      // Use AI-corrected lyrics if available, otherwise use raw transcription
+      let lyrics: LyricLine[];
       
-      // Group words into lines (by sentence or time gap)
-      const groupedLyrics = groupWordsIntoLines(lyrics);
+      if (data.correctedLyrics && data.correctedLyrics.length > 0) {
+        // AI corrected lyrics are already grouped into lines
+        lyrics = data.correctedLyrics;
+        console.log('Using AI-corrected lyrics');
+      } else {
+        // Convert ElevenLabs response to LyricLine format
+        lyrics = data.words?.map((word: { text: string; start: number; end: number }) => ({
+          text: word.text,
+          start: word.start,
+          end: word.end,
+        })) || [];
+        
+        // Group words into lines (by sentence or time gap)
+        lyrics = groupWordsIntoLines(lyrics);
+      }
       
-      if (groupedLyrics.length > 0) {
-        lyricsCache[trackId] = groupedLyrics;
-        setCurrentLyrics(groupedLyrics);
+      if (lyrics.length > 0) {
+        lyricsCache[trackId] = lyrics;
+        setCurrentLyrics(lyrics);
         setShowLyrics(true);
       } else {
         setTranscribeError('歌詞が検出されませんでした');

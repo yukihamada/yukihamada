@@ -46,7 +46,7 @@ const Navigation = () => {
   };
   
   const singleLinks = [
-    { name: t.nav.blog, href: '#blog', icon: BookOpen },
+    { name: t.nav.blog, href: '/blog', icon: BookOpen, isRoute: true },
   ];
 
   // Track scroll and active section
@@ -284,9 +284,25 @@ const Navigation = () => {
               
               {/* Single Links */}
               {singleLinks.map((link) => {
+                const isRoute = 'isRoute' in link && link.isRoute;
+                const isActive = isRoute ? location.pathname.startsWith(link.href) : activeSection === link.href.replace('#', '');
+                
+                if (isRoute) {
+                  return (
+                    <Link
+                      key={link.name}
+                      to={link.href}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-full transition-colors ${
+                        isActive ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      <link.icon className="h-3.5 w-3.5" />
+                      <span>{link.name}</span>
+                    </Link>
+                  );
+                }
+                
                 const href = isHomePage ? link.href : `/${link.href}`;
-                const sectionId = link.href.replace('#', '');
-                const isActive = activeSection === sectionId;
                 return (
                   <a
                     key={link.name}

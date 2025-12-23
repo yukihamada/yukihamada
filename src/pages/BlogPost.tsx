@@ -39,13 +39,14 @@ const blogImages: Record<string, string> = {
 };
 
 const trackMapping: Record<string, { index: number; titleJa: string; titleEn: string }> = {
-  'shio-to-pixel': { index: 6, titleJa: '塩とピクセル', titleEn: 'Salt and Pixels' },
   'free-to-change': { index: 0, titleJa: 'Free to Change', titleEn: 'Free to Change' },
   'hello-2150': { index: 1, titleJa: 'Hello 2150', titleEn: 'Hello 2150' },
-  'everybody-bjj': { index: 2, titleJa: 'Everybody say 柔術', titleEn: 'Everybody say BJJ' },
+  'everybody-say-bjj': { index: 2, titleJa: 'Everybody say 柔術', titleEn: 'Everybody say BJJ' },
+  'everybody-bjj': { index: 2, titleJa: 'Everybody say 柔術', titleEn: 'Everybody say BJJ' }, // alias
   'i-love-you': { index: 3, titleJa: 'I Love You', titleEn: 'I Love You' },
   'attention': { index: 4, titleJa: 'I need your attention', titleEn: 'I need your attention' },
   'koi-jujutsu': { index: 5, titleJa: 'それ恋じゃなくて柔術', titleEn: "That's not love, it's Jiu-Jitsu" },
+  'shio-to-pixel': { index: 6, titleJa: '塩とピクセル', titleEn: 'Salt and Pixels' },
   'musubinaosu': { index: 7, titleJa: '結び直す朝', titleEn: 'Morning to Reconnect' },
 };
 

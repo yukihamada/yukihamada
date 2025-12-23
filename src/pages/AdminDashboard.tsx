@@ -1380,17 +1380,31 @@ const AdminDashboard = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-2">
-                    {posts.slice(0, 5).map((post) => (
-                      <div key={post.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50">
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium truncate">{post.title_ja}</p>
-                          <p className="text-xs text-muted-foreground">{post.date_ja}</p>
+                    {posts.slice(0, 5).map((post) => {
+                      const scheduled = isScheduledPost(post.published_at);
+                      return (
+                        <div key={post.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium truncate">{post.title_ja}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {post.date_ja}
+                              {scheduled && post.published_at && (
+                                <span className="text-amber-600 ml-2">
+                                  → {format(new Date(post.published_at), 'MM/dd HH:mm', { locale: ja })}
+                                </span>
+                              )}
+                            </p>
+                          </div>
+                          {post.status === 'draft' ? (
+                            <Badge variant="secondary">下書き</Badge>
+                          ) : scheduled ? (
+                            <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/30">予約</Badge>
+                          ) : (
+                            <Badge variant="default">公開</Badge>
+                          )}
                         </div>
-                        <Badge variant={post.status === 'published' ? 'default' : 'secondary'}>
-                          {post.status === 'published' ? '公開' : '下書き'}
-                        </Badge>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </CardContent>
                 </Card>
                 <Card>
@@ -1532,6 +1546,15 @@ const AdminDashboard = () => {
                                 </SelectContent>
                               </Select>
                             </div>
+                            <div className="flex items-center gap-2">
+                              <Label className="text-xs">公開日時:</Label>
+                              <Input
+                                type="datetime-local"
+                                value={editingPost.published_at || formatDateTimeLocal(new Date())}
+                                onChange={(e) => setEditingPost({ ...editingPost, published_at: e.target.value })}
+                                className="w-44 h-8 text-xs"
+                              />
+                            </div>
                           </div>
                           <div>
                             <Label>{previewLang === 'ja' ? 'タイトル' : 'Title'}</Label>
@@ -1626,7 +1649,7 @@ const AdminDashboard = () => {
                             />
                           </div>
                         </div>
-                        <div className="flex items-center gap-6">
+                        <div className="flex items-center gap-6 flex-wrap">
                           <div className="flex items-center gap-2">
                             <Switch
                               checked={editingPost.featured || false}
@@ -1648,6 +1671,21 @@ const AdminDashboard = () => {
                                 <SelectItem value="published">公開</SelectItem>
                               </SelectContent>
                             </Select>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Label>公開日時:</Label>
+                            <Input
+                              type="datetime-local"
+                              value={editingPost.published_at || formatDateTimeLocal(new Date())}
+                              onChange={(e) => setEditingPost({ ...editingPost, published_at: e.target.value })}
+                              className="w-52"
+                            />
+                            {editingPost.published_at && isScheduledPost(new Date(editingPost.published_at).toISOString()) && (
+                              <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/30">
+                                <Clock className="w-3 h-3 mr-1" />
+                                予約済み
+                              </Badge>
+                            )}
                           </div>
                         </div>
                         <Tabs defaultValue="ja">
@@ -1760,38 +1798,53 @@ const AdminDashboard = () => {
                         </CardContent>
                       </Card>
                     ) : (
-                      posts.map((post) => (
-                        <Card key={post.id}>
-                          <CardContent className="py-3">
-                            <div className="flex items-center justify-between">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-1">
-                                  {post.status === 'draft' ? (
-                                    <Badge variant="outline" className="text-muted-foreground">下書き</Badge>
-                                  ) : (
-                                    <Badge variant="default" className="bg-green-600">公開</Badge>
-                                  )}
-                                  {post.featured && <Badge variant="secondary">注目</Badge>}
-                                  <span className="text-xs text-muted-foreground">{post.category_ja}</span>
+                      posts.map((post) => {
+                        const scheduled = isScheduledPost(post.published_at);
+                        return (
+                          <Card key={post.id} className={scheduled ? 'border-amber-500/30' : ''}>
+                            <CardContent className="py-3">
+                              <div className="flex items-center justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                    {post.status === 'draft' ? (
+                                      <Badge variant="outline" className="text-muted-foreground">下書き</Badge>
+                                    ) : scheduled ? (
+                                      <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/30">
+                                        <Clock className="w-3 h-3 mr-1" />
+                                        予約
+                                      </Badge>
+                                    ) : (
+                                      <Badge variant="default" className="bg-green-600">公開</Badge>
+                                    )}
+                                    {post.featured && <Badge variant="secondary">注目</Badge>}
+                                    <span className="text-xs text-muted-foreground">{post.category_ja}</span>
+                                  </div>
+                                  <h3 className="font-medium truncate">{post.title_ja}</h3>
+                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <span>{post.date_ja}</span>
+                                    {scheduled && post.published_at && (
+                                      <span className="text-xs text-amber-600">
+                                        → {format(new Date(post.published_at), 'MM/dd HH:mm', { locale: ja })} 公開
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
-                                <h3 className="font-medium truncate">{post.title_ja}</h3>
-                                <p className="text-sm text-muted-foreground">{post.date_ja}</p>
+                                <div className="flex gap-1">
+                                  <Button variant="ghost" size="sm" onClick={() => navigate(`/blog/${post.slug}`)}>
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                  <Button variant="ghost" size="sm" onClick={() => setEditingPost(post)}>
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button variant="ghost" size="sm" onClick={() => handleDeletePost(post.id)} className="text-destructive">
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
                               </div>
-                              <div className="flex gap-1">
-                                <Button variant="ghost" size="sm" onClick={() => navigate(`/blog/${post.slug}`)}>
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                                <Button variant="ghost" size="sm" onClick={() => setEditingPost(post)}>
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button variant="ghost" size="sm" onClick={() => handleDeletePost(post.id)} className="text-destructive">
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))
+                            </CardContent>
+                          </Card>
+                        );
+                      })
                     )}
                   </div>
                 </>

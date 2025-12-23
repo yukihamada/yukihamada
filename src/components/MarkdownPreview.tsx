@@ -34,7 +34,15 @@ const MarkdownPreview = ({ content, title, excerpt }: MarkdownPreviewProps) => {
           return `<div class="flex items-start gap-2 p-3 my-3 rounded-lg ${bgColor} border text-sm"><span class="text-lg">${emoji}</span><span class="text-foreground leading-relaxed">${text}</span></div>`;
         })
         .replace(/\[youtube:([a-zA-Z0-9_-]+)\]/g, '<div class="my-6 aspect-video rounded-lg overflow-hidden bg-muted flex items-center justify-center text-muted-foreground text-sm">[YouTube: $1]</div>')
-        .replace(/\[image:([a-zA-Z0-9_-]+)\]/g, '<div class="my-6 p-4 rounded-lg bg-muted/50 border border-dashed border-border text-center text-muted-foreground text-sm">[Image: $1]</div>')
+        .replace(/\[image:([^\]]+)\]/g, (_, imageInfo) => {
+          if (imageInfo.startsWith('/')) {
+            const parts = imageInfo.split(':');
+            const imagePath = parts[0];
+            const caption = parts.slice(1).join(':') || '';
+            return `<figure class="my-6"><img src="${imagePath}" alt="${caption}" class="w-full rounded-lg" />${caption ? `<figcaption class="text-center text-xs text-muted-foreground mt-2">${caption}</figcaption>` : ''}</figure>`;
+          }
+          return `<div class="my-6 p-4 rounded-lg bg-muted/50 border border-dashed border-border text-center text-muted-foreground text-sm">[Image: ${imageInfo}]</div>`;
+        })
         .replace(/\[play:([a-zA-Z0-9_-]+)\]/g, '<div class="my-6 p-4 rounded-lg bg-primary/10 border border-primary/30 text-center text-primary text-sm">[Music Player: $1]</div>')
         .replace(/\n\n/g, '</p><p class="mb-4 text-muted-foreground leading-relaxed text-sm">'),
       { ADD_ATTR: ['target', 'rel'] }

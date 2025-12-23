@@ -1,6 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
-import { useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { useEffect, useRef, useMemo, lazy, Suspense } from 'react';
 import { ArrowLeft, Calendar, Tag, RefreshCw, Twitter, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useBlogPost, useBlogPosts } from '@/hooks/useBlogPosts';
@@ -42,7 +41,7 @@ const trackMapping: Record<string, { index: number; titleJa: string; titleEn: st
   'free-to-change': { index: 0, titleJa: 'Free to Change', titleEn: 'Free to Change' },
   'hello-2150': { index: 1, titleJa: 'Hello 2150', titleEn: 'Hello 2150' },
   'everybody-say-bjj': { index: 2, titleJa: 'Everybody say 柔術', titleEn: 'Everybody say BJJ' },
-  'everybody-bjj': { index: 2, titleJa: 'Everybody say 柔術', titleEn: 'Everybody say BJJ' }, // alias
+  'everybody-bjj': { index: 2, titleJa: 'Everybody say 柔術', titleEn: 'Everybody say BJJ' },
   'i-love-you': { index: 3, titleJa: 'I Love You', titleEn: 'I Love You' },
   'attention': { index: 4, titleJa: 'I need your attention', titleEn: 'I need your attention' },
   'koi-jujutsu': { index: 5, titleJa: 'それ恋じゃなくて柔術', titleEn: "That's not love, it's Jiu-Jitsu" },
@@ -54,10 +53,75 @@ const playTrack = (trackIndex: number) => {
   window.dispatchEvent(new CustomEvent('playSpecificTrack', { detail: { trackIndex } }));
 };
 
+// Memoized content processing function
+const processContent = (rawContent: string, lang: string): string => {
+  let processed = rawContent
+    .replace(/<h2([^>]*)>([^<]+)<\/h2>/g, (_, attrs, text) => {
+      const hasId = attrs.includes('id=');
+      const id = hasId ? '' : ` id="${text.trim().toLowerCase().replace(/[^\w\s\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/g, '').replace(/\s+/g, '-').slice(0, 50)}"`;
+      return `<h2${attrs}${id} class="text-2xl md:text-3xl font-bold mt-12 mb-6 text-foreground border-l-4 border-primary pl-4">${text}</h2>`;
+    })
+    .replace(/<h3([^>]*)>([^<]+)<\/h3>/g, (_, attrs, text) => {
+      const hasId = attrs.includes('id=');
+      const id = hasId ? '' : ` id="${text.trim().toLowerCase().replace(/[^\w\s\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/g, '').replace(/\s+/g, '-').slice(0, 50)}"`;
+      return `<h3${attrs}${id} class="text-xl md:text-2xl font-semibold mt-8 mb-4 text-foreground">${text}</h3>`;
+    })
+    .replace(/^## (.+)$/gm, (_, heading) => {
+      const id = heading.replace(/\*\*/g, '').trim().toLowerCase().replace(/[^\w\s\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/g, '').replace(/\s+/g, '-').slice(0, 50);
+      return `<h2 id="${id}" class="text-2xl md:text-3xl font-bold mt-12 mb-6 text-foreground border-l-4 border-primary pl-4">${heading}</h2>`;
+    })
+    .replace(/^### (.+)$/gm, (_, heading) => {
+      const id = heading.replace(/\*\*/g, '').trim().toLowerCase().replace(/[^\w\s\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/g, '').replace(/\s+/g, '-').slice(0, 50);
+      return `<h3 id="${id}" class="text-xl md:text-2xl font-semibold mt-8 mb-4 text-foreground">${heading}</h3>`;
+    })
+    .replace(/\|(.+)\|/g, (match) => {
+      const cells = match.split('|').filter(c => c.trim());
+      if (cells.every(c => c.trim().match(/^[-:]+$/))) return '';
+      const cellsHtml = cells.map(c => `<td class="px-4 py-3 border border-border/30">${c.trim()}</td>`).join('');
+      return `<tr class="even:bg-muted/30">${cellsHtml}</tr>`;
+    })
+    .replace(/(<tr.*?<\/tr>\s*)+/g, (match) => {
+      return `<div class="overflow-x-auto my-8"><table class="w-full border-collapse rounded-xl overflow-hidden shadow-lg ring-1 ring-border/20"><tbody>${match}</tbody></table></div>`;
+    })
+    .replace(/<blockquote>([^<]+)<\/blockquote>/g, '<div class="blog-quote"><p>$1</p></div>')
+    .replace(/^> (.+)$/gm, '<div class="blog-quote"><p>$1</p></div>')
+    .replace(/^---$/gm, '<hr class="my-12 border-t border-border/30" />')
+    .replace(/^(\d+)\. (.+)$/gm, '<li class="flex items-start gap-3 mb-3"><span class="flex-shrink-0 w-7 h-7 rounded-full bg-primary/20 text-primary text-sm font-bold flex items-center justify-center mt-0.5">$1</span><span class="text-muted-foreground leading-relaxed">$2</span></li>')
+    .replace(/^- (.+)$/gm, '<li class="flex items-start gap-3 mb-3"><span class="flex-shrink-0 w-2 h-2 rounded-full bg-primary mt-2.5"></span><span class="text-muted-foreground leading-relaxed">$1</span></li>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong class="text-foreground font-semibold">$1</strong>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary hover:text-primary/80 underline underline-offset-4 decoration-primary/50 hover:decoration-primary transition-all font-medium">$1</a>')
+    .replace(/^(⚠️|👉|🎉) (.+)$/gm, (_, emoji, text) => {
+      const bgColor = emoji === '⚠️' ? 'bg-amber-500/10 border-amber-500/30' : emoji === '🎉' ? 'bg-green-500/10 border-green-500/30' : 'bg-primary/10 border-primary/30';
+      return `<div class="flex items-start gap-3 p-4 my-4 rounded-xl ${bgColor} border"><span class="text-2xl">${emoji}</span><span class="text-foreground leading-relaxed">${text}</span></div>`;
+    })
+    .replace(/\[youtube:([a-zA-Z0-9_-]+)\]/g, '<div class="my-10 aspect-video rounded-2xl overflow-hidden shadow-xl ring-1 ring-border/20"><iframe class="w-full h-full" src="https://www.youtube.com/embed/$1" title="YouTube video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>')
+    .replace(/\[image:([^\]]+)\]/g, (_, imageInfo) => {
+      if (imageInfo.startsWith('/')) {
+        const parts = imageInfo.split(':');
+        const imagePath = parts[0];
+        const caption = parts.slice(1).join(':') || '';
+        return `<figure class="my-8"><img src="${imagePath}" alt="${caption}" loading="lazy" decoding="async" class="w-full rounded-xl shadow-lg ring-1 ring-border/20" />${caption ? `<figcaption class="text-center text-sm text-muted-foreground mt-3">${caption}</figcaption>` : ''}</figure>`;
+      } else {
+        const imageSrc = blogImages[imageInfo];
+        return imageSrc ? `<div class="my-8 flex justify-center"><img src="${imageSrc}" alt="${imageInfo}" loading="lazy" decoding="async" class="w-full md:w-1/2 lg:w-2/5 rounded-xl shadow-lg ring-1 ring-border/20" /></div>` : '';
+      }
+    })
+    .replace(/\[play:([a-zA-Z0-9_-]+)\]/g, (_, trackId) => {
+      const track = trackMapping[trackId];
+      const trackIndex = track?.index ?? 0;
+      const trackTitle = lang === 'ja' ? track?.titleJa : track?.titleEn;
+      return `<div class="my-12 flex justify-center"><button data-play-track="${trackIndex}" class="group relative inline-flex items-center gap-4 px-8 py-5 rounded-2xl bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 hover:from-primary/30 hover:via-primary/20 hover:to-primary/30 border border-primary/30 hover:border-primary/50 transition-all duration-500 shadow-lg hover:shadow-primary/20 hover:scale-[1.02] cursor-pointer"><span class="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></span><div class="flex items-center justify-center w-14 h-14 rounded-xl bg-primary/20 group-hover:bg-primary/30 transition-colors"><svg class="w-6 h-6 text-primary" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div><div class="text-left"><span class="block text-xs text-muted-foreground mb-0.5">${lang === 'ja' ? '🎵 曲を再生' : '🎵 Play Track'}</span><span class="block text-lg font-semibold text-foreground group-hover:text-primary transition-colors">${trackTitle || 'Unknown Track'}</span></div></button></div>`;
+    });
+
+  return DOMPurify.sanitize(processed, {
+    ADD_ATTR: ['data-play-track'],
+  });
+};
+
 const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { post, isLoading, isScheduled } = useBlogPost(slug, true); // allowScheduled for admin preview
-  const { posts: allPosts, isAdmin } = useBlogPosts(true);
+  const { post, isLoading, isScheduled } = useBlogPost(slug, true);
+  const { isAdmin } = useBlogPosts(true);
   const contentRef = useRef<HTMLDivElement>(null);
   const { language } = useLanguage();
   const { setPageContext, setCurrentBlogTitle } = useChat();
@@ -77,21 +141,26 @@ const BlogPost = () => {
     if (!contentRef.current) return;
     
     const playButtons = contentRef.current.querySelectorAll('[data-play-track]');
+    const handlers: Array<{ button: Element; handler: () => void }> = [];
+    
     playButtons.forEach((button) => {
       const trackIndex = parseInt(button.getAttribute('data-play-track') || '0', 10);
       const handleClick = () => playTrack(trackIndex);
       button.addEventListener('click', handleClick);
-      (button as any)._playHandler = handleClick;
+      handlers.push({ button, handler: handleClick });
     });
 
     return () => {
-      playButtons.forEach((button) => {
-        const handler = (button as any)._playHandler;
-        if (handler) {
-          button.removeEventListener('click', handler);
-        }
+      handlers.forEach(({ button, handler }) => {
+        button.removeEventListener('click', handler);
       });
     };
+  }, [post, language]);
+
+  // Memoize processed content to avoid recalculation on every render
+  const processedContent = useMemo(() => {
+    if (!post) return '';
+    return processContent(post[language].content, language);
   }, [post, language]);
 
   if (isLoading) {
@@ -124,10 +193,6 @@ const BlogPost = () => {
 
   const content = post[language];
 
-  const relatedPosts = allPosts
-    .filter(p => p[language].category === content.category && p.slug !== post.slug)
-    .slice(0, 2);
-
   return (
     <div className="min-h-screen bg-background">
       <BlogOGP post={post} />
@@ -135,28 +200,18 @@ const BlogPost = () => {
       
       <main className="pt-24 pb-20">
         <article className="container mx-auto px-6 max-w-4xl">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
+          <div>
             <Button variant="ghost" asChild className="mb-8 text-muted-foreground hover:text-foreground">
               <Link to="/#blog">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 {language === 'ja' ? 'ブログに戻る' : 'Back to Blog'}
               </Link>
             </Button>
-          </motion.div>
+          </div>
 
-          <motion.header
-            className="mb-12"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            {/* Category and Date - Clean top line */}
+          <header className="mb-12">
+            {/* Category and Date */}
             <div className="flex flex-wrap items-center gap-3 mb-6">
-              {/* Scheduled Badge for Admin */}
               {isScheduled && isAdmin && (
                 <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500 text-white text-sm font-medium">
                   <Clock className="h-3.5 w-3.5" />
@@ -179,7 +234,7 @@ const BlogPost = () => {
               <ShareCounts postSlug={post.slug} />
             </div>
 
-            {/* Title - Prominent */}
+            {/* Title */}
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight mb-4">
               {content.title}
             </h1>
@@ -189,7 +244,7 @@ const BlogPost = () => {
               {content.excerpt}
             </p>
 
-            {/* Author and Actions - Compact row */}
+            {/* Author and Actions */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 glass rounded-2xl mb-6">
               <div className="flex items-center gap-3">
                 <OptimizedImage
@@ -235,194 +290,41 @@ const BlogPost = () => {
 
             {/* Table of Contents */}
             <TableOfContents content={content.content} />
-          </motion.header>
+          </header>
 
-          <motion.div
-            className="prose prose-lg dark:prose-invert max-w-none"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
+          <div className="prose prose-lg dark:prose-invert max-w-none">
             <div className="glass rounded-3xl p-4 md:p-8 lg:p-12">
               <div 
                 ref={contentRef}
                 className="blog-content prose prose-lg dark:prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ 
-                  __html: DOMPurify.sanitize(
-                    content.content
-                      // Style existing HTML h2 tags (preserve id if present)
-                      .replace(/<h2([^>]*)>([^<]+)<\/h2>/g, (_, attrs, text) => {
-                        const hasId = attrs.includes('id=');
-                        const id = hasId ? '' : ` id="${text.trim()
-                          .toLowerCase()
-                          .replace(/[^\w\s\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/g, '')
-                          .replace(/\s+/g, '-')
-                          .slice(0, 50)}"`;
-                        return `<h2${attrs}${id} class="text-2xl md:text-3xl font-bold mt-12 mb-6 text-foreground border-l-4 border-primary pl-4">${text}</h2>`;
-                      })
-                      // Style existing HTML h3 tags
-                      .replace(/<h3([^>]*)>([^<]+)<\/h3>/g, (_, attrs, text) => {
-                        const hasId = attrs.includes('id=');
-                        const id = hasId ? '' : ` id="${text.trim()
-                          .toLowerCase()
-                          .replace(/[^\w\s\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/g, '')
-                          .replace(/\s+/g, '-')
-                          .slice(0, 50)}"`;
-                        return `<h3${attrs}${id} class="text-xl md:text-2xl font-semibold mt-8 mb-4 text-foreground">${text}</h3>`;
-                      })
-                      // Convert markdown ## to styled h2
-                      .replace(/^## (.+)$/gm, (_, heading) => {
-                        const id = heading.replace(/\*\*/g, '').trim()
-                          .toLowerCase()
-                          .replace(/[^\w\s\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/g, '')
-                          .replace(/\s+/g, '-')
-                          .slice(0, 50);
-                        return `<h2 id="${id}" class="text-2xl md:text-3xl font-bold mt-12 mb-6 text-foreground border-l-4 border-primary pl-4">${heading}</h2>`;
-                      })
-                      // Convert markdown ### to styled h3
-                      .replace(/^### (.+)$/gm, (_, heading) => {
-                        const id = heading.replace(/\*\*/g, '').trim()
-                          .toLowerCase()
-                          .replace(/[^\w\s\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/g, '')
-                          .replace(/\s+/g, '-')
-                          .slice(0, 50);
-                        return `<h3 id="${id}" class="text-xl md:text-2xl font-semibold mt-8 mb-4 text-foreground">${heading}</h3>`;
-                      })
-                      .replace(/\|(.+)\|/g, (match) => {
-                        const cells = match.split('|').filter(c => c.trim());
-                        if (cells.every(c => c.trim().match(/^[-:]+$/))) {
-                          return '';
-                        }
-                        const cellsHtml = cells.map(c => `<td class="px-4 py-3 border border-border/30">${c.trim()}</td>`).join('');
-                        return `<tr class="even:bg-muted/30">${cellsHtml}</tr>`;
-                      })
-                      .replace(/(<tr.*?<\/tr>\s*)+/g, (match) => {
-                        return `<div class="overflow-x-auto my-8"><table class="w-full border-collapse rounded-xl overflow-hidden shadow-lg ring-1 ring-border/20"><tbody>${match}</tbody></table></div>`;
-                      })
-                      // Style HTML blockquote tags
-                      .replace(/<blockquote>([^<]+)<\/blockquote>/g, '<div class="blog-quote"><p>$1</p></div>')
-                      // Style markdown blockquotes
-                      .replace(/^> (.+)$/gm, '<div class="blog-quote"><p>$1</p></div>')
-                      .replace(/^---$/gm, '<hr class="my-12 border-t border-border/30" />')
-                      .replace(/^(\d+)\. (.+)$/gm, '<li class="flex items-start gap-3 mb-3"><span class="flex-shrink-0 w-7 h-7 rounded-full bg-primary/20 text-primary text-sm font-bold flex items-center justify-center mt-0.5">$1</span><span class="text-muted-foreground leading-relaxed">$2</span></li>')
-                      .replace(/^- (.+)$/gm, '<li class="flex items-start gap-3 mb-3"><span class="flex-shrink-0 w-2 h-2 rounded-full bg-primary mt-2.5"></span><span class="text-muted-foreground leading-relaxed">$1</span></li>')
-                      .replace(/\*\*(.+?)\*\*/g, '<strong class="text-foreground font-semibold">$1</strong>')
-                      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary hover:text-primary/80 underline underline-offset-4 decoration-primary/50 hover:decoration-primary transition-all font-medium">$1</a>')
-                      .replace(/^(⚠️|👉|🎉) (.+)$/gm, (_, emoji, text) => {
-                        const bgColor = emoji === '⚠️' ? 'bg-amber-500/10 border-amber-500/30' : emoji === '🎉' ? 'bg-green-500/10 border-green-500/30' : 'bg-primary/10 border-primary/30';
-                        return `<div class="flex items-start gap-3 p-4 my-4 rounded-xl ${bgColor} border"><span class="text-2xl">${emoji}</span><span class="text-foreground leading-relaxed">${text}</span></div>`;
-                      })
-                      .replace(/\[youtube:([a-zA-Z0-9_-]+)\]/g, '<div class="my-10 aspect-video rounded-2xl overflow-hidden shadow-xl ring-1 ring-border/20"><iframe class="w-full h-full" src="https://www.youtube.com/embed/$1" title="YouTube video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>')
-                      .replace(/\[image:([^\]]+)\]/g, (_, imageInfo) => {
-                        // Support both formats:
-                        // [image:key] - lookup in blogImages
-                        // [image:/path/to/image.jpg:caption] - direct path with caption
-                        if (imageInfo.startsWith('/')) {
-                          // Direct path format: /path/to/image.jpg:caption
-                          const parts = imageInfo.split(':');
-                          const imagePath = parts[0];
-                          const caption = parts.slice(1).join(':') || '';
-                          return `<figure class="my-8"><img src="${imagePath}" alt="${caption}" loading="lazy" decoding="async" class="w-full rounded-xl shadow-lg ring-1 ring-border/20" />${caption ? `<figcaption class="text-center text-sm text-muted-foreground mt-3">${caption}</figcaption>` : ''}</figure>`;
-                        } else {
-                          // Key format: lookup in blogImages
-                          const imageSrc = blogImages[imageInfo];
-                          return imageSrc 
-                            ? `<div class="my-8 flex justify-center"><img src="${imageSrc}" alt="${imageInfo}" loading="lazy" decoding="async" class="w-full md:w-1/2 lg:w-2/5 rounded-xl shadow-lg ring-1 ring-border/20" /></div>`
-                            : '';
-                        }
-                      })
-                      .replace(/\[play:([a-zA-Z0-9_-]+)\]/g, (_, trackId) => {
-                        const track = trackMapping[trackId];
-                        const trackIndex = track?.index ?? 0;
-                        const trackTitle = language === 'ja' ? track?.titleJa : track?.titleEn;
-                        return `
-<div class="my-12 flex justify-center">
-  <button data-play-track="${trackIndex}" class="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-card via-card to-muted border border-border/50 p-1 shadow-2xl hover:shadow-primary/20 transition-all duration-500 cursor-pointer hover:scale-[1.02]">
-    <div class="relative flex items-center gap-5 px-8 py-6 rounded-[22px] bg-gradient-to-br from-background/80 to-background/40 backdrop-blur-sm">
-      <div class="relative">
-        <div class="absolute inset-0 bg-primary/30 rounded-full blur-xl group-hover:blur-2xl transition-all duration-500 animate-pulse"></div>
-        <div class="relative w-16 h-16 rounded-full bg-gradient-to-br from-primary via-primary to-primary/70 flex items-center justify-center shadow-lg group-hover:shadow-primary/50 transition-all duration-300 group-hover:scale-110">
-          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" class="text-primary-foreground ml-1 group-hover:scale-110 transition-transform duration-300"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-        </div>
-      </div>
-      <div class="flex flex-col items-start">
-        <span class="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-1">${language === 'ja' ? "🎵 今日の一曲" : "🎵 Today's Song"}</span>
-        <span class="text-xl font-bold text-foreground group-hover:text-primary transition-colors duration-300">${trackTitle || trackId}</span>
-        <span class="text-sm text-muted-foreground mt-0.5">${language === 'ja' ? 'クリックして再生' : 'Click to play'}</span>
-      </div>
-      <div class="absolute -right-20 -top-20 w-40 h-40 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/20 transition-colors duration-500"></div>
-      <div class="absolute -left-10 -bottom-10 w-32 h-32 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/15 transition-colors duration-500"></div>
-    </div>
-  </button>
-</div>`;
-                      })
-                      .replace(/\n\n/g, '</p><p class="mb-6 text-muted-foreground leading-relaxed text-lg">'),
-                    { ADD_ATTR: ['target', 'rel', 'allowfullscreen', 'allow', 'frameborder', 'data-play-track'], ADD_TAGS: ['iframe'] }
-                  )
-                }}
+                dangerouslySetInnerHTML={{ __html: processedContent }}
               />
             </div>
+          </div>
 
-            <div className="flex flex-col items-center gap-6 mt-8">
-              <LikeButton postSlug={post.slug} />
-              <ShareButtons title={content.title} url={window.location.href} />
-              
-              <BlogSuggestedQuestions 
-                blogTitle={content.title} 
-                blogCategory={content.category}
-                postSlug={post.slug}
-                content={content.content}
-              />
+          {/* Like Button */}
+          <div className="mt-12 flex flex-col items-center gap-4">
+            <LikeButton postSlug={post.slug} />
+          </div>
 
-              <BlogComments blogSlug={post.slug} />
-            </div>
-          </motion.div>
+          {/* AI Suggested Questions */}
+          <BlogSuggestedQuestions 
+            postSlug={post.slug}
+            title={content.title}
+            content={content.content}
+          />
 
-          {relatedPosts.length > 0 && (
-            <motion.section
-              className="mt-16"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-            >
-              <h2 className="text-2xl font-bold text-foreground mb-8">
-                {language === 'ja' ? '関連記事' : 'Related Posts'}
-              </h2>
-              <div className="grid md:grid-cols-2 gap-6">
-                {relatedPosts.map((relatedPost) => {
-                  const relatedContent = relatedPost[language];
-                  return (
-                    <Link
-                      key={relatedPost.slug}
-                      to={`/blog/${relatedPost.slug}`}
-                      className="group glass rounded-2xl p-6 hover:scale-[1.02] transition-transform"
-                    >
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-primary text-xs font-medium">{relatedContent.category}</span>
-                        <span className="text-muted-foreground text-xs">{relatedContent.date}</span>
-                      </div>
-                      <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
-                        {relatedContent.title}
-                      </h3>
-                    </Link>
-                  );
-                })}
-              </div>
-            </motion.section>
-          )}
+          {/* Comments Section */}
+          <BlogComments blogSlug={post.slug} />
 
-          <motion.div
-            className="mt-12 text-center"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-          >
+          {/* Back to Blog */}
+          <div className="mt-12 text-center">
             <Button variant="outline" asChild>
               <Link to="/#blog">
                 {language === 'ja' ? 'すべての記事を見る' : 'View All Posts'}
               </Link>
             </Button>
-          </motion.div>
+          </div>
         </article>
       </main>
 

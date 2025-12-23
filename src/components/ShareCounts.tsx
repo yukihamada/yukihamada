@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -6,19 +6,20 @@ interface ShareCountsProps {
   postSlug: string;
 }
 
-interface ShareCountData {
-  hatena: number;
-}
-
 const ShareCounts = ({ postSlug }: ShareCountsProps) => {
   const { language } = useLanguage();
-  const [counts, setCounts] = useState<ShareCountData | null>(null);
+  const [hatenaCount, setHatenaCount] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const fetchedRef = useRef(false);
 
   useEffect(() => {
+    // Prevent double fetch
+    if (fetchedRef.current) return;
+    fetchedRef.current = true;
+
     const fetchCounts = async () => {
       try {
-        // First try to get from cache
+        // Only fetch from cache - don't call edge function on every page load
         const { data: cached } = await supabase
           .from('blog_share_counts')
           .select('hatena_count')
@@ -26,33 +27,10 @@ const ShareCounts = ({ postSlug }: ShareCountsProps) => {
           .single();
 
         if (cached) {
-          setCounts({ hatena: cached.hatena_count });
-          setIsLoading(false);
-          
-          // Check if we need to refresh (older than 1 hour)
-          // We'll do this in the background
-        }
-
-        // Fetch fresh counts from edge function
-        const response = await fetch(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-share-counts`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-            },
-            body: JSON.stringify({ slug: postSlug }),
-          }
-        );
-
-        if (response.ok) {
-          const data = await response.json();
-          setCounts({ hatena: data.hatena || 0 });
+          setHatenaCount(cached.hatena_count);
         }
       } catch (error) {
-        console.error('Error fetching share counts:', error);
+        // Silent fail - share counts are not critical
       } finally {
         setIsLoading(false);
       }
@@ -61,13 +39,7 @@ const ShareCounts = ({ postSlug }: ShareCountsProps) => {
     fetchCounts();
   }, [postSlug]);
 
-  if (isLoading || !counts) {
-    return null;
-  }
-
-  const totalShares = counts.hatena;
-
-  if (totalShares === 0) {
+  if (isLoading || hatenaCount === null || hatenaCount === 0) {
     return null;
   }
 
@@ -85,21 +57,19 @@ const ShareCounts = ({ postSlug }: ShareCountsProps) => {
         <line x1="12" y1="2" x2="12" y2="15" />
       </svg>
       <span>
-        {totalShares.toLocaleString()} {language === 'ja' ? 'シェア' : 'shares'}
+        {hatenaCount.toLocaleString()} {language === 'ja' ? 'シェア' : 'shares'}
       </span>
-      {counts.hatena > 0 && (
-        <a
-          href={`https://b.hatena.ne.jp/entry/s/yukihamada.jp/blog/${postSlug}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#00A4DE]/10 text-[#00A4DE] hover:bg-[#00A4DE]/20 transition-colors text-xs"
-        >
-          <svg className="w-3 h-3" viewBox="0 0 32 32" fill="currentColor">
-            <path d="M4.615 7.385V24.615C4.615 26.52 6.095 28 8 28H24C25.905 28 27.385 26.52 27.385 24.615V7.385C27.385 5.48 25.905 4 24 4H8C6.095 4 4.615 5.48 4.615 7.385ZM20.923 22.154H18.462V12.923H20.923V22.154ZM19.692 11.692C18.873 11.692 18.154 10.974 18.154 10.154C18.154 9.333 18.873 8.615 19.692 8.615C20.513 8.615 21.231 9.333 21.231 10.154C21.231 10.974 20.513 11.692 19.692 11.692ZM14.769 22.154H12.308V15.692H10.769V13.538H14.769V22.154Z" />
-          </svg>
-          {counts.hatena}
-        </a>
-      )}
+      <a
+        href={`https://b.hatena.ne.jp/entry/s/yukihamada.jp/blog/${postSlug}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#00A4DE]/10 text-[#00A4DE] hover:bg-[#00A4DE]/20 transition-colors text-xs"
+      >
+        <svg className="w-3 h-3" viewBox="0 0 32 32" fill="currentColor">
+          <path d="M4.615 7.385V24.615C4.615 26.52 6.095 28 8 28H24C25.905 28 27.385 26.52 27.385 24.615V7.385C27.385 5.48 25.905 4 24 4H8C6.095 4 4.615 5.48 4.615 7.385ZM20.923 22.154H18.462V12.923H20.923V22.154ZM19.692 11.692C18.873 11.692 18.154 10.974 18.154 10.154C18.154 9.333 18.873 8.615 19.692 8.615C20.513 8.615 21.231 9.333 21.231 10.154C21.231 10.974 20.513 11.692 19.692 11.692ZM14.769 22.154H12.308V15.692H10.769V13.538H14.769V22.154Z" />
+        </svg>
+        {hatenaCount}
+      </a>
     </div>
   );
 };

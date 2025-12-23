@@ -1,6 +1,5 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, ChevronDown, ChevronUp, Loader2, RefreshCw, Volume2 } from 'lucide-react';
+import { useState, useCallback } from 'react';
+import { Sparkles, ChevronDown, ChevronUp, Loader2, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
@@ -21,7 +20,7 @@ const BlogSummary = ({ postSlug, title, category, content }: BlogSummaryProps) =
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchSummary = async (forceRegenerate = false) => {
+  const fetchSummary = useCallback(async (forceRegenerate = false) => {
     if (summary && !forceRegenerate) {
       setIsExpanded(!isExpanded);
       return;
@@ -55,15 +54,10 @@ const BlogSummary = ({ postSlug, title, category, content }: BlogSummaryProps) =
         }
       );
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch summary');
-      }
+      if (!response.ok) throw new Error('Failed to fetch summary');
 
       const data = await response.json();
-      setSummary({
-        ja: data.summary_ja,
-        en: data.summary_en,
-      });
+      setSummary({ ja: data.summary_ja, en: data.summary_en });
       setIsExpanded(true);
       
       if (forceRegenerate) {
@@ -76,7 +70,7 @@ const BlogSummary = ({ postSlug, title, category, content }: BlogSummaryProps) =
       setIsLoading(false);
       setIsRegenerating(false);
     }
-  };
+  }, [summary, isExpanded, postSlug, title, category, content, language]);
 
   return (
     <div className="w-full my-8">
@@ -109,47 +103,37 @@ const BlogSummary = ({ postSlug, title, category, content }: BlogSummaryProps) =
         </div>
       </div>
 
-      <AnimatePresence>
-        {isExpanded && summary && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="overflow-hidden"
-          >
-            <div className="mt-4 p-6 rounded-xl bg-gradient-to-br from-primary/5 to-accent/5 border border-primary/20">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium text-primary">
-                    {language === 'ja' ? 'AI要約' : 'AI Summary'}
-                  </span>
-                </div>
-                <Button
-                  onClick={() => fetchSummary(true)}
-                  variant="ghost"
-                  size="sm"
-                  className="text-muted-foreground hover:text-foreground"
-                  disabled={isRegenerating}
-                >
-                  {isRegenerating ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <RefreshCw className="h-4 w-4" />
-                  )}
-                  <span className="ml-1 text-xs">
-                    {language === 'ja' ? '再生成' : 'Regenerate'}
-                  </span>
-                </Button>
-              </div>
-              <p className="text-foreground leading-relaxed">
-                {language === 'ja' ? summary.ja : summary.en}
-              </p>
+      {isExpanded && summary && (
+        <div className="mt-4 p-6 rounded-xl bg-gradient-to-br from-primary/5 to-accent/5 border border-primary/20">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium text-primary">
+                {language === 'ja' ? 'AI要約' : 'AI Summary'}
+              </span>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            <Button
+              onClick={() => fetchSummary(true)}
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground hover:text-foreground"
+              disabled={isRegenerating}
+            >
+              {isRegenerating ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="h-4 w-4" />
+              )}
+              <span className="ml-1 text-xs">
+                {language === 'ja' ? '再生成' : 'Regenerate'}
+              </span>
+            </Button>
+          </div>
+          <p className="text-foreground leading-relaxed">
+            {language === 'ja' ? summary.ja : summary.en}
+          </p>
+        </div>
+      )}
 
       {error && (
         <p className="mt-2 text-sm text-destructive text-center">{error}</p>

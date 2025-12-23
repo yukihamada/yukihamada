@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useMemo, useCallback } from 'react';
 import { List, ChevronDown, ChevronUp } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -16,10 +15,9 @@ interface TableOfContentsProps {
 const TableOfContents = ({ content }: TableOfContentsProps) => {
   const { language } = useLanguage();
   const [isExpanded, setIsExpanded] = useState(true);
-  const [tocItems, setTocItems] = useState<TocItem[]>([]);
-  const [activeId, setActiveId] = useState<string>('');
 
-  useEffect(() => {
+  // Memoize TOC items parsing
+  const tocItems = useMemo(() => {
     const items: TocItem[] = [];
     
     // Try parsing HTML headings first (h2, h3 with id attributes)
@@ -51,54 +49,24 @@ const TableOfContents = ({ content }: TableOfContentsProps) => {
       }
     }
 
-    setTocItems(items);
+    return items;
   }, [content]);
 
-  useEffect(() => {
-    if (tocItems.length === 0) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveId(entry.target.id);
-          }
-        });
-      },
-      { rootMargin: '-20% 0px -80% 0px' }
-    );
-
-    // Observe all heading elements
-    tocItems.forEach((item) => {
-      const element = document.getElementById(item.id);
-      if (element) {
-        observer.observe(element);
-      }
-    });
-
-    return () => observer.disconnect();
-  }, [tocItems]);
-
-  if (tocItems.length < 2) {
-    return null;
-  }
-
-  const handleClick = (id: string) => {
+  const handleClick = useCallback((id: string) => {
     const element = document.getElementById(id);
     if (element) {
       const yOffset = -100;
       const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
       window.scrollTo({ top: y, behavior: 'smooth' });
     }
-  };
+  }, []);
+
+  if (tocItems.length < 2) {
+    return null;
+  }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="glass rounded-2xl p-4 mb-6"
-    >
+    <div className="glass rounded-2xl p-4 mb-6">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="flex items-center justify-between w-full text-left"
@@ -119,41 +87,26 @@ const TableOfContents = ({ content }: TableOfContentsProps) => {
         )}
       </button>
 
-      <AnimatePresence>
-        {isExpanded && (
-          <motion.nav
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="overflow-hidden"
-          >
-            <ul className="mt-3 space-y-1 border-l-2 border-border/50">
-              {tocItems.map((item, index) => (
-                <li
-                  key={`${item.id}-${index}`}
-                  style={{ paddingLeft: `${(item.level - 2) * 12 + 12}px` }}
+      {isExpanded && (
+        <nav className="mt-3 border-l-2 border-border/50">
+          <ul className="space-y-1">
+            {tocItems.map((item, index) => (
+              <li
+                key={`${item.id}-${index}`}
+                style={{ paddingLeft: `${(item.level - 2) * 12 + 12}px` }}
+              >
+                <button
+                  onClick={() => handleClick(item.id)}
+                  className="block w-full text-left py-1.5 text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
-                  <button
-                    onClick={() => handleClick(item.id)}
-                    className={`
-                      block w-full text-left py-1.5 text-sm transition-all duration-200
-                      hover:text-primary hover:translate-x-1
-                      ${activeId === item.id 
-                        ? 'text-primary font-medium border-l-2 border-primary -ml-[2px] pl-3' 
-                        : 'text-muted-foreground'
-                      }
-                    `}
-                  >
-                    {item.text}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </motion.nav>
-        )}
-      </AnimatePresence>
-    </motion.div>
+                  {item.text}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
+    </div>
   );
 };
 

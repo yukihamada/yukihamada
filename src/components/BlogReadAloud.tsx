@@ -1,5 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Volume2, Pause, Loader2, Square, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -30,23 +29,23 @@ const BlogReadAloud = ({ content, title, postSlug }: BlogReadAloudProps) => {
     currentLanguageRef.current = language;
   }, [language]);
 
-  // Clean content for TTS (remove markdown, html, etc.)
-  const cleanContent = (text: string): string => {
+  // Clean content for TTS
+  const cleanContent = useCallback((text: string): string => {
     return text
-      .replace(/^##+ .+$/gm, '') // Remove headings
-      .replace(/\[.*?\]\(.*?\)/g, '') // Remove markdown links
-      .replace(/\[.*?\]/g, '') // Remove bracket content
-      .replace(/\*\*(.+?)\*\*/g, '$1') // Remove bold
-      .replace(/<[^>]+>/g, '') // Remove HTML tags
-      .replace(/\|.+\|/g, '') // Remove table content
-      .replace(/^[-*] /gm, '') // Remove list markers
-      .replace(/^\d+\. /gm, '') // Remove numbered list markers
-      .replace(/^> /gm, '') // Remove blockquote markers
-      .replace(/\n{3,}/g, '\n\n') // Reduce multiple newlines
+      .replace(/^##+ .+$/gm, '')
+      .replace(/\[.*?\]\(.*?\)/g, '')
+      .replace(/\[.*?\]/g, '')
+      .replace(/\*\*(.+?)\*\*/g, '$1')
+      .replace(/<[^>]+>/g, '')
+      .replace(/\|.+\|/g, '')
+      .replace(/^[-*] /gm, '')
+      .replace(/^\d+\. /gm, '')
+      .replace(/^> /gm, '')
+      .replace(/\n{3,}/g, '\n\n')
       .trim();
-  };
+  }, []);
 
-  const generateAudio = async () => {
+  const generateAudio = useCallback(async () => {
     setIsLoading(true);
     
     try {
@@ -61,25 +60,15 @@ const BlogReadAloud = ({ content, title, postSlug }: BlogReadAloudProps) => {
             'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
             'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
-          body: JSON.stringify({
-            text: textToRead,
-            language,
-            postSlug,
-          }),
+          body: JSON.stringify({ text: textToRead, language, postSlug }),
         }
       );
 
-      if (!response.ok) {
-        throw new Error('Failed to generate audio');
-      }
+      if (!response.ok) throw new Error('Failed to generate audio');
 
       const data = await response.json();
-      
-      if (data.error) {
-        throw new Error(data.error);
-      }
+      if (data.error) throw new Error(data.error);
 
-      // Use the audio URL from storage
       const audio = new Audio(data.audioUrl);
       audioRef.current = audio;
       
@@ -97,58 +86,49 @@ const BlogReadAloud = ({ content, title, postSlug }: BlogReadAloudProps) => {
       await audio.play();
       setIsPlaying(true);
       setIsPaused(false);
-      
-      if (data.cached) {
-        console.log('Playing cached audio');
-      } else {
-        console.log('Playing freshly generated audio (now cached)');
-      }
-      
     } catch (err) {
       console.error('Error generating audio:', err);
       toast.error(language === 'ja' ? '音声生成に失敗しました' : 'Failed to generate audio');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [title, content, language, postSlug, cleanContent]);
 
-  const handlePlay = async () => {
+  const handlePlay = useCallback(async () => {
     if (audioRef.current && !audioRef.current.ended) {
-      // Resume existing audio
       await audioRef.current.play();
       setIsPlaying(true);
       setIsPaused(false);
     } else {
-      // Generate/fetch audio
       await generateAudio();
     }
-  };
+  }, [generateAudio]);
 
-  const handlePause = () => {
+  const handlePause = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.pause();
       setIsPlaying(false);
       setIsPaused(true);
     }
-  };
+  }, []);
 
-  const handleStop = () => {
+  const handleStop = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
       setIsPlaying(false);
       setIsPaused(false);
     }
-  };
+  }, []);
 
-  const handleRestart = () => {
+  const handleRestart = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.currentTime = 0;
       audioRef.current.play();
       setIsPlaying(true);
       setIsPaused(false);
     }
-  };
+  }, []);
 
   return (
     <div className="flex items-center gap-2 flex-1">
@@ -172,82 +152,49 @@ const BlogReadAloud = ({ content, title, postSlug }: BlogReadAloudProps) => {
         </Button>
       )}
 
-      <AnimatePresence>
-        {(isPlaying || isPaused) && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className="flex-1 flex items-center justify-center gap-3 px-6 py-4 rounded-xl bg-primary/10 border border-primary/30"
-          >
-            {isPlaying ? (
-              <>
-                <motion.div 
-                  className="flex items-center gap-0.5"
-                  animate={{ opacity: [0.5, 1, 0.5] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                >
-                  {[1, 2, 3, 4].map((i) => (
-                    <motion.div
-                      key={i}
-                      className="w-1 bg-primary rounded-full"
-                      animate={{ height: [8, 16, 8] }}
-                      transition={{ 
-                        duration: 0.5, 
-                        repeat: Infinity, 
-                        delay: i * 0.1 
-                      }}
-                    />
-                  ))}
-                </motion.div>
-                <span className="text-sm font-medium text-primary">
-                  {language === 'ja' ? '再生中...' : 'Playing...'}
-                </span>
-                <Button
-                  onClick={handlePause}
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                >
-                  <Pause className="h-4 w-4" />
-                </Button>
-              </>
-            ) : (
-              <>
-                <span className="text-sm font-medium text-muted-foreground">
-                  {language === 'ja' ? '一時停止中' : 'Paused'}
-                </span>
-                <Button
-                  onClick={handlePlay}
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                >
-                  <Volume2 className="h-4 w-4" />
-                </Button>
-              </>
-            )}
-            
-            <Button
-              onClick={handleRestart}
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-            >
-              <RotateCcw className="h-4 w-4" />
-            </Button>
-            
-            <Button
-              onClick={handleStop}
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-            >
-              <Square className="h-4 w-4" />
-            </Button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {(isPlaying || isPaused) && (
+        <div className="flex-1 flex items-center justify-center gap-3 px-6 py-4 rounded-xl bg-primary/10 border border-primary/30">
+          {isPlaying ? (
+            <>
+              <div className="flex items-center gap-0.5">
+                {[1, 2, 3, 4].map((i) => (
+                  <div
+                    key={i}
+                    className="w-1 bg-primary rounded-full animate-pulse"
+                    style={{ 
+                      height: `${8 + Math.sin(i) * 8}px`,
+                      animationDelay: `${i * 0.1}s`
+                    }}
+                  />
+                ))}
+              </div>
+              <span className="text-sm font-medium text-primary">
+                {language === 'ja' ? '再生中...' : 'Playing...'}
+              </span>
+              <Button onClick={handlePause} variant="ghost" size="icon" className="h-8 w-8">
+                <Pause className="h-4 w-4" />
+              </Button>
+            </>
+          ) : (
+            <>
+              <span className="text-sm font-medium text-muted-foreground">
+                {language === 'ja' ? '一時停止中' : 'Paused'}
+              </span>
+              <Button onClick={handlePlay} variant="ghost" size="icon" className="h-8 w-8">
+                <Volume2 className="h-4 w-4" />
+              </Button>
+            </>
+          )}
+          
+          <Button onClick={handleRestart} variant="ghost" size="icon" className="h-8 w-8">
+            <RotateCcw className="h-4 w-4" />
+          </Button>
+          
+          <Button onClick={handleStop} variant="ghost" size="icon" className="h-8 w-8">
+            <Square className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

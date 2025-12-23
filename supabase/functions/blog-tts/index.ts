@@ -1,10 +1,21 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { encode as hexEncode } from "https://deno.land/std@0.168.0/encoding/hex.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Generate a short hash from text content for cache invalidation
+async function generateContentHash(text: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(text);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = new Uint8Array(hashBuffer);
+  const hashHex = new TextDecoder().decode(hexEncode(hashArray));
+  return hashHex.substring(0, 8); // Use first 8 chars for brevity
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -23,8 +34,9 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Create cache file path
-    const cacheFileName = `${postSlug}_${language}.mp3`;
+    // Generate content hash for cache invalidation when text changes
+    const contentHash = await generateContentHash(text);
+    const cacheFileName = `${postSlug}_${language}_${contentHash}.mp3`;
     
     // Check if cached audio exists in storage
     console.log(`Checking cache for: ${cacheFileName}`);
@@ -49,6 +61,20 @@ serve(async (req) => {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         }
       );
+    }
+
+    // Clean up old cache files for this post/language combo
+    console.log(`Cache miss. Cleaning up old cache files for ${postSlug}_${language}...`);
+    const { data: oldFiles } = await supabase.storage
+      .from('blog-tts-cache')
+      .list('', { search: `${postSlug}_${language}_` });
+    
+    if (oldFiles && oldFiles.length > 0) {
+      const filesToDelete = oldFiles.map(f => f.name);
+      console.log(`Deleting ${filesToDelete.length} old cache files:`, filesToDelete);
+      await supabase.storage
+        .from('blog-tts-cache')
+        .remove(filesToDelete);
     }
 
     console.log(`Cache miss. Generating TTS for language: ${language}, text length: ${text.length}`);

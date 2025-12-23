@@ -33,6 +33,7 @@ interface Topic {
   created_at: string;
   user_id: string;
   profiles?: {
+    public_id: string | null;
     display_name: string | null;
     avatar_url: string | null;
   };
@@ -45,6 +46,7 @@ interface Comment {
   created_at: string;
   user_id: string;
   profiles?: {
+    public_id: string | null;
     display_name: string | null;
     avatar_url: string | null;
   };
@@ -158,7 +160,7 @@ const Community = () => {
             try {
               const { data: profileData } = await supabase
                 .from('profiles')
-                .select('display_name, avatar_url')
+                .select('public_id, display_name, avatar_url')
                 .eq('user_id', topic.user_id)
                 .maybeSingle();
               profile = profileData;
@@ -189,7 +191,7 @@ const Community = () => {
         data.map(async (comment) => {
           const { data: profile } = await supabase
             .from('profiles')
-            .select('display_name, avatar_url')
+            .select('public_id, display_name, avatar_url')
             .eq('user_id', comment.user_id)
             .maybeSingle();
           return { ...comment, profiles: profile };

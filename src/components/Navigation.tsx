@@ -5,6 +5,7 @@ import { Menu, X, Sparkles, User, Users, ChevronDown, Briefcase, TrendingUp, Boo
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
+import { useUIVisibility } from '@/contexts/UIVisibilityContext';
 import { useAuth } from '@/hooks/useAuth';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -18,12 +19,16 @@ const Navigation = () => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { t, language } = useLanguage();
   const { isPlaying, analyzerData } = useMusicPlayer();
+  const { isUIVisible } = useUIVisibility();
   const { isAuthenticated, profile, isAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   
   const isOnBlogPage = location.pathname.startsWith('/blog');
   const isHomePage = location.pathname === '/';
+  
+  // Don't hide nav when mobile menu is open or dropdown is active
+  const shouldHide = !isUIVisible && !isMobileMenuOpen && !activeDropdown;
 
   // Grouped navigation
   const navGroups = {
@@ -108,8 +113,11 @@ const Navigation = () => {
     <motion.nav
       className="fixed top-0 left-0 right-0 z-50"
       initial={{ y: -100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6, ease: [0.25, 0.4, 0.25, 1] }}
+      animate={{ 
+        y: shouldHide ? -100 : 0, 
+        opacity: shouldHide ? 0 : 1 
+      }}
+      transition={{ duration: 0.3, ease: [0.25, 0.4, 0.25, 1] }}
       style={{
         paddingTop: `${16 - scrollProgress * 8}px`,
         paddingBottom: `${16 - scrollProgress * 8}px`,

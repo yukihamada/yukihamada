@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { getVisitorSupabaseClient } from '@/lib/visitorSupabaseClient';
 import { useChat } from '@/contexts/ChatContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useUIVisibility } from '@/contexts/UIVisibilityContext';
 import yukiProfile from '@/assets/yuki-profile.jpg';
 import { TypingText } from '@/components/TypingText';
 
@@ -191,6 +192,7 @@ export const AIChatSection = () => {
   const { toast } = useToast();
   const { isOpen, toggleChat, openChat, closeChat, pageContext, currentBlogTitle, pendingMessage, setPendingMessage } = useChat();
   const { language } = useLanguage();
+  const { isUIVisible } = useUIVisibility();
   const [messages, setMessages] = useState<Message[]>(() => loadMessagesFromStorage());
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -819,9 +821,9 @@ export const AIChatSection = () => {
       {/* Drag constraints container */}
       <div ref={constraintsRef} className="fixed inset-0 pointer-events-none z-40" />
 
-      {/* Chat Toggle Button - only show when closed */}
+      {/* Chat Toggle Button - only show when closed and UI is visible */}
       <AnimatePresence>
-        {!isOpen && (
+        {!isOpen && isUIVisible && (
           <motion.button
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ 

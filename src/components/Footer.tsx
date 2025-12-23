@@ -37,7 +37,7 @@ const Footer = () => {
     { name: t.nav.enabler, href: '#enabler' },
     { name: t.nav.career, href: '#career' },
     { name: t.nav.investments, href: '#investments' },
-    { name: t.nav.blog, href: '#blog' },
+    { name: t.nav.blog, href: '/blog', isRoute: true },
     { name: t.nav.hobbies, href: '#hobbies' },
   ];
 
@@ -123,13 +123,24 @@ const Footer = () => {
                   viewport={{ once: true }}
                   transition={{ delay: 0.2 + index * 0.05 }}
                 >
-                  <motion.a
-                    href={link.href}
-                    className="text-muted-foreground hover:text-primary transition-colors"
-                    whileHover={{ x: 5 }}
-                  >
-                    {link.name}
-                  </motion.a>
+                  {'isRoute' in link && link.isRoute ? (
+                    <Link
+                      to={link.href}
+                      className="text-muted-foreground hover:text-primary transition-colors inline-block"
+                    >
+                      <motion.span whileHover={{ x: 5 }} className="inline-block">
+                        {link.name}
+                      </motion.span>
+                    </Link>
+                  ) : (
+                    <motion.a
+                      href={link.href}
+                      className="text-muted-foreground hover:text-primary transition-colors"
+                      whileHover={{ x: 5 }}
+                    >
+                      {link.name}
+                    </motion.a>
+                  )}
                 </motion.li>
               ))}
             </ul>

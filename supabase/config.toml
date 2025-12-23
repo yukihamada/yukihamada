@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.generate-ogp]
 verify_jwt = false
+
+[functions.sse]
+verify_jwt = false

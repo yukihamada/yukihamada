@@ -250,6 +250,27 @@ const BlogPost = () => {
                 dangerouslySetInnerHTML={{ 
                   __html: DOMPurify.sanitize(
                     content.content
+                      // Style existing HTML h2 tags (preserve id if present)
+                      .replace(/<h2([^>]*)>([^<]+)<\/h2>/g, (_, attrs, text) => {
+                        const hasId = attrs.includes('id=');
+                        const id = hasId ? '' : ` id="${text.trim()
+                          .toLowerCase()
+                          .replace(/[^\w\s\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/g, '')
+                          .replace(/\s+/g, '-')
+                          .slice(0, 50)}"`;
+                        return `<h2${attrs}${id} class="text-2xl md:text-3xl font-bold mt-12 mb-6 text-foreground border-l-4 border-primary pl-4">${text}</h2>`;
+                      })
+                      // Style existing HTML h3 tags
+                      .replace(/<h3([^>]*)>([^<]+)<\/h3>/g, (_, attrs, text) => {
+                        const hasId = attrs.includes('id=');
+                        const id = hasId ? '' : ` id="${text.trim()
+                          .toLowerCase()
+                          .replace(/[^\w\s\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/g, '')
+                          .replace(/\s+/g, '-')
+                          .slice(0, 50)}"`;
+                        return `<h3${attrs}${id} class="text-xl md:text-2xl font-semibold mt-8 mb-4 text-foreground">${text}</h3>`;
+                      })
+                      // Convert markdown ## to styled h2
                       .replace(/^## (.+)$/gm, (_, heading) => {
                         const id = heading.replace(/\*\*/g, '').trim()
                           .toLowerCase()
@@ -258,6 +279,7 @@ const BlogPost = () => {
                           .slice(0, 50);
                         return `<h2 id="${id}" class="text-2xl md:text-3xl font-bold mt-12 mb-6 text-foreground border-l-4 border-primary pl-4">${heading}</h2>`;
                       })
+                      // Convert markdown ### to styled h3
                       .replace(/^### (.+)$/gm, (_, heading) => {
                         const id = heading.replace(/\*\*/g, '').trim()
                           .toLowerCase()

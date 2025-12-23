@@ -117,10 +117,11 @@ const Navigation = () => {
         y: shouldHide ? -100 : 0, 
         opacity: shouldHide ? 0 : 1 
       }}
-      transition={{ duration: 0.3, ease: [0.25, 0.4, 0.25, 1] }}
+      transition={{ duration: 0.4, ease: [0.25, 0.4, 0.25, 1] }}
       style={{
         paddingTop: `${16 - scrollProgress * 8}px`,
         paddingBottom: `${16 - scrollProgress * 8}px`,
+        opacity: shouldHide ? 0 : Math.max(0.7, 1 - scrollProgress * 0.3),
       }}
     >
       {/* Progress bar */}

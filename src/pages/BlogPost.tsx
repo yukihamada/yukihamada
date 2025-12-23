@@ -287,11 +287,23 @@ const BlogPost = () => {
                         return `<div class="flex items-start gap-3 p-4 my-4 rounded-xl ${bgColor} border"><span class="text-2xl">${emoji}</span><span class="text-foreground leading-relaxed">${text}</span></div>`;
                       })
                       .replace(/\[youtube:([a-zA-Z0-9_-]+)\]/g, '<div class="my-10 aspect-video rounded-2xl overflow-hidden shadow-xl ring-1 ring-border/20"><iframe class="w-full h-full" src="https://www.youtube.com/embed/$1" title="YouTube video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>')
-                      .replace(/\[image:([a-zA-Z0-9_-]+)\]/g, (_, imageKey) => {
-                        const imageSrc = blogImages[imageKey];
-                        return imageSrc 
-                          ? `<div class="my-8 flex justify-center"><img src="${imageSrc}" alt="${imageKey}" loading="lazy" decoding="async" class="w-full md:w-1/2 lg:w-2/5 rounded-xl shadow-lg ring-1 ring-border/20" /></div>`
-                          : '';
+                      .replace(/\[image:([^\]]+)\]/g, (_, imageInfo) => {
+                        // Support both formats:
+                        // [image:key] - lookup in blogImages
+                        // [image:/path/to/image.jpg:caption] - direct path with caption
+                        if (imageInfo.startsWith('/')) {
+                          // Direct path format: /path/to/image.jpg:caption
+                          const parts = imageInfo.split(':');
+                          const imagePath = parts[0];
+                          const caption = parts.slice(1).join(':') || '';
+                          return `<figure class="my-8"><img src="${imagePath}" alt="${caption}" loading="lazy" decoding="async" class="w-full rounded-xl shadow-lg ring-1 ring-border/20" />${caption ? `<figcaption class="text-center text-sm text-muted-foreground mt-3">${caption}</figcaption>` : ''}</figure>`;
+                        } else {
+                          // Key format: lookup in blogImages
+                          const imageSrc = blogImages[imageInfo];
+                          return imageSrc 
+                            ? `<div class="my-8 flex justify-center"><img src="${imageSrc}" alt="${imageInfo}" loading="lazy" decoding="async" class="w-full md:w-1/2 lg:w-2/5 rounded-xl shadow-lg ring-1 ring-border/20" /></div>`
+                            : '';
+                        }
                       })
                       .replace(/\[play:([a-zA-Z0-9_-]+)\]/g, (_, trackId) => {
                         const track = trackMapping[trackId];

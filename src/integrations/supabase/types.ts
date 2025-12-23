@@ -569,6 +569,47 @@ export type Database = {
       }
       get_blog_like_count: { Args: { p_post_slug: string }; Returns: number }
       get_blog_view_count: { Args: { p_post_slug: string }; Returns: number }
+      get_forum_comments_safe: {
+        Args: { p_blog_slug?: string; p_topic_id?: string }
+        Returns: {
+          author_avatar_url: string
+          author_display_name: string
+          author_public_id: string
+          blog_slug: string
+          content: string
+          created_at: string
+          id: string
+          parent_id: string
+          topic_id: string
+          updated_at: string
+        }[]
+      }
+      get_forum_profile: {
+        Args: { p_user_id: string }
+        Returns: {
+          avatar_url: string
+          bio: string
+          display_name: string
+          public_id: string
+        }[]
+      }
+      get_forum_topics_safe: {
+        Args: never
+        Returns: {
+          author_avatar_url: string
+          author_display_name: string
+          author_public_id: string
+          category: string
+          comment_count: number
+          content: string
+          created_at: string
+          id: string
+          is_pinned: boolean
+          title: string
+          updated_at: string
+          view_count: number
+        }[]
+      }
       get_music_play_counts: {
         Args: never
         Returns: {

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Music, X, ChevronUp, Shuffle, Repeat, Repeat1, SlidersHorizontal, FileText, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
+import { useUIVisibility } from '@/contexts/UIVisibilityContext';
 
 // Artwork mapping for dynamic imports
 import albumFreeToChange from '@/assets/album-free-to-change.jpg';
@@ -107,6 +108,7 @@ const savePlayCount = (trackId: string) => {
 
 const MusicPlayer = () => {
   const { setIsPlaying: setGlobalIsPlaying, setAnalyzerData: setGlobalAnalyzerData, setCurrentColor } = useMusicPlayer();
+  const { isUIVisible } = useUIVisibility();
   
   // Track data from database
   const [tracks, setTracks] = useState<Track[]>([]);
@@ -629,8 +631,11 @@ const MusicPlayer = () => {
         ref={playerContainerRef}
         className="fixed bottom-6 right-6 z-50"
         initial={{ y: 100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        animate={{ 
+          y: (!isUIVisible && !isExpanded) ? 150 : 0, 
+          opacity: (!isUIVisible && !isExpanded) ? 0 : 1 
+        }}
+        transition={{ duration: 0.3, ease: [0.25, 0.4, 0.25, 1] }}
       >
         <AnimatePresence mode="wait">
           {isExpanded ? (

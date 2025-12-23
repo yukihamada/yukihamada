@@ -7,6 +7,7 @@ import { ThemeProvider } from "next-themes";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { MusicPlayerProvider } from "@/contexts/MusicPlayerContext";
 import { ChatProvider } from "@/contexts/ChatContext";
+import { UIVisibilityProvider } from "@/contexts/UIVisibilityContext";
 import ScrollToTop from "@/components/ScrollToTop";
 import MusicPlayer from "@/components/MusicPlayer";
 import OrganicBackground from "@/components/OrganicBackground";
@@ -28,32 +29,34 @@ const App = () => (
       <LanguageProvider>
         <MusicPlayerProvider>
           <ChatProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <ScrollToTop />
-                <OrganicBackground />
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/blog" element={<Blog />} />
-                  <Route path="/blog/:slug" element={<BlogPost />} />
-                  <Route path="/auth" element={<Auth />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/community" element={<Community />} />
-                  <Route path="/admin" element={<AdminDashboard />} />
-                  {/* Legacy routes - redirect to main admin */}
-                  <Route path="/admin/blog" element={<AdminDashboard />} />
-                  <Route path="/admin/chat" element={<AdminDashboard />} />
-                  <Route path="/blog-admin" element={<AdminDashboard />} />
-                  <Route path="/chat-admin" element={<AdminDashboard />} />
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-                <MusicPlayer />
-                <AIChatSection />
-              </BrowserRouter>
-            </TooltipProvider>
+            <UIVisibilityProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                  <ScrollToTop />
+                  <OrganicBackground />
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/blog" element={<Blog />} />
+                    <Route path="/blog/:slug" element={<BlogPost />} />
+                    <Route path="/auth" element={<Auth />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/community" element={<Community />} />
+                    <Route path="/admin" element={<AdminDashboard />} />
+                    {/* Legacy routes - redirect to main admin */}
+                    <Route path="/admin/blog" element={<AdminDashboard />} />
+                    <Route path="/admin/chat" element={<AdminDashboard />} />
+                    <Route path="/blog-admin" element={<AdminDashboard />} />
+                    <Route path="/chat-admin" element={<AdminDashboard />} />
+                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                  <MusicPlayer />
+                  <AIChatSection />
+                </BrowserRouter>
+              </TooltipProvider>
+            </UIVisibilityProvider>
           </ChatProvider>
         </MusicPlayerProvider>
       </LanguageProvider>

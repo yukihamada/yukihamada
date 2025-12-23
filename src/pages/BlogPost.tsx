@@ -299,7 +299,10 @@ const BlogPost = () => {
                       .replace(/(<tr.*?<\/tr>\s*)+/g, (match) => {
                         return `<div class="overflow-x-auto my-8"><table class="w-full border-collapse rounded-xl overflow-hidden shadow-lg ring-1 ring-border/20"><tbody>${match}</tbody></table></div>`;
                       })
-                      .replace(/^> (.+)$/gm, '<blockquote class="border-l-4 border-primary/50 pl-6 py-4 my-8 bg-primary/5 rounded-r-xl italic text-muted-foreground text-lg">$1</blockquote>')
+                      // Style HTML blockquote tags
+                      .replace(/<blockquote>([^<]+)<\/blockquote>/g, '<div class="blog-quote"><p>$1</p></div>')
+                      // Style markdown blockquotes
+                      .replace(/^> (.+)$/gm, '<div class="blog-quote"><p>$1</p></div>')
                       .replace(/^---$/gm, '<hr class="my-12 border-t border-border/30" />')
                       .replace(/^(\d+)\. (.+)$/gm, '<li class="flex items-start gap-3 mb-3"><span class="flex-shrink-0 w-7 h-7 rounded-full bg-primary/20 text-primary text-sm font-bold flex items-center justify-center mt-0.5">$1</span><span class="text-muted-foreground leading-relaxed">$2</span></li>')
                       .replace(/^- (.+)$/gm, '<li class="flex items-start gap-3 mb-3"><span class="flex-shrink-0 w-2 h-2 rounded-full bg-primary mt-2.5"></span><span class="text-muted-foreground leading-relaxed">$1</span></li>')

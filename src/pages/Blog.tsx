@@ -41,18 +41,30 @@ const Blog = () => {
   }, [blogPosts, selectedCategory, language]);
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchViewCounts = async () => {
-      const counts: Record<string, number> = {};
-      for (const post of blogPosts) {
-        const { data } = await supabase
-          .rpc('get_blog_view_count', { p_post_slug: post.slug });
-        counts[post.slug] = data || 0;
-      }
-      setViewCounts(counts);
+      const entries = await Promise.all(
+        blogPosts.map(async (post) => {
+          const { data, error } = await supabase.rpc('get_blog_view_count', { p_post_slug: post.slug });
+          if (error) {
+            console.error('Failed to fetch view count', post.slug, error);
+          }
+          return [post.slug, (data ?? 0) as number] as const;
+        })
+      );
+
+      if (!isMounted) return;
+      setViewCounts(Object.fromEntries(entries));
     };
+
     if (blogPosts.length > 0) {
       fetchViewCounts();
     }
+
+    return () => {
+      isMounted = false;
+    };
   }, [blogPosts]);
 
   const containerVariants = {

@@ -1,6 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
-import { useEffect, useRef, useMemo, lazy, Suspense } from 'react';
-import { ArrowLeft, Calendar, Tag, RefreshCw, Twitter, Clock } from 'lucide-react';
+import { useEffect, useRef, useMemo, useState } from 'react';
+import { ArrowLeft, Calendar, Tag, RefreshCw, Twitter, Clock, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useBlogPost, useBlogPosts } from '@/hooks/useBlogPosts';
 import Navigation from '@/components/Navigation';
@@ -19,6 +19,7 @@ import { useChat } from '@/contexts/ChatContext';
 import { calculateReadingTime, formatReadingTime } from '@/lib/readingTime';
 import ShareCounts from '@/components/ShareCounts';
 import TableOfContents from '@/components/TableOfContents';
+import { useAuth } from '@/hooks/useAuth';
 import jiuflowHero from '@/assets/jiuflow-hero.png';
 import jiuflowLesson from '@/assets/jiuflow-lesson.png';
 import yukiProfile from '@/assets/yuki-profile.jpg';
@@ -128,6 +129,7 @@ const BlogPost = () => {
   const contentRef = useRef<HTMLDivElement>(null);
   const { language } = useLanguage();
   const { setPageContext, setCurrentBlogTitle } = useChat();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     setPageContext('blog-post');
@@ -163,8 +165,31 @@ const BlogPost = () => {
   // Memoize processed content to avoid recalculation on every render
   const processedContent = useMemo(() => {
     if (!post) return '';
-    return processContent(post[language].content, language);
-  }, [post, language]);
+    let content = post[language].content;
+    
+    // Hide members-only content for non-authenticated users
+    if (!isAuthenticated) {
+      content = content.replace(
+        /<div class="members-only-content"[^>]*>[\s\S]*?<\/div>/g,
+        `<div class="members-only-placeholder glass rounded-2xl p-8 my-8 text-center border-2 border-dashed border-primary/30">
+          <div class="flex flex-col items-center gap-4">
+            <div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+              <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+              </svg>
+            </div>
+            <h3 class="text-xl font-bold text-foreground">${language === 'ja' ? '🎁 会員限定コンテンツ' : '🎁 Members Only Content'}</h3>
+            <p class="text-muted-foreground max-w-md">${language === 'ja' ? 'この続きは会員登録すると閲覧できます。無料で登録して、特別なコンテンツにアクセスしましょう！' : 'Register for free to unlock this exclusive content and access special features!'}</p>
+            <a href="/auth" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors">
+              ${language === 'ja' ? '無料で会員登録' : 'Register for Free'}
+            </a>
+          </div>
+        </div>`
+      );
+    }
+    
+    return processContent(content, language);
+  }, [post, language, isAuthenticated]);
 
   if (isLoading) {
     return (

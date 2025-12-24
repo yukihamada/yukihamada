@@ -8,6 +8,7 @@ import { getVisitorSupabaseClient } from '@/lib/visitorSupabaseClient';
 import { useChat } from '@/contexts/ChatContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useUIVisibility } from '@/contexts/UIVisibilityContext';
+import { useAuth } from '@/hooks/useAuth';
 import yukiProfile from '@/assets/yuki-profile.jpg';
 import { TypingText } from '@/components/TypingText';
 
@@ -193,6 +194,7 @@ export const AIChatSection = () => {
   const { isOpen, toggleChat, openChat, closeChat, pageContext, currentBlogTitle, pendingMessage, setPendingMessage } = useChat();
   const { language } = useLanguage();
   const { isUIVisible } = useUIVisibility();
+  const { isAuthenticated, user } = useAuth();
   const [messages, setMessages] = useState<Message[]>(() => loadMessagesFromStorage());
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -559,9 +561,19 @@ export const AIChatSection = () => {
     // Generate UUID client-side to avoid needing SELECT after INSERT
     const newConversationId = crypto.randomUUID();
 
+    // Include user_id if authenticated
+    const insertData: { id: string; visitor_id: string; user_id?: string } = { 
+      id: newConversationId, 
+      visitor_id: visitorId 
+    };
+    
+    if (isAuthenticated && user?.id) {
+      insertData.user_id = user.id;
+    }
+
     const { error } = await visitorSupabase
       .from('chat_conversations')
-      .insert({ id: newConversationId, visitor_id: visitorId });
+      .insert(insertData);
 
     if (error) {
       console.error('Error creating conversation:', error);
@@ -1101,8 +1113,8 @@ export const AIChatSection = () => {
                 </motion.div>
               )}
               
-              {/* Registration prompt after 4+ user messages */}
-              {messages.filter(m => m.role === 'user').length >= 4 && (
+              {/* Registration prompt after 4+ user messages - only show for non-authenticated users */}
+              {!isAuthenticated && messages.filter(m => m.role === 'user').length >= 4 && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}

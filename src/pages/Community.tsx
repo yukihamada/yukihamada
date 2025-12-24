@@ -28,21 +28,24 @@ import { ja, enUS } from 'date-fns/locale';
 // Simple markdown to HTML converter
 const renderMarkdown = (content: string): string => {
   let html = content
-    // Escape HTML first
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
     // Headers
     .replace(/^## (.+)$/gm, '<h2 class="text-xl font-bold mt-6 mb-3 text-foreground">$1</h2>')
     .replace(/^### (.+)$/gm, '<h3 class="text-lg font-semibold mt-4 mb-2 text-foreground">$1</h3>')
     // Bold
     .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-foreground">$1</strong>')
-    // Links
+    // Blockquotes
+    .replace(/^> (.+)$/gm, '<blockquote class="border-l-4 border-primary pl-4 my-4 italic text-muted-foreground">$1</blockquote>')
+    // Links - markdown style [text](url)
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary hover:underline" target="_blank" rel="noopener noreferrer">$1</a>')
+    // Plain URLs (but not already in href)
+    .replace(/(?<!href="|">)(https?:\/\/[^\s<]+)/g, '<a href="$1" class="text-primary hover:underline" target="_blank" rel="noopener noreferrer">$1</a>')
     // Lists with emoji
     .replace(/^([🎧🎵🤖👥🚀💡🤝🎉🎁👉✨📝])\s+(.+)$/gm, '<div class="flex items-start gap-2 my-2"><span class="text-lg">$1</span><span>$2</span></div>')
     // Regular lists
     .replace(/^- (.+)$/gm, '<li class="ml-4 list-disc text-muted-foreground">$1</li>')
+    .replace(/^• (.+)$/gm, '<li class="ml-4 list-disc text-muted-foreground">$1</li>')
+    // Horizontal rule
+    .replace(/^---$/gm, '<hr class="my-6 border-border" />')
     // Paragraphs (double newlines)
     .replace(/\n\n/g, '</p><p class="my-3 text-muted-foreground">')
     // Single newlines
@@ -50,6 +53,10 @@ const renderMarkdown = (content: string): string => {
 
   // Wrap in paragraph
   html = '<p class="my-3 text-muted-foreground">' + html + '</p>';
+  
+  // Clean up empty paragraphs
+  html = html.replace(/<p class="my-3 text-muted-foreground"><\/p>/g, '');
+  html = html.replace(/<p class="my-3 text-muted-foreground"><br\/><\/p>/g, '');
   
   return DOMPurify.sanitize(html, {
     ADD_ATTR: ['target', 'rel'],

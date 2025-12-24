@@ -10,9 +10,12 @@ interface BlogViewStatsProps {
 // Get or create visitor ID
 const getVisitorId = (): string => {
   const stored = localStorage.getItem('visitor_id');
-  if (stored) return stored;
+  if (stored && stored.length >= 32) return stored;
   
-  const newId = `visitor_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  // Generate ID with minimum 32 characters for database validation
+  const timestamp = Date.now().toString();
+  const random = Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2);
+  const newId = `visitor_${timestamp}_${random.substring(0, 16)}`;
   localStorage.setItem('visitor_id', newId);
   return newId;
 };

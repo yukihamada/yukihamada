@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
+import DOMPurify from 'dompurify';
 import { 
   MessageSquare, 
   Plus, 
@@ -23,6 +24,37 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ja, enUS } from 'date-fns/locale';
+
+// Simple markdown to HTML converter
+const renderMarkdown = (content: string): string => {
+  let html = content
+    // Escape HTML first
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    // Headers
+    .replace(/^## (.+)$/gm, '<h2 class="text-xl font-bold mt-6 mb-3 text-foreground">$1</h2>')
+    .replace(/^### (.+)$/gm, '<h3 class="text-lg font-semibold mt-4 mb-2 text-foreground">$1</h3>')
+    // Bold
+    .replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-foreground">$1</strong>')
+    // Links
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary hover:underline" target="_blank" rel="noopener noreferrer">$1</a>')
+    // Lists with emoji
+    .replace(/^([🎧🎵🤖👥🚀💡🤝🎉🎁👉✨📝])\s+(.+)$/gm, '<div class="flex items-start gap-2 my-2"><span class="text-lg">$1</span><span>$2</span></div>')
+    // Regular lists
+    .replace(/^- (.+)$/gm, '<li class="ml-4 list-disc text-muted-foreground">$1</li>')
+    // Paragraphs (double newlines)
+    .replace(/\n\n/g, '</p><p class="my-3 text-muted-foreground">')
+    // Single newlines
+    .replace(/\n/g, '<br/>');
+
+  // Wrap in paragraph
+  html = '<p class="my-3 text-muted-foreground">' + html + '</p>';
+  
+  return DOMPurify.sanitize(html, {
+    ADD_ATTR: ['target', 'rel'],
+  });
+};
 
 interface Topic {
   id: string;
@@ -424,7 +456,10 @@ const Community = () => {
                   </span>
                 </div>
                 <h2 className="text-xl font-bold mb-4">{selectedTopic.title}</h2>
-                <p className="text-muted-foreground whitespace-pre-wrap">{selectedTopic.content}</p>
+                <div 
+                  className="prose prose-sm dark:prose-invert max-w-none"
+                  dangerouslySetInnerHTML={{ __html: renderMarkdown(selectedTopic.content) }}
+                />
               </div>
 
               {/* Comments */}

@@ -205,6 +205,8 @@ export const AIChatSection = () => {
   });
   const [showMusicPrompt, setShowMusicPrompt] = useState(false);
   const [hasShownBottomPrompt, setHasShownBottomPrompt] = useState(false);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [hasLoadedUserHistory, setHasLoadedUserHistory] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -212,6 +214,62 @@ export const AIChatSection = () => {
   const constraintsRef = useRef<HTMLDivElement>(null);
   const greetingInProgressRef = useRef(false);
   const visitorIdRef = useRef<string>(getVisitorId());
+
+  // Load conversation history for logged-in users
+  useEffect(() => {
+    const loadUserConversationHistory = async () => {
+      if (!isAuthenticated || !user?.id || hasLoadedUserHistory) return;
+      
+      setIsLoadingHistory(true);
+      try {
+        // Find the user's most recent conversation
+        const { data: conversations, error: convError } = await supabase
+          .from('chat_conversations')
+          .select('id, updated_at')
+          .eq('user_id', user.id)
+          .order('updated_at', { ascending: false })
+          .limit(1);
+
+        if (convError || !conversations || conversations.length === 0) {
+          setHasLoadedUserHistory(true);
+          setIsLoadingHistory(false);
+          return;
+        }
+
+        const latestConversation = conversations[0];
+        
+        // Load messages from this conversation
+        const { data: messagesData, error: msgError } = await supabase
+          .from('chat_messages')
+          .select('*')
+          .eq('conversation_id', latestConversation.id)
+          .order('created_at', { ascending: true });
+
+        if (!msgError && messagesData && messagesData.length > 0) {
+          const loadedMessages: Message[] = messagesData.map(m => ({
+            role: m.role as 'user' | 'assistant',
+            content: m.content,
+            timestamp: new Date(m.created_at),
+            status: 'delivered' as const,
+          }));
+          
+          setMessages(loadedMessages);
+          setConversationId(latestConversation.id);
+          saveConversationId(latestConversation.id);
+          saveMessagesToStorage(loadedMessages);
+          setHasGreeted(true);
+          localStorage.setItem(GREETED_KEY, 'true');
+        }
+      } catch (err) {
+        console.error('Error loading conversation history:', err);
+      } finally {
+        setHasLoadedUserHistory(true);
+        setIsLoadingHistory(false);
+      }
+    };
+
+    loadUserConversationHistory();
+  }, [isAuthenticated, user?.id, hasLoadedUserHistory]);
 
   // Close chat when clicking outside
   useEffect(() => {
@@ -783,6 +841,7 @@ export const AIChatSection = () => {
     setMessages([]);
     setConversationId(null);
     setHasGreeted(false);
+    setHasLoadedUserHistory(false); // Allow loading history again after new chat
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem(CONVERSATION_ID_KEY);
     localStorage.removeItem(GREETED_KEY);
@@ -1002,7 +1061,17 @@ export const AIChatSection = () => {
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-3 space-y-2.5 bg-muted/20">
-              {messages.length === 0 && (
+              {/* Loading history indicator */}
+              {isLoadingHistory && (
+                <div className="flex flex-col items-center justify-center h-full text-center px-3">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary mb-3" />
+                  <p className="text-sm text-muted-foreground">
+                    {language === 'ja' ? '会話履歴を読み込んでいます...' : 'Loading conversation history...'}
+                  </p>
+                </div>
+              )}
+              
+              {!isLoadingHistory && messages.length === 0 && (
                 <div className="flex flex-col items-center justify-center h-full text-center px-3">
                   <img 
                     src={yukiProfile} 
@@ -1025,6 +1094,19 @@ export const AIChatSection = () => {
                     ))}
                   </div>
                 </div>
+              )}
+              
+              {/* Show "conversation restored" indicator for logged-in users with history */}
+              {isAuthenticated && messages.length > 0 && hasLoadedUserHistory && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex justify-center mb-2"
+                >
+                  <span className="text-xs text-muted-foreground bg-muted/50 px-3 py-1 rounded-full">
+                    {language === 'ja' ? '💬 前回の会話の続きから' : '💬 Continuing from last conversation'}
+                  </span>
+                </motion.div>
               )}
               
               {messages.map((message, index) => (

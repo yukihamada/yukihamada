@@ -53,10 +53,13 @@ interface BlogPostDB {
 interface Conversation {
   id: string;
   visitor_id: string;
+  user_id: string | null;
   created_at: string;
   updated_at: string;
   message_count: number;
   last_message: string;
+  user_display_name?: string | null;
+  user_public_id?: string | null;
 }
 
 interface Message {
@@ -549,10 +552,29 @@ const AdminDashboard = () => {
             .eq('conversation_id', conv.id)
             .order('created_at', { ascending: false });
 
+          // Fetch user profile if user_id exists
+          let userDisplayName: string | null = null;
+          let userPublicId: string | null = null;
+          
+          if (conv.user_id) {
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('display_name, public_id')
+              .eq('user_id', conv.user_id)
+              .maybeSingle();
+            
+            if (profileData) {
+              userDisplayName = profileData.display_name;
+              userPublicId = profileData.public_id;
+            }
+          }
+
           return {
             ...conv,
             message_count: msgData?.length || 0,
-            last_message: msgData?.find(m => m.role === 'user')?.content?.substring(0, 50) || ''
+            last_message: msgData?.find(m => m.role === 'user')?.content?.substring(0, 50) || '',
+            user_display_name: userDisplayName,
+            user_public_id: userPublicId
           };
         })
       );
@@ -1972,6 +1994,21 @@ const AdminDashboard = () => {
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex-1 min-w-0">
+                              {/* User info badge */}
+                              {conv.user_id ? (
+                                <div className="flex items-center gap-1 mb-1">
+                                  <Badge variant="default" className="text-xs bg-green-600">
+                                    <User className="w-3 h-3 mr-1" />
+                                    {conv.user_display_name || conv.user_public_id || '会員'}
+                                  </Badge>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-1 mb-1">
+                                  <Badge variant="outline" className="text-xs text-muted-foreground">
+                                    ゲスト
+                                  </Badge>
+                                </div>
+                              )}
                               <p className="text-sm truncate">{conv.last_message || '(空)'}</p>
                               <p className="text-xs text-muted-foreground">
                                 {format(new Date(conv.updated_at), 'MM/dd HH:mm', { locale: ja })}

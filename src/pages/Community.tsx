@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -68,6 +68,7 @@ const Community = () => {
   const { toast } = useToast();
   const { language } = useLanguage();
   const navigate = useNavigate();
+  const { topicId } = useParams<{ topicId: string }>();
 
   const texts = {
     en: {
@@ -131,6 +132,17 @@ const Community = () => {
   useEffect(() => {
     fetchTopics();
   }, []);
+
+  // Handle direct URL access to topic
+  useEffect(() => {
+    if (topicId && topics.length > 0 && isAuthenticated) {
+      const topic = topics.find(t => t.id === topicId);
+      if (topic) {
+        setSelectedTopic(topic);
+        fetchComments(topic.id);
+      }
+    }
+  }, [topicId, topics, isAuthenticated]);
 
   const fetchTopics = async () => {
     setIsLoading(true);
@@ -226,6 +238,8 @@ const Community = () => {
       return; // The UI will show login prompt
     }
     
+    // Update URL
+    navigate(`/community/${topic.id}`);
     setSelectedTopic(topic);
     fetchComments(topic.id);
     
@@ -234,6 +248,11 @@ const Community = () => {
       .from('forum_topics')
       .update({ view_count: topic.view_count + 1 })
       .eq('id', topic.id);
+  };
+
+  const handleBackToTopics = () => {
+    navigate('/community');
+    setSelectedTopic(null);
   };
 
   const handleCreateTopic = async () => {
@@ -299,7 +318,7 @@ const Community = () => {
           {/* Actions */}
           <div className="flex gap-4 mb-8">
             {selectedTopic && (
-              <Button variant="ghost" onClick={() => setSelectedTopic(null)}>
+              <Button variant="ghost" onClick={handleBackToTopics}>
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 {t.back}
               </Button>
@@ -383,9 +402,17 @@ const Community = () => {
             >
               <div className="bg-card border border-border rounded-xl p-6">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                    <User className="w-5 h-5 text-primary" />
-                  </div>
+                  {selectedTopic.profiles?.avatar_url ? (
+                    <img 
+                      src={selectedTopic.profiles.avatar_url} 
+                      alt={selectedTopic.profiles?.display_name || 'User'} 
+                      className="w-10 h-10 rounded-full object-cover ring-2 ring-primary/30"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                      <User className="w-5 h-5 text-primary" />
+                    </div>
+                  )}
                   <div>
                     <p className="font-medium">
                       {selectedTopic.profiles?.display_name || 'Anonymous'}
@@ -412,9 +439,17 @@ const Community = () => {
                     className="bg-card border border-border rounded-lg p-4"
                   >
                     <div className="flex items-center gap-2 mb-2">
-                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                        <User className="w-4 h-4 text-primary" />
-                      </div>
+                      {comment.profiles?.avatar_url ? (
+                        <img 
+                          src={comment.profiles.avatar_url} 
+                          alt={comment.profiles?.display_name || 'User'} 
+                          className="w-8 h-8 rounded-full object-cover ring-2 ring-primary/30"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                          <User className="w-4 h-4 text-primary" />
+                        </div>
+                      )}
                       <span className="font-medium text-sm">
                         {comment.profiles?.display_name || 'Anonymous'}
                       </span>
@@ -475,9 +510,17 @@ const Community = () => {
                     }`}
                   >
                     <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                        <User className="w-5 h-5 text-primary" />
-                      </div>
+                      {topic.profiles?.avatar_url ? (
+                        <img 
+                          src={topic.profiles.avatar_url} 
+                          alt={topic.profiles?.display_name || 'User'} 
+                          className="w-10 h-10 rounded-full object-cover ring-2 ring-primary/30 flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                          <User className="w-5 h-5 text-primary" />
+                        </div>
+                      )}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-sm text-muted-foreground">

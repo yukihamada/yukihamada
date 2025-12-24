@@ -43,7 +43,7 @@ const App = () => (
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/community" element={<Community />} />
-                    <Route path="/admin" element={<AdminDashboard />} />
+                    <Route path="/community/:topicId" element={<Community />} />
                     {/* Legacy routes - redirect to main admin */}
                     <Route path="/admin/blog" element={<AdminDashboard />} />
                     <Route path="/admin/chat" element={<AdminDashboard />} />

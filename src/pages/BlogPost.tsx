@@ -300,8 +300,16 @@ const BlogPost = () => {
             </div>
           </div>
 
+          {/* Bottom Share Buttons */}
+          <div className="mt-12 pt-8 border-t border-border/30">
+            <p className="text-center text-muted-foreground mb-4">
+              {language === 'ja' ? 'この記事をシェアする' : 'Share this article'}
+            </p>
+            <ShareButtons title={content.title} url={window.location.href} />
+          </div>
+
           {/* Like Button */}
-          <div className="mt-12 flex flex-col items-center gap-4">
+          <div className="mt-8 flex flex-col items-center gap-4">
             <LikeButton postSlug={post.slug} />
           </div>
 

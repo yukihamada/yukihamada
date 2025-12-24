@@ -116,7 +116,8 @@ const processContent = (rawContent: string, lang: string): string => {
   return DOMPurify.sanitize(processed, {
     ADD_TAGS: ['figure', 'figcaption', 'iframe'],
     ADD_ATTR: ['data-play-track', 'style', 'allow', 'allowfullscreen', 'frameborder', 'loading', 'decoding'],
-    ALLOWED_URI_REGEXP: /^(?:(?:https?|data):)/i,
+    // Allow same-origin relative URLs like /images/... in addition to https:// and data:
+    ALLOWED_URI_REGEXP: /^(?:(?:https?|data):|\/)/i,
   });
 };
 

@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.og-metadata]
 verify_jwt = false
+
+[functions.get-share-counts]
+verify_jwt = false

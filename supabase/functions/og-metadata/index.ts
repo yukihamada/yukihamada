@@ -135,6 +135,7 @@ serve(async (req) => {
 <html lang="${lang === 'en' ? 'en' : 'ja'}">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escapeHtml(ogData.title)}</title>
   
@@ -174,13 +175,12 @@ serve(async (req) => {
 </body>
 </html>`;
 
-      return new Response(html, {
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'text/html; charset=utf-8',
-          'Cache-Control': 'public, max-age=3600',
-        }
-      });
+      const headers = new Headers(corsHeaders);
+      headers.set('content-type', 'text/html; charset=utf-8');
+      headers.set('cache-control', 'public, max-age=3600');
+
+      const body = new TextEncoder().encode(html);
+      return new Response(body, { headers });
     }
 
     // Default: return JSON

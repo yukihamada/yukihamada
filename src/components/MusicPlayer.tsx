@@ -14,6 +14,7 @@ import albumAttention from '@/assets/album-attention.jpg';
 import albumKoiJujutsu from '@/assets/album-koi-jujutsu.jpg';
 import albumShioPixel from '@/assets/album-shio-pixel.jpg';
 import albumMusubinaosu from '@/assets/album-musubinaosu.jpg';
+import albumAttentionPlease from '@/assets/album-attention-please.jpg';
 
 const artworkMap: Record<string, string> = {
   'album-free-to-change.jpg': albumFreeToChange,
@@ -24,6 +25,7 @@ const artworkMap: Record<string, string> = {
   'album-koi-jujutsu.jpg': albumKoiJujutsu,
   'album-shio-pixel.jpg': albumShioPixel,
   'album-musubinaosu.jpg': albumMusubinaosu,
+  'album-attention-please.jpg': albumAttentionPlease,
 };
 
 interface LyricLine {
@@ -369,11 +371,30 @@ const MusicPlayer = () => {
       }
     };
 
+    const handlePlayTrackById = (event: CustomEvent<{ trackId: string }>) => {
+      const { trackId } = event.detail;
+      // Find track by matching src filename (e.g., "attention-please" matches "/audio/attention-please.mp3")
+      const trackIndex = tracks.findIndex(t => t.src.includes(trackId));
+      if (trackIndex >= 0) {
+        setCurrentTrack(trackIndex);
+        setDisplayedTrack(trackIndex);
+        const foundTrackId = tracks[trackIndex].id;
+        const newCounts = updateLocalPlayCount(foundTrackId);
+        setPlayCounts(newCounts);
+        savePlayCountToDb(foundTrackId);
+        setIsPlaying(true);
+        setIsExpanded(true);
+        setIsVisible(true);
+      }
+    };
+
     window.addEventListener('toggleMusicPlayer', handleToggleMusic);
     window.addEventListener('playSpecificTrack', handlePlaySpecificTrack as EventListener);
+    window.addEventListener('playTrackById', handlePlayTrackById as EventListener);
     return () => {
       window.removeEventListener('toggleMusicPlayer', handleToggleMusic);
       window.removeEventListener('playSpecificTrack', handlePlaySpecificTrack as EventListener);
+      window.removeEventListener('playTrackById', handlePlayTrackById as EventListener);
     };
   }, [currentTrack, isPlaying, tracks]);
 

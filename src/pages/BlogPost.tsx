@@ -43,21 +43,21 @@ const blogImages: Record<string, string> = {
   'newt-chat-logo': '/images/newt-chat-logo.png',
 };
 
-const trackMapping: Record<string, { index: number; titleJa: string; titleEn: string }> = {
-  'free-to-change': { index: 0, titleJa: 'Free to Change', titleEn: 'Free to Change' },
-  'hello-2150': { index: 1, titleJa: 'Hello 2150', titleEn: 'Hello 2150' },
-  'everybody-say-bjj': { index: 2, titleJa: 'Everybody say 柔術', titleEn: 'Everybody say BJJ' },
-  'everybody-bjj': { index: 2, titleJa: 'Everybody say 柔術', titleEn: 'Everybody say BJJ' },
-  'i-love-you': { index: 3, titleJa: 'I Love You', titleEn: 'I Love You' },
-  'attention': { index: 4, titleJa: 'I need your attention', titleEn: 'I need your attention' },
-  'koi-jujutsu': { index: 5, titleJa: 'それ恋じゃなくて柔術', titleEn: "That's not love, it's Jiu-Jitsu" },
-  'shio-to-pixel': { index: 6, titleJa: '塩とピクセル', titleEn: 'Salt and Pixels' },
-  'musubinaosu': { index: 7, titleJa: '結び直す朝', titleEn: 'Morning to Reconnect' },
-  'attention-please': { index: 8, titleJa: 'アテンションください', titleEn: 'Attention Please' },
+const trackMapping: Record<string, { titleJa: string; titleEn: string }> = {
+  'free-to-change': { titleJa: 'Free to Change', titleEn: 'Free to Change' },
+  'hello-2150': { titleJa: 'Hello 2150', titleEn: 'Hello 2150' },
+  'everybody-say-bjj': { titleJa: 'Everybody say 柔術', titleEn: 'Everybody say BJJ' },
+  'everybody-bjj': { titleJa: 'Everybody say 柔術', titleEn: 'Everybody say BJJ' },
+  'i-love-you': { titleJa: 'I Love You', titleEn: 'I Love You' },
+  'attention': { titleJa: 'I need your attention', titleEn: 'I need your attention' },
+  'koi-jujutsu': { titleJa: 'それ恋じゃなくて柔術', titleEn: "That's not love, it's Jiu-Jitsu" },
+  'shio-to-pixel': { titleJa: '塩とピクセル', titleEn: 'Salt and Pixels' },
+  'musubinaosu': { titleJa: '結び直す朝', titleEn: 'Morning to Reconnect' },
+  'attention-please': { titleJa: 'アテンションください', titleEn: 'Attention Please' },
 };
 
-const playTrack = (trackIndex: number) => {
-  window.dispatchEvent(new CustomEvent('playSpecificTrack', { detail: { trackIndex } }));
+const playTrackById = (trackId: string) => {
+  window.dispatchEvent(new CustomEvent('playTrackById', { detail: { trackId } }));
 };
 
 // Memoized content processing function
@@ -115,14 +115,13 @@ const processContent = (rawContent: string, lang: string): string => {
     })
     .replace(/\[play:([a-zA-Z0-9_-]+)\]/g, (_, trackId) => {
       const track = trackMapping[trackId];
-      const trackIndex = track?.index ?? 0;
       const trackTitle = lang === 'ja' ? track?.titleJa : track?.titleEn;
-      return `<div class="my-12 flex justify-center"><button data-play-track="${trackIndex}" class="group relative inline-flex items-center gap-4 px-8 py-5 rounded-2xl bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 hover:from-primary/30 hover:via-primary/20 hover:to-primary/30 border border-primary/30 hover:border-primary/50 transition-all duration-500 shadow-lg hover:shadow-primary/20 hover:scale-[1.02] cursor-pointer"><span class="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></span><div class="flex items-center justify-center w-14 h-14 rounded-xl bg-primary/20 group-hover:bg-primary/30 transition-colors"><svg class="w-6 h-6 text-primary" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div><div class="text-left"><span class="block text-xs text-muted-foreground mb-0.5">${lang === 'ja' ? '🎵 曲を再生' : '🎵 Play Track'}</span><span class="block text-lg font-semibold text-foreground group-hover:text-primary transition-colors">${trackTitle || 'Unknown Track'}</span></div></button></div>`;
+      return `<div class="my-12 flex justify-center"><button data-play-track-id="${trackId}" class="group relative inline-flex items-center gap-4 px-8 py-5 rounded-2xl bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 hover:from-primary/30 hover:via-primary/20 hover:to-primary/30 border border-primary/30 hover:border-primary/50 transition-all duration-500 shadow-lg hover:shadow-primary/20 hover:scale-[1.02] cursor-pointer"><span class="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></span><div class="flex items-center justify-center w-14 h-14 rounded-xl bg-primary/20 group-hover:bg-primary/30 transition-colors"><svg class="w-6 h-6 text-primary" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div><div class="text-left"><span class="block text-xs text-muted-foreground mb-0.5">${lang === 'ja' ? '🎵 曲を再生' : '🎵 Play Track'}</span><span class="block text-lg font-semibold text-foreground group-hover:text-primary transition-colors">${trackTitle || 'Unknown Track'}</span></div></button></div>`;
     });
 
   return DOMPurify.sanitize(processed, {
     ADD_TAGS: ['figure', 'figcaption', 'iframe'],
-    ADD_ATTR: ['data-play-track', 'style', 'allow', 'allowfullscreen', 'frameborder', 'loading', 'decoding'],
+    ADD_ATTR: ['data-play-track-id', 'style', 'allow', 'allowfullscreen', 'frameborder', 'loading', 'decoding'],
     // Allow same-origin relative URLs like /images/... in addition to https:// and data:
     ALLOWED_URI_REGEXP: /^(?:(?:https?|data):|\/)/i,
   });
@@ -151,12 +150,12 @@ const BlogPost = () => {
   useEffect(() => {
     if (!contentRef.current) return;
     
-    const playButtons = contentRef.current.querySelectorAll('[data-play-track]');
+    const playButtons = contentRef.current.querySelectorAll('[data-play-track-id]');
     const handlers: Array<{ button: Element; handler: () => void }> = [];
     
     playButtons.forEach((button) => {
-      const trackIndex = parseInt(button.getAttribute('data-play-track') || '0', 10);
-      const handleClick = () => playTrack(trackIndex);
+      const trackId = button.getAttribute('data-play-track-id') || '';
+      const handleClick = () => playTrackById(trackId);
       button.addEventListener('click', handleClick);
       handlers.push({ button, handler: handleClick });
     });

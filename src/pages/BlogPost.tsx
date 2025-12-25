@@ -40,6 +40,7 @@ const blogImages: Record<string, string> = {
   'newt-chat-dm2': '/images/blog-newt-chat-dm2.png',
   'newt-chat-yuki': '/images/blog-newt-chat-yuki.png',
   'newt-chat-newt': '/images/blog-newt-chat-newt.png',
+  'newt-chat-logo': '/images/newt-chat-logo.png',
 };
 
 const trackMapping: Record<string, { index: number; titleJa: string; titleEn: string }> = {

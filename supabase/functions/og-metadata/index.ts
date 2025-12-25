@@ -164,8 +164,8 @@ serve(async (req) => {
   <meta name="twitter:description" content="${escapeHtml(ogData.description)}">
   <meta name="twitter:image" content="${escapeHtml(ogData.image)}">
   
-  <!-- Redirect for browsers -->
-  <meta http-equiv="refresh" content="0;url=${escapeHtml(ogData.url)}">
+  <!-- Redirect for browsers (delay for crawlers to parse OGP) -->
+  <meta http-equiv="refresh" content="3;url=${escapeHtml(ogData.url)}">
   <link rel="canonical" href="${escapeHtml(ogData.url)}">
 </head>
 <body>

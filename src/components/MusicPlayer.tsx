@@ -718,71 +718,7 @@ const MusicPlayer = () => {
                 </div>
               </div>
 
-              {/* Album Art with Glow */}
-              <div className="px-5 py-4">
-                <div className="relative mx-auto w-48 h-48">
-                  <motion.div
-                    className="absolute inset-0 rounded-3xl blur-2xl"
-                    style={{ backgroundColor: track.color }}
-                    animate={isPlaying ? { 
-                      opacity: [0.3, 0.5, 0.3],
-                      scale: [1, 1.1, 1],
-                    } : { opacity: 0.2 }}
-                    transition={{ duration: 3, repeat: Infinity }}
-                  />
-                  
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={displayedTrack}
-                      className="relative w-full h-full rounded-3xl overflow-hidden shadow-2xl"
-                      initial={{ rotateY: 90, opacity: 0 }}
-                      animate={{ rotateY: 0, opacity: 1 }}
-                      exit={{ rotateY: -90, opacity: 0 }}
-                      transition={{ duration: 0.4 }}
-                      style={{
-                        boxShadow: `0 20px 40px -15px ${track.color}60`,
-                      }}
-                    >
-                      <img 
-                        src={tracks[displayedTrack].artwork} 
-                        alt={tracks[displayedTrack].title}
-                        className="w-full h-full object-cover"
-                      />
-                      
-                      {isPlaying && (
-                        <motion.div
-                          className="absolute inset-0 bg-gradient-to-br from-black/20 via-transparent to-black/30"
-                          animate={{ opacity: [0.3, 0.5, 0.3] }}
-                          transition={{ duration: 2, repeat: Infinity }}
-                        />
-                      )}
-                    </motion.div>
-                  </AnimatePresence>
-                  
-                  {isPlaying && (
-                    <motion.div
-                      className="absolute -right-3 top-1/2 -translate-y-1/2 w-12 h-24 overflow-hidden"
-                      initial={{ x: 20, opacity: 0 }}
-                      animate={{ x: 0, opacity: 1 }}
-                    >
-                      <motion.div
-                        className="w-24 h-24 rounded-full bg-gradient-to-br from-zinc-900 via-zinc-800 to-black"
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                      >
-                        <div className="absolute inset-2 rounded-full border border-zinc-700/30" />
-                        <div className="absolute inset-4 rounded-full border border-zinc-700/50" />
-                        <div className="absolute inset-6 rounded-full border border-zinc-700/30" />
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="w-4 h-4 rounded-full bg-zinc-700" />
-                        </div>
-                      </motion.div>
-                    </motion.div>
-                  )}
-                </div>
-              </div>
-
-              {/* Track Info */}
+              {/* Track Info (moved up) */}
               <div className="px-5 text-center mb-4">
                 <motion.h3 
                   className="text-xl font-bold text-foreground truncate mb-1"
@@ -1123,8 +1059,8 @@ const MusicPlayer = () => {
               </AnimatePresence>
 
               {/* Track List */}
-              <div className="px-5 pb-5">
-                <div className="pt-4 border-t border-white/10 max-h-64 overflow-y-auto scrollbar-thin">
+              <div className="px-5">
+                <div className="pt-4 border-t border-white/10">
                   <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-3">Playlist</p>
                   <div className="space-y-2">
                     {tracks.map((t, index) => (
@@ -1190,6 +1126,49 @@ const MusicPlayer = () => {
                       </motion.button>
                     ))}
                   </div>
+                </div>
+              </div>
+
+              {/* Album Art at bottom */}
+              <div className="px-5 py-4 pb-5">
+                <div className="relative mx-auto w-32 h-32">
+                  <motion.div
+                    className="absolute inset-0 rounded-2xl blur-xl"
+                    style={{ backgroundColor: track.color }}
+                    animate={isPlaying ? { 
+                      opacity: [0.2, 0.4, 0.2],
+                      scale: [1, 1.05, 1],
+                    } : { opacity: 0.15 }}
+                    transition={{ duration: 3, repeat: Infinity }}
+                  />
+                  
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={displayedTrack}
+                      className="relative w-full h-full rounded-2xl overflow-hidden shadow-xl"
+                      initial={{ rotateY: 90, opacity: 0 }}
+                      animate={{ rotateY: 0, opacity: 1 }}
+                      exit={{ rotateY: -90, opacity: 0 }}
+                      transition={{ duration: 0.4 }}
+                      style={{
+                        boxShadow: `0 15px 30px -10px ${track.color}50`,
+                      }}
+                    >
+                      <img 
+                        src={tracks[displayedTrack].artwork} 
+                        alt={tracks[displayedTrack].title}
+                        className="w-full h-full object-cover"
+                      />
+                      
+                      {isPlaying && (
+                        <motion.div
+                          className="absolute inset-0 bg-gradient-to-br from-black/20 via-transparent to-black/30"
+                          animate={{ opacity: [0.3, 0.5, 0.3] }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                        />
+                      )}
+                    </motion.div>
+                  </AnimatePresence>
                 </div>
               </div>
             </motion.div>

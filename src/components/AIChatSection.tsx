@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
-import { MessageCircle, Send, Minus, Maximize2, Minimize2, Loader2, GripHorizontal, CheckCheck, Mic, MicOff } from 'lucide-react';
+import { MessageCircle, Send, Minus, Maximize2, Minimize2, Loader2, GripHorizontal, CheckCheck, Mic, MicOff, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,6 +8,7 @@ import { getVisitorSupabaseClient } from '@/lib/visitorSupabaseClient';
 import { useChat } from '@/contexts/ChatContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useUIVisibility } from '@/contexts/UIVisibilityContext';
+import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import { useAuth } from '@/hooks/useAuth';
 import yukiProfile from '@/assets/yuki-profile.jpg';
 import { TypingText } from '@/components/TypingText';
@@ -194,6 +195,7 @@ export const AIChatSection = () => {
   const { isOpen, toggleChat, openChat, closeChat, pageContext, currentBlogTitle, pendingMessage, setPendingMessage, chatMode, setChatMode } = useChat();
   const { language } = useLanguage();
   const { isUIVisible } = useUIVisibility();
+  const { isPlaying: isMusicPlaying } = useMusicPlayer();
   const { isAuthenticated, user } = useAuth();
   const [messages, setMessages] = useState<Message[]>(() => loadMessagesFromStorage());
   const [input, setInput] = useState('');
@@ -292,6 +294,13 @@ export const AIChatSection = () => {
     };
   }, [isOpen, closeChat]);
 
+  // Show music prompt when chat opens if music is not playing
+  useEffect(() => {
+    if (isOpen && !isMusicPlaying && !showMusicPrompt) {
+      setShowMusicPrompt(true);
+    }
+  }, [isOpen, isMusicPlaying]);
+
   // Detect when user scrolls to bottom of page (only on blog pages)
   useEffect(() => {
     // Only enable scroll detection on blog list and blog post pages
@@ -305,7 +314,6 @@ export const AIChatSection = () => {
       
       if (isAtBottom && !isOpen && !hasShownBottomPrompt) {
         setHasShownBottomPrompt(true);
-        setShowMusicPrompt(true);
         openChat();
       }
     };
@@ -1003,11 +1011,12 @@ export const AIChatSection = () => {
                   </div>
                   <Button
                     variant="ghost"
-                    size="sm"
+                    size="icon"
                     onClick={handleNewChat}
-                    className="text-xs text-muted-foreground hover:text-foreground h-7 px-2"
+                    className="rounded-full h-7 w-7 hover:bg-muted"
+                    title={t.newChat}
                   >
-                    {t.newChat}
+                    <Plus className="w-4 h-4" />
                   </Button>
                   <Button
                     variant="ghost"

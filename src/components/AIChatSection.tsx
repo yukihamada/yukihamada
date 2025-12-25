@@ -191,7 +191,7 @@ const VoiceInputButton = ({ onTranscript, isDisabled, texts }: VoiceInputProps) 
 
 export const AIChatSection = () => {
   const { toast } = useToast();
-  const { isOpen, toggleChat, openChat, closeChat, pageContext, currentBlogTitle, pendingMessage, setPendingMessage } = useChat();
+  const { isOpen, toggleChat, openChat, closeChat, pageContext, currentBlogTitle, pendingMessage, setPendingMessage, chatMode, setChatMode } = useChat();
   const { language } = useLanguage();
   const { isUIVisible } = useUIVisibility();
   const { isAuthenticated, user } = useAuth();
@@ -894,7 +894,7 @@ export const AIChatSection = () => {
 
       {/* Chat Toggle Button - only show when closed and UI is visible */}
       <AnimatePresence>
-        {!isOpen && isUIVisible && (
+        {!isOpen && isUIVisible && chatMode === 'yuki' && (
           <motion.button
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ 
@@ -918,9 +918,9 @@ export const AIChatSection = () => {
         )}
       </AnimatePresence>
 
-      {/* Chat Window */}
+      {/* Chat Window - only show for Yuki mode */}
       <AnimatePresence>
-        {isOpen && (
+        {isOpen && chatMode === 'yuki' && (
           <motion.div
             ref={chatContainerRef}
             drag={window.innerWidth >= 768 && !isResizing.current}
@@ -979,6 +979,24 @@ export const AIChatSection = () => {
                   </p>
                 </div>
                 <div className="flex items-center gap-1">
+                  {/* Chat Mode Toggle */}
+                  <div className="flex items-center bg-muted rounded-full p-0.5">
+                    <button
+                      onClick={() => setChatMode('yuki')}
+                      className="px-2 py-1 text-xs rounded-full transition-colors bg-primary text-primary-foreground"
+                    >
+                      Yuki
+                    </button>
+                    <button
+                      onClick={() => {
+                        setChatMode('newt');
+                        closeChat();
+                      }}
+                      className="px-2 py-1 text-xs rounded-full transition-colors text-muted-foreground hover:text-foreground"
+                    >
+                      Newt
+                    </button>
+                  </div>
                   <Button
                     variant="ghost"
                     size="sm"

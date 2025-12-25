@@ -10,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
+import SEO from '@/components/SEO';
 import DOMPurify from 'dompurify';
 import { 
   MessageSquare, 
@@ -341,6 +342,11 @@ const Community = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title={language === 'ja' ? 'コミュニティ' : 'Community'}
+        description={language === 'ja' ? 'Yuki Hamadaのコミュニティ。ディスカッションに参加しよう。' : 'Join Yuki Hamada\'s community discussions.'}
+        url="https://yukihamada.jp/community"
+      />
       <Navigation />
       
       <main className="pt-24 pb-16">

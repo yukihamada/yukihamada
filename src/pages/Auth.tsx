@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Mail, ArrowLeft, Loader2, CheckCircle } from 'lucide-react';
+import SEO from '@/components/SEO';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -125,6 +126,11 @@ const Auth = () => {
   if (emailSent) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <SEO 
+          title={language === 'ja' ? 'ログイン' : 'Login'}
+          description={language === 'ja' ? 'Yuki Hamadaのサイトにログイン' : 'Login to Yuki Hamada\'s site'}
+          url="https://yukihamada.jp/auth"
+        />
         {/* Overlay to ensure readability */}
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-0" />
         
@@ -206,6 +212,11 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <SEO 
+        title={language === 'ja' ? 'ログイン' : 'Login'}
+        description={language === 'ja' ? 'Yuki Hamadaのサイトにログイン' : 'Login to Yuki Hamada\'s site'}
+        url="https://yukihamada.jp/auth"
+      />
       {/* Overlay to ensure readability over music player */}
       <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-0" />
       

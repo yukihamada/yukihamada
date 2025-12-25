@@ -15,6 +15,7 @@ import {
   Globe, Sparkles, History, RotateCcw, Monitor, Smartphone, Tablet, GitCompare,
   Play, Headphones, Link, Replace, ThumbsUp, ThumbsDown, AlertCircle, CheckCircle2
 } from 'lucide-react';
+import SEO from '@/components/SEO';
 import MarkdownPreview from '@/components/MarkdownPreview';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -1345,6 +1346,11 @@ const AdminDashboard = () => {
 
   return (
     <>
+      <SEO 
+        title="管理ダッシュボード"
+        description="Yuki Hamadaサイトの管理ダッシュボード"
+        url="https://yukihamada.jp/admin"
+      />
       <Navigation />
       <main className="min-h-screen pt-20 pb-16 bg-background relative z-10">
         <div className="container mx-auto px-4">

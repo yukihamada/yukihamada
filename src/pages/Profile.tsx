@@ -11,6 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
+import SEO from '@/components/SEO';
 import { User, Save, Loader2, ArrowLeft, LogOut, Camera, Upload } from 'lucide-react';
 
 const Profile = () => {
@@ -165,6 +166,11 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title={language === 'ja' ? 'プロフィール設定' : 'Profile Settings'}
+        description={language === 'ja' ? 'プロフィールを編集' : 'Edit your profile'}
+        url="https://yukihamada.jp/profile"
+      />
       <Navigation />
       
       <main className="pt-24 pb-16">

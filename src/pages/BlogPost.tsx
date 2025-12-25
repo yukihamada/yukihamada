@@ -7,7 +7,7 @@ import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import LikeButton from '@/components/LikeButton';
 import BlogViewStats from '@/components/BlogViewStats';
-import BlogOGP from '@/components/BlogOGP';
+import SEO from '@/components/SEO';
 import ShareButtons from '@/components/ShareButtons';
 import { BlogComments } from '@/components/BlogComments';
 import BlogSuggestedQuestions from '@/components/BlogSuggestedQuestions';
@@ -228,7 +228,15 @@ const BlogPost = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <BlogOGP post={post} />
+      <SEO 
+        title={content.title}
+        description={content.excerpt}
+        image={post.image}
+        url={`https://yukihamada.jp/blog/${post.slug}`}
+        type="article"
+        publishedTime={content.date}
+        category={content.category}
+      />
       <Navigation />
       
       <main className="pt-24 pb-20">

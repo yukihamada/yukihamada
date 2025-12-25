@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useChat } from "@/contexts/ChatContext";
+import SEO from "@/components/SEO";
 
 interface HighScore {
   id: string;
@@ -573,6 +574,10 @@ const NotFound = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/30 flex flex-col items-center justify-center px-4 py-12">
+      <SEO 
+        title="404 - Page Not Found"
+        description={language === 'ja' ? 'お探しのページは見つかりませんでした' : 'The page you are looking for could not be found'}
+      />
       {/* Animated background elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         {[...Array(20)].map((_, i) => (

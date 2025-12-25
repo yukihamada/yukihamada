@@ -964,28 +964,30 @@ export const AIChatSection = () => {
               {/* Mobile drag indicator */}
               <div className="md:hidden w-8 h-1 bg-muted-foreground/30 rounded-full mx-auto mb-2" />
               
-              <div className="flex items-center gap-2">
-                <div className="relative shrink-0">
-                  <img 
-                    src={yukiProfile} 
-                    alt="Yuki" 
-                    className="w-8 h-8 rounded-full object-cover ring-2 ring-primary/20"
-                  />
-                  <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 border border-card rounded-full" />
+              <div className="flex items-center justify-between gap-2 w-full">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="relative shrink-0">
+                    <img 
+                      src={yukiProfile} 
+                      alt="Yuki" 
+                      className="w-8 h-8 rounded-full object-cover ring-2 ring-primary/20"
+                    />
+                    <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 border border-card rounded-full" />
+                  </div>
+                  <div className="min-w-0 flex-shrink">
+                    <h3 className="font-medium text-foreground text-sm truncate">{t.name}</h3>
+                    <p className="text-xs text-green-500 flex items-center gap-1 whitespace-nowrap">
+                      <span className="w-1.5 h-1.5 bg-green-500 rounded-full shrink-0" />
+                      {t.online}
+                    </p>
+                  </div>
                 </div>
-                <div className="shrink-0">
-                  <h3 className="font-medium text-foreground text-sm whitespace-nowrap">{t.name} <span className="text-muted-foreground font-normal">- {t.musicQuestion}</span></h3>
-                  <p className="text-xs text-green-500 flex items-center gap-1 whitespace-nowrap">
-                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full shrink-0" />
-                    {t.online}
-                  </p>
-                </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 shrink-0">
                   {/* Chat Mode Toggle */}
                   <div className="flex items-center bg-muted/80 rounded-full p-0.5 border border-border/50">
                     <button
                       onClick={() => setChatMode('yuki')}
-                      className="px-3 py-1 text-xs rounded-full transition-all duration-200 font-medium bg-primary text-primary-foreground shadow-sm"
+                      className="px-2 py-1 text-xs rounded-full transition-all duration-200 font-medium bg-primary text-primary-foreground shadow-sm"
                     >
                       Yuki
                     </button>
@@ -994,7 +996,7 @@ export const AIChatSection = () => {
                         setChatMode('newt');
                         closeChat();
                       }}
-                      className="px-3 py-1 text-xs rounded-full transition-all duration-200 font-medium text-muted-foreground hover:text-foreground hover:bg-muted"
+                      className="px-2 py-1 text-xs rounded-full transition-all duration-200 font-medium text-muted-foreground hover:text-foreground hover:bg-muted"
                     >
                       Newt
                     </button>

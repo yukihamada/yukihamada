@@ -980,10 +980,10 @@ export const AIChatSection = () => {
                 </div>
                 <div className="flex items-center gap-1">
                   {/* Chat Mode Toggle */}
-                  <div className="flex items-center bg-muted rounded-full p-0.5">
+                  <div className="flex items-center bg-muted/80 rounded-full p-0.5 border border-border/50">
                     <button
                       onClick={() => setChatMode('yuki')}
-                      className="px-2 py-1 text-xs rounded-full transition-colors bg-primary text-primary-foreground"
+                      className="px-3 py-1 text-xs rounded-full transition-all duration-200 font-medium bg-primary text-primary-foreground shadow-sm"
                     >
                       Yuki
                     </button>
@@ -992,7 +992,7 @@ export const AIChatSection = () => {
                         setChatMode('newt');
                         closeChat();
                       }}
-                      className="px-2 py-1 text-xs rounded-full transition-colors text-muted-foreground hover:text-foreground"
+                      className="px-3 py-1 text-xs rounded-full transition-all duration-200 font-medium text-muted-foreground hover:text-foreground hover:bg-muted"
                     >
                       Newt
                     </button>

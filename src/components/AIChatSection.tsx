@@ -472,6 +472,7 @@ export const AIChatSection = () => {
       name: 'Yuki Hamada',
       title: 'Entrepreneur・Investor・BJJ Player・Musician',
       online: 'Online',
+      musicQuestion: 'Want to listen to some music?',
       newChat: 'New Chat',
       placeholder: 'Type a message...',
       errorTitle: 'Error',
@@ -505,6 +506,7 @@ export const AIChatSection = () => {
       name: '濱田 優貴',
       title: '起業家・投資家・柔術家・音楽家',
       online: 'オンライン',
+      musicQuestion: '音楽聴きますか？',
       newChat: '新規チャット',
       placeholder: 'メッセージを入力...',
       errorTitle: 'エラー',
@@ -972,7 +974,7 @@ export const AIChatSection = () => {
                   <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 border border-card rounded-full" />
                 </div>
                 <div className="shrink-0">
-                  <h3 className="font-medium text-foreground text-sm whitespace-nowrap">{t.name}</h3>
+                  <h3 className="font-medium text-foreground text-sm whitespace-nowrap">{t.name} <span className="text-muted-foreground font-normal">- {t.musicQuestion}</span></h3>
                   <p className="text-xs text-green-500 flex items-center gap-1 whitespace-nowrap">
                     <span className="w-1.5 h-1.5 bg-green-500 rounded-full shrink-0" />
                     {t.online}

@@ -27,9 +27,8 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const [pageContext, setPageContext] = useState<PageContext>('home');
   const [currentBlogTitle, setCurrentBlogTitle] = useState<string | undefined>(undefined);
   const [pendingMessage, setPendingMessage] = useState<string | undefined>(undefined);
-  const [chatMode, setChatModeState] = useState<ChatMode>(() => {
-    return (localStorage.getItem(CHAT_MODE_KEY) as ChatMode) || 'yuki';
-  });
+  // Always start with 'yuki' mode on page load - Newt is only activated by explicit user action
+  const [chatMode, setChatModeState] = useState<ChatMode>('yuki');
   // Used to trigger opening Newt only when user explicitly selects it
   const [newtOpenNonce, setNewtOpenNonce] = useState(0);
 

@@ -44,7 +44,8 @@ const App = () => (
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/community" element={<Community />} />
                     <Route path="/community/:topicId" element={<Community />} />
-                    {/* Legacy routes - redirect to main admin */}
+                    {/* Admin routes */}
+                    <Route path="/admin" element={<AdminDashboard />} />
                     <Route path="/admin/blog" element={<AdminDashboard />} />
                     <Route path="/admin/chat" element={<AdminDashboard />} />
                     <Route path="/blog-admin" element={<AdminDashboard />} />

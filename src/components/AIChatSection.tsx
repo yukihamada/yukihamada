@@ -963,7 +963,7 @@ export const AIChatSection = () => {
               <div className="md:hidden w-8 h-1 bg-muted-foreground/30 rounded-full mx-auto mb-2" />
               
               <div className="flex items-center gap-2">
-                <div className="relative">
+                <div className="relative shrink-0">
                   <img 
                     src={yukiProfile} 
                     alt="Yuki" 
@@ -971,10 +971,10 @@ export const AIChatSection = () => {
                   />
                   <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 border border-card rounded-full" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-foreground text-sm truncate">{t.name}</h3>
-                  <p className="text-xs text-green-500 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                <div className="shrink-0">
+                  <h3 className="font-medium text-foreground text-sm whitespace-nowrap">{t.name}</h3>
+                  <p className="text-xs text-green-500 flex items-center gap-1 whitespace-nowrap">
+                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full shrink-0" />
                     {t.online}
                   </p>
                 </div>

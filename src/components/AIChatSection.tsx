@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { MessageCircle, Send, Minus, Maximize2, Minimize2, Loader2, GripHorizontal, CheckCheck, Mic, MicOff, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { getVisitorSupabaseClient } from '@/lib/visitorSupabaseClient';
@@ -1009,44 +1010,75 @@ export const AIChatSection = () => {
                       Newt
                     </button>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleNewChat}
-                    className="rounded-full h-7 w-7 hover:bg-muted"
-                    title={t.newChat}
-                  >
-                    <Plus className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      if (!isMaximized) {
-                        prevSize.current = { width: chatWidth, height: chatHeight };
-                        setChatWidth(window.innerWidth - 48);
-                        setChatHeight(window.innerHeight - 48);
-                      } else {
-                        setChatWidth(prevSize.current.width);
-                        setChatHeight(prevSize.current.height);
-                      }
-                      setIsMaximized(!isMaximized);
-                    }}
-                    className="hidden md:flex rounded-full h-7 w-7 hover:bg-muted"
-                    title={language === 'ja' ? (isMaximized ? '元に戻す' : '最大化') : (isMaximized ? 'Restore' : 'Maximize')}
-                  >
-                    {isMaximized ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={toggleChat}
-                    className="rounded-full h-7 w-7 hover:bg-muted"
-                    title={language === 'ja' ? '最小化' : 'Minimize'}
-                  >
-                    <Minus className="w-4 h-4" />
-                  </Button>
-                  <GripHorizontal className="w-3 h-3 text-muted-foreground hidden md:block" />
+                  <TooltipProvider delayDuration={300}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={handleNewChat}
+                          className="rounded-full h-7 w-7 hover:bg-muted"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        <p>{t.newChat}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <TooltipProvider delayDuration={300}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            if (!isMaximized) {
+                              prevSize.current = { width: chatWidth, height: chatHeight };
+                              setChatWidth(window.innerWidth - 48);
+                              setChatHeight(window.innerHeight - 48);
+                            } else {
+                              setChatWidth(prevSize.current.width);
+                              setChatHeight(prevSize.current.height);
+                            }
+                            setIsMaximized(!isMaximized);
+                          }}
+                          className="hidden md:flex rounded-full h-7 w-7 hover:bg-muted"
+                        >
+                          {isMaximized ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        <p>{language === 'ja' ? (isMaximized ? '元に戻す' : '最大化') : (isMaximized ? 'Restore' : 'Maximize')}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <TooltipProvider delayDuration={300}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={toggleChat}
+                          className="rounded-full h-7 w-7 hover:bg-muted"
+                        >
+                          <Minus className="w-4 h-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        <p>{language === 'ja' ? '最小化' : 'Minimize'}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <GripHorizontal className="w-3 h-3 text-muted-foreground hidden md:block cursor-move" />
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p>{language === 'ja' ? 'ドラッグして移動' : 'Drag to move'}</p>
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
               </div>
             </div>

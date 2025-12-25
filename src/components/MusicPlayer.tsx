@@ -1124,7 +1124,7 @@ const MusicPlayer = () => {
 
               {/* Track List */}
               <div className="px-5 pb-5">
-                <div className="pt-4 border-t border-white/10 max-h-36 overflow-y-auto scrollbar-thin">
+                <div className="pt-4 border-t border-white/10 max-h-64 overflow-y-auto scrollbar-thin">
                   <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-3">Playlist</p>
                   <div className="space-y-2">
                     {tracks.map((t, index) => (

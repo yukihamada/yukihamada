@@ -53,6 +53,7 @@ const trackMapping: Record<string, { index: number; titleJa: string; titleEn: st
   'koi-jujutsu': { index: 5, titleJa: 'それ恋じゃなくて柔術', titleEn: "That's not love, it's Jiu-Jitsu" },
   'shio-to-pixel': { index: 6, titleJa: '塩とピクセル', titleEn: 'Salt and Pixels' },
   'musubinaosu': { index: 7, titleJa: '結び直す朝', titleEn: 'Morning to Reconnect' },
+  'attention-please': { index: 8, titleJa: 'アテンションください', titleEn: 'Attention Please' },
 };
 
 const playTrack = (trackIndex: number) => {

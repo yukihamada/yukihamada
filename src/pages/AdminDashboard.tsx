@@ -13,7 +13,7 @@ import {
   Plus, Edit, Trash2, Save, X, ChevronRight, User, Bot,
   Shield, LogOut, Settings, Columns2, PanelLeft, Music, Calendar, Clock,
   Globe, Sparkles, History, RotateCcw, Monitor, Smartphone, Tablet, GitCompare,
-  Play, Headphones, Link, Replace
+  Play, Headphones, Link, Replace, ThumbsUp, ThumbsDown, AlertCircle, CheckCircle2
 } from 'lucide-react';
 import MarkdownPreview from '@/components/MarkdownPreview';
 import { Button } from '@/components/ui/button';
@@ -62,11 +62,22 @@ interface Conversation {
   user_public_id?: string | null;
 }
 
+interface MessageFeedback {
+  id: string;
+  message_id: string;
+  rating: 'good' | 'bad' | 'neutral';
+  feedback_note: string | null;
+  reviewed_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   created_at: string;
+  feedback?: MessageFeedback | null;
 }
 
 interface BlogAnalytics {
@@ -388,6 +399,9 @@ const AdminDashboard = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [editingFeedbackId, setEditingFeedbackId] = useState<string | null>(null);
+  const [feedbackNote, setFeedbackNote] = useState('');
+  const [chatFilter, setChatFilter] = useState<'all' | 'unreviewed' | 'good' | 'bad'>('all');
 
   // Analytics state
   const [blogAnalytics, setBlogAnalytics] = useState<BlogAnalytics[]>([]);
@@ -590,7 +604,86 @@ const AdminDashboard = () => {
       .order('created_at', { ascending: true });
 
     if (!error && data) {
-      setMessages(data.map(m => ({ ...m, role: m.role as 'user' | 'assistant' })));
+      // Fetch feedback for all messages
+      const messageIds = data.map(m => m.id);
+      const { data: feedbackData } = await supabase
+        .from('chat_message_feedback')
+        .select('*')
+        .in('message_id', messageIds);
+
+      const feedbackMap = new Map(feedbackData?.map(f => [f.message_id, f]) || []);
+
+      setMessages(data.map(m => ({
+        ...m,
+        role: m.role as 'user' | 'assistant',
+        feedback: feedbackMap.get(m.id) as MessageFeedback | undefined
+      })));
+    }
+  };
+
+  const saveMessageFeedback = async (messageId: string, rating: 'good' | 'bad' | 'neutral', note?: string) => {
+    const { data: existing } = await supabase
+      .from('chat_message_feedback')
+      .select('id')
+      .eq('message_id', messageId)
+      .maybeSingle();
+
+    if (existing) {
+      // Update existing feedback
+      const { error } = await supabase
+        .from('chat_message_feedback')
+        .update({ 
+          rating, 
+          feedback_note: note || null,
+          reviewed_by: user?.id || null
+        })
+        .eq('message_id', messageId);
+
+      if (error) {
+        toast.error('フィードバックの更新に失敗しました');
+        return;
+      }
+    } else {
+      // Insert new feedback
+      const { error } = await supabase
+        .from('chat_message_feedback')
+        .insert({
+          message_id: messageId,
+          rating,
+          feedback_note: note || null,
+          reviewed_by: user?.id || null
+        });
+
+      if (error) {
+        toast.error('フィードバックの保存に失敗しました');
+        return;
+      }
+    }
+
+    toast.success('フィードバックを保存しました');
+    setEditingFeedbackId(null);
+    setFeedbackNote('');
+    
+    // Refresh messages to show updated feedback
+    if (selectedConversation) {
+      fetchMessages(selectedConversation);
+    }
+  };
+
+  const deleteFeedback = async (messageId: string) => {
+    const { error } = await supabase
+      .from('chat_message_feedback')
+      .delete()
+      .eq('message_id', messageId);
+
+    if (error) {
+      toast.error('フィードバックの削除に失敗しました');
+      return;
+    }
+
+    toast.success('フィードバックを削除しました');
+    if (selectedConversation) {
+      fetchMessages(selectedConversation);
     }
   };
 
@@ -1972,14 +2065,27 @@ const AdminDashboard = () => {
 
             {/* Chat Tab */}
             <TabsContent value="chat" className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold">チャット履歴</h2>
-                <Button variant="outline" onClick={fetchConversations}>
-                  <RefreshCw className="mr-2 h-4 w-4" />更新
-                </Button>
+              <div className="flex justify-between items-center flex-wrap gap-2">
+                <h2 className="text-xl font-semibold">チャット履歴・AI回答評価</h2>
+                <div className="flex gap-2 items-center">
+                  <Select value={chatFilter} onValueChange={(v) => setChatFilter(v as typeof chatFilter)}>
+                    <SelectTrigger className="w-36">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">すべて</SelectItem>
+                      <SelectItem value="unreviewed">未評価</SelectItem>
+                      <SelectItem value="good">良い回答</SelectItem>
+                      <SelectItem value="bad">要改善</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button variant="outline" onClick={fetchConversations}>
+                    <RefreshCw className="mr-2 h-4 w-4" />更新
+                  </Button>
+                </div>
               </div>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <Card className="max-h-[600px] overflow-y-auto">
+                <Card className="max-h-[700px] overflow-y-auto">
                   <CardHeader>
                     <CardTitle className="text-base">会話一覧</CardTitle>
                   </CardHeader>
@@ -2028,19 +2134,39 @@ const AdminDashboard = () => {
                       ))}
                   </CardContent>
                 </Card>
-                <Card className="max-h-[600px] overflow-y-auto">
+                <Card className="max-h-[700px] overflow-y-auto">
                   <CardHeader>
-                    <CardTitle className="text-base">メッセージ</CardTitle>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      メッセージ
+                      <span className="text-xs text-muted-foreground font-normal">
+                        (AI回答を評価してプロンプト改善に活用)
+                      </span>
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {messages.length === 0 ? (
                       <p className="text-center text-muted-foreground py-8">会話を選択してください</p>
                     ) : (
-                      messages.map((msg) => (
+                      messages
+                        .filter(msg => {
+                          if (chatFilter === 'all') return true;
+                          if (msg.role === 'user') return true; // Always show user messages
+                          if (chatFilter === 'unreviewed') return !msg.feedback;
+                          if (chatFilter === 'good') return msg.feedback?.rating === 'good';
+                          if (chatFilter === 'bad') return msg.feedback?.rating === 'bad';
+                          return true;
+                        })
+                        .map((msg) => (
                         <div
                           key={msg.id}
                           className={`p-3 rounded-lg ${
-                            msg.role === 'user' ? 'bg-primary/10 ml-8' : 'bg-muted mr-8'
+                            msg.role === 'user' 
+                              ? 'bg-primary/10 ml-8' 
+                              : msg.feedback?.rating === 'bad'
+                                ? 'bg-red-500/10 border border-red-500/30 mr-8'
+                                : msg.feedback?.rating === 'good'
+                                  ? 'bg-green-500/10 border border-green-500/30 mr-8'
+                                  : 'bg-muted mr-8'
                           }`}
                         >
                           <div className="flex items-center gap-2 mb-1">
@@ -2048,8 +2174,120 @@ const AdminDashboard = () => {
                             <span className="text-xs text-muted-foreground">
                               {format(new Date(msg.created_at), 'HH:mm:ss')}
                             </span>
+                            {msg.role === 'assistant' && msg.feedback && (
+                              <Badge 
+                                variant="outline" 
+                                className={`text-xs ${
+                                  msg.feedback.rating === 'good' 
+                                    ? 'bg-green-500/10 text-green-600 border-green-500/30' 
+                                    : msg.feedback.rating === 'bad'
+                                      ? 'bg-red-500/10 text-red-600 border-red-500/30'
+                                      : ''
+                                }`}
+                              >
+                                {msg.feedback.rating === 'good' ? (
+                                  <><CheckCircle2 className="w-3 h-3 mr-1" />良い</>
+                                ) : msg.feedback.rating === 'bad' ? (
+                                  <><AlertCircle className="w-3 h-3 mr-1" />要改善</>
+                                ) : '評価済み'}
+                              </Badge>
+                            )}
                           </div>
                           <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                          
+                          {/* Feedback section for assistant messages */}
+                          {msg.role === 'assistant' && (
+                            <div className="mt-3 pt-2 border-t border-border/50">
+                              {editingFeedbackId === msg.id ? (
+                                <div className="space-y-2">
+                                  <Label className="text-xs">改善メモ（任意）</Label>
+                                  <Textarea
+                                    value={feedbackNote}
+                                    onChange={(e) => setFeedbackNote(e.target.value)}
+                                    placeholder="どう改善すべきか、何が問題だったかをメモ..."
+                                    rows={2}
+                                    className="text-sm"
+                                  />
+                                  <div className="flex gap-2">
+                                    <Button 
+                                      size="sm" 
+                                      variant="outline"
+                                      className="text-green-600 border-green-600 hover:bg-green-50"
+                                      onClick={() => saveMessageFeedback(msg.id, 'good', feedbackNote)}
+                                    >
+                                      <ThumbsUp className="w-3 h-3 mr-1" />良い
+                                    </Button>
+                                    <Button 
+                                      size="sm" 
+                                      variant="outline"
+                                      className="text-red-600 border-red-600 hover:bg-red-50"
+                                      onClick={() => saveMessageFeedback(msg.id, 'bad', feedbackNote)}
+                                    >
+                                      <ThumbsDown className="w-3 h-3 mr-1" />要改善
+                                    </Button>
+                                    <Button 
+                                      size="sm" 
+                                      variant="ghost"
+                                      onClick={() => { setEditingFeedbackId(null); setFeedbackNote(''); }}
+                                    >
+                                      キャンセル
+                                    </Button>
+                                  </div>
+                                </div>
+                              ) : msg.feedback ? (
+                                <div className="space-y-1">
+                                  {msg.feedback.feedback_note && (
+                                    <p className="text-xs text-muted-foreground bg-background/50 p-2 rounded">
+                                      📝 {msg.feedback.feedback_note}
+                                    </p>
+                                  )}
+                                  <div className="flex gap-2">
+                                    <Button 
+                                      size="sm" 
+                                      variant="ghost"
+                                      className="h-6 text-xs"
+                                      onClick={() => {
+                                        setEditingFeedbackId(msg.id);
+                                        setFeedbackNote(msg.feedback?.feedback_note || '');
+                                      }}
+                                    >
+                                      <Edit className="w-3 h-3 mr-1" />編集
+                                    </Button>
+                                    <Button 
+                                      size="sm" 
+                                      variant="ghost"
+                                      className="h-6 text-xs text-destructive"
+                                      onClick={() => deleteFeedback(msg.id)}
+                                    >
+                                      <Trash2 className="w-3 h-3 mr-1" />削除
+                                    </Button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex gap-2">
+                                  <Button 
+                                    size="sm" 
+                                    variant="ghost"
+                                    className="h-7 text-xs text-green-600 hover:bg-green-50"
+                                    onClick={() => saveMessageFeedback(msg.id, 'good')}
+                                  >
+                                    <ThumbsUp className="w-3 h-3 mr-1" />良い
+                                  </Button>
+                                  <Button 
+                                    size="sm" 
+                                    variant="ghost"
+                                    className="h-7 text-xs text-red-600 hover:bg-red-50"
+                                    onClick={() => {
+                                      setEditingFeedbackId(msg.id);
+                                      setFeedbackNote('');
+                                    }}
+                                  >
+                                    <ThumbsDown className="w-3 h-3 mr-1" />要改善
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       ))
                     )}

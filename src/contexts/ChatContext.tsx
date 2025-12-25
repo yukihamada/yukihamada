@@ -43,6 +43,8 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   // Load Newt widget script and position it
   useEffect(() => {
     const styleId = 'newt-chat-position-style';
+    let observer: MutationObserver | null = null;
+    let checkInterval: NodeJS.Timeout | null = null;
     
     if (chatMode === 'newt') {
       // Add custom positioning CSS for Newt widget (bottom-left like Yuki)
@@ -62,6 +64,26 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         document.head.appendChild(style);
       }
       
+      // Function to detect when Newt widget is closed
+      const detectNewtClose = () => {
+        let wasOpen = false;
+        
+        checkInterval = setInterval(() => {
+          const newtFrame = document.querySelector('iframe[src*="newt.net"]');
+          const isOpen = newtFrame && 
+            window.getComputedStyle(newtFrame).display !== 'none' &&
+            window.getComputedStyle(newtFrame).visibility !== 'hidden' &&
+            (newtFrame as HTMLElement).offsetHeight > 100; // Widget button is small, open chat is larger
+          
+          if (wasOpen && !isOpen) {
+            // Newt was open and is now closed, switch back to Yuki
+            setChatModeState('yuki');
+            localStorage.setItem(CHAT_MODE_KEY, 'yuki');
+          }
+          wasOpen = !!isOpen;
+        }, 500);
+      };
+      
       // Check if script already exists
       if (!document.querySelector('script[src="https://chat-widget.newt.net/embed.js"]')) {
         (window as any).newtChatSettings = {
@@ -76,6 +98,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
             if ((window as any).NewtChat?.open) {
               (window as any).NewtChat.open();
             }
+            detectNewtClose();
           }, 500);
         };
         document.body.appendChild(script);
@@ -84,6 +107,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         if ((window as any).NewtChat?.open) {
           (window as any).NewtChat.open();
         }
+        detectNewtClose();
       }
     } else {
       // Remove positioning style when not using Newt
@@ -92,6 +116,15 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         existingStyle.remove();
       }
     }
+    
+    return () => {
+      if (observer) {
+        observer.disconnect();
+      }
+      if (checkInterval) {
+        clearInterval(checkInterval);
+      }
+    };
   }, [chatMode]);
 
   return (

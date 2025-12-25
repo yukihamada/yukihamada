@@ -47,28 +47,66 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   // Load Newt widget script, position it, and detect close
   useEffect(() => {
     const styleId = 'newt-chat-position-style';
+    const hideStyleId = 'newt-chat-hide-style';
     let checkInterval: ReturnType<typeof setInterval> | null = null;
 
     const shouldUseNewt = chatMode === 'newt' && newtOpenNonce > 0;
 
-    const ensureLeftPositionStyle = () => {
-      if (document.getElementById(styleId)) return;
-      const style = document.createElement('style');
-      style.id = styleId;
-      style.textContent = `
-        /* Force Newt widget to bottom-left */
-        #newt-chat-widget,
-        [id^="newt-chat"],
-        [id^="newt_"],
-        .newt-chat-widget,
-        iframe[src*="newt"],
-        iframe[src*="chat-widget.newt"] {
-          left: 16px !important;
-          right: auto !important;
-          bottom: 16px !important;
-        }
-      `;
-      document.head.appendChild(style);
+    const hideNewtWidget = () => {
+      // Add CSS to completely hide Newt widget
+      if (!document.getElementById(hideStyleId)) {
+        const style = document.createElement('style');
+        style.id = hideStyleId;
+        style.textContent = `
+          /* Completely hide Newt widget */
+          #newt-chat-widget,
+          [id^="newt-chat"],
+          [id^="newt_"],
+          .newt-chat-widget,
+          iframe[src*="newt"],
+          iframe[src*="chat-widget.newt"],
+          div[data-newt-chat],
+          [class*="newt"] {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+          }
+        `;
+        document.head.appendChild(style);
+      }
+    };
+
+    const showNewtWidget = () => {
+      // Remove hide style
+      const existingHideStyle = document.getElementById(hideStyleId);
+      if (existingHideStyle) existingHideStyle.remove();
+      
+      // Add positioning style to force left side
+      if (!document.getElementById(styleId)) {
+        const style = document.createElement('style');
+        style.id = styleId;
+        style.textContent = `
+          /* Force Newt widget to bottom-left and show it */
+          #newt-chat-widget,
+          [id^="newt-chat"],
+          [id^="newt_"],
+          .newt-chat-widget,
+          iframe[src*="newt"],
+          iframe[src*="chat-widget.newt"],
+          div[data-newt-chat],
+          [class*="newt"] {
+            left: 16px !important;
+            right: auto !important;
+            bottom: 16px !important;
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+          }
+        `;
+        document.head.appendChild(style);
+      }
     };
 
     const getLargestNewtElement = () => {
@@ -112,9 +150,10 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       checkInterval = setInterval(() => {
         const openNow = isNewtChatOpen();
         if (wasOpen && !openNow) {
-          // Newt was open and is now closed, switch back to Yuki mode
+          // Newt was open and is now closed, switch back to Yuki mode and hide Newt
           setChatModeState('yuki');
           localStorage.setItem(CHAT_MODE_KEY, 'yuki');
+          hideNewtWidget();
         }
         wasOpen = openNow;
       }, 400);
@@ -130,6 +169,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
           if (normalized.includes('close') || normalized.includes('closed')) {
             setChatModeState('yuki');
             localStorage.setItem(CHAT_MODE_KEY, 'yuki');
+            hideNewtWidget();
           }
         } catch {
           // ignore
@@ -143,7 +183,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     let stopMessageListener: (() => void) | null = null;
 
     if (shouldUseNewt) {
-      ensureLeftPositionStyle();
+      showNewtWidget();
 
       const openAndWatch = () => {
         // Open Newt widget (best-effort)
@@ -174,6 +214,9 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         openAndWatch();
       }
     } else {
+      // Hide Newt widget completely when not using Newt
+      hideNewtWidget();
+      
       // Remove positioning style when not using Newt
       const existingStyle = document.getElementById(styleId);
       if (existingStyle) existingStyle.remove();

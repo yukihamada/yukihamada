@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Calendar, Tag, Eye, Filter, Clock, ChevronDown, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Calendar, Tag, Eye, Filter, Clock, ChevronDown, X, ArrowUpDown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,6 +25,7 @@ const Blog = () => {
   const { posts: blogPosts, isLoading } = useBlogPosts();
   const [viewCounts, setViewCounts] = useState<Record<string, number>>({});
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<'date' | 'views'>('date');
 
   // Set page context for chat
   useEffect(() => {
@@ -40,11 +41,19 @@ const Blog = () => {
     return Array.from(cats).sort();
   }, [blogPosts, language]);
 
-  // Filter posts by category
+  // Filter and sort posts
   const filteredPosts = useMemo(() => {
-    if (!selectedCategory) return blogPosts;
-    return blogPosts.filter(post => post[language].category === selectedCategory);
-  }, [blogPosts, selectedCategory, language]);
+    let posts = selectedCategory 
+      ? blogPosts.filter(post => post[language].category === selectedCategory)
+      : [...blogPosts];
+    
+    if (sortBy === 'views') {
+      posts.sort((a, b) => (viewCounts[b.slug] || 0) - (viewCounts[a.slug] || 0));
+    }
+    // 'date' sorting is already applied from useBlogPosts (newest first)
+    
+    return posts;
+  }, [blogPosts, selectedCategory, language, sortBy, viewCounts]);
 
   useEffect(() => {
     let isMounted = true;
@@ -134,7 +143,7 @@ const Blog = () => {
               transition={{ duration: 0.4, delay: 0.2 }}
               className="mb-8"
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm" className="gap-2">
@@ -162,6 +171,34 @@ const Blog = () => {
                         </DropdownMenuItem>
                       );
                     })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <ArrowUpDown className="h-4 w-4" />
+                      {sortBy === 'date' 
+                        ? (language === 'ja' ? '新着順' : 'Newest') 
+                        : (language === 'ja' ? '閲覧数順' : 'Most Viewed')}
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="bg-card border-border z-50">
+                    <DropdownMenuItem 
+                      onClick={() => setSortBy('date')}
+                      className={sortBy === 'date' ? 'bg-primary/10 text-primary' : ''}
+                    >
+                      <Calendar className="h-4 w-4 mr-2" />
+                      {language === 'ja' ? '新着順' : 'Newest First'}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => setSortBy('views')}
+                      className={sortBy === 'views' ? 'bg-primary/10 text-primary' : ''}
+                    >
+                      <Eye className="h-4 w-4 mr-2" />
+                      {language === 'ja' ? '閲覧数順' : 'Most Viewed'}
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
                 

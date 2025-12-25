@@ -36,6 +36,10 @@ const blogImages: Record<string, string> = {
   'ai-jobs-transition': '/images/blog-ai-jobs-transition.jpg',
   'ai-jobs-bjj': '/images/blog-ai-jobs-bjj.jpg',
   'ai-jobs-crossroads': '/images/blog-ai-jobs-crossroads.jpg',
+  'newt-chat-dm1': '/images/blog-newt-chat-dm1.png',
+  'newt-chat-dm2': '/images/blog-newt-chat-dm2.png',
+  'newt-chat-yuki': '/images/blog-newt-chat-yuki.png',
+  'newt-chat-newt': '/images/blog-newt-chat-newt.png',
 };
 
 const trackMapping: Record<string, { index: number; titleJa: string; titleEn: string }> = {

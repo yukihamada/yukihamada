@@ -289,6 +289,44 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_message_feedback: {
+        Row: {
+          created_at: string
+          feedback_note: string | null
+          id: string
+          message_id: string
+          rating: string
+          reviewed_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          feedback_note?: string | null
+          id?: string
+          message_id: string
+          rating: string
+          reviewed_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          feedback_note?: string | null
+          id?: string
+          message_id?: string
+          rating?: string
+          reviewed_by?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_message_feedback_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: true
+            referencedRelation: "chat_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_messages: {
         Row: {
           content: string

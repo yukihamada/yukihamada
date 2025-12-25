@@ -40,9 +40,28 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem(CHAT_MODE_KEY, mode);
   }, []);
 
-  // Load Newt widget script when mode is newt
+  // Load Newt widget script and position it
   useEffect(() => {
+    const styleId = 'newt-chat-position-style';
+    
     if (chatMode === 'newt') {
+      // Add custom positioning CSS for Newt widget (bottom-left like Yuki)
+      if (!document.getElementById(styleId)) {
+        const style = document.createElement('style');
+        style.id = styleId;
+        style.textContent = `
+          #newt-chat-widget,
+          [id^="newt-chat"],
+          .newt-chat-widget,
+          iframe[src*="newt.net"] {
+            left: 16px !important;
+            right: auto !important;
+            bottom: 16px !important;
+          }
+        `;
+        document.head.appendChild(style);
+      }
+      
       // Check if script already exists
       if (!document.querySelector('script[src="https://chat-widget.newt.net/embed.js"]')) {
         (window as any).newtChatSettings = {
@@ -52,6 +71,12 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         script.src = 'https://chat-widget.newt.net/embed.js';
         script.async = true;
         document.body.appendChild(script);
+      }
+    } else {
+      // Remove positioning style when not using Newt
+      const existingStyle = document.getElementById(styleId);
+      if (existingStyle) {
+        existingStyle.remove();
       }
     }
   }, [chatMode]);

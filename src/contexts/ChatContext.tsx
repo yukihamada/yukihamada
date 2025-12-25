@@ -70,7 +70,20 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         const script = document.createElement('script');
         script.src = 'https://chat-widget.newt.net/embed.js';
         script.async = true;
+        script.onload = () => {
+          // Open Newt widget after script loads
+          setTimeout(() => {
+            if ((window as any).NewtChat?.open) {
+              (window as any).NewtChat.open();
+            }
+          }, 500);
+        };
         document.body.appendChild(script);
+      } else {
+        // Script already loaded, just open the widget
+        if ((window as any).NewtChat?.open) {
+          (window as any).NewtChat.open();
+        }
       }
     } else {
       // Remove positioning style when not using Newt

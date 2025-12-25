@@ -8,7 +8,7 @@ import BlogSection from '@/components/BlogSection';
 import HobbiesSection from '@/components/HobbiesSection';
 import Footer from '@/components/Footer';
 import OrganicBackground from '@/components/OrganicBackground';
-
+import SEO from '@/components/SEO';
 const Index = () => {
 
   useEffect(() => {
@@ -23,6 +23,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO url="https://yukihamada.jp" />
       <OrganicBackground />
       <Navigation />
       <main className="relative z-10">

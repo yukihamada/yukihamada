@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
+import SEO from '@/components/SEO';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useChat } from '@/contexts/ChatContext';
 import { useEffect, useState, useMemo } from 'react';
@@ -106,6 +107,11 @@ const Blog = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title={language === 'ja' ? 'ブログ' : 'Blog'}
+        description={language === 'ja' ? '濱田優貴のブログ。AI、テクノロジー、柔術、起業などについて書いています。' : 'Yuki Hamada\'s blog. Writing about AI, technology, BJJ, entrepreneurship and more.'}
+        url="https://yukihamada.jp/blog"
+      />
       <Navigation />
       
       <main className="pt-24 pb-16">

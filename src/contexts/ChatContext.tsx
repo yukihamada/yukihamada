@@ -76,10 +76,9 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
             (newtFrame as HTMLElement).offsetHeight > 100; // Widget button is small, open chat is larger
           
           if (wasOpen && !isOpen) {
-            // Newt was open and is now closed, switch back to Yuki and open chat
+            // Newt was open and is now closed, switch back to Yuki mode
             setChatModeState('yuki');
             localStorage.setItem(CHAT_MODE_KEY, 'yuki');
-            setIsOpen(true); // Open Yuki chat automatically
           }
           wasOpen = !!isOpen;
         }, 500);

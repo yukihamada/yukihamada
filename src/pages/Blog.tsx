@@ -1,7 +1,13 @@
 import { motion } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Calendar, Tag, Eye, Filter, Clock } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Calendar, Tag, Eye, Filter, Clock, ChevronDown, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -128,32 +134,48 @@ const Blog = () => {
               transition={{ duration: 0.4, delay: 0.2 }}
               className="mb-8"
             >
-              <div className="flex items-center gap-2 mb-3">
-                <Filter className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">
-                  {language === 'ja' ? 'カテゴリーで絞り込み' : 'Filter by category'}
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  variant={selectedCategory === null ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setSelectedCategory(null)}
-                  className="rounded-full"
-                >
-                  {language === 'ja' ? 'すべて' : 'All'}
-                </Button>
-                {categories.map((category) => (
+              <div className="flex items-center gap-3">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <Filter className="h-4 w-4" />
+                      {selectedCategory || (language === 'ja' ? 'すべてのカテゴリー' : 'All Categories')}
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="bg-card border-border z-50">
+                    <DropdownMenuItem 
+                      onClick={() => setSelectedCategory(null)}
+                      className={selectedCategory === null ? 'bg-primary/10 text-primary' : ''}
+                    >
+                      {language === 'ja' ? 'すべて' : 'All'} ({blogPosts.length})
+                    </DropdownMenuItem>
+                    {categories.map((category) => {
+                      const count = blogPosts.filter(p => p[language].category === category).length;
+                      return (
+                        <DropdownMenuItem 
+                          key={category}
+                          onClick={() => setSelectedCategory(category)}
+                          className={selectedCategory === category ? 'bg-primary/10 text-primary' : ''}
+                        >
+                          {category} ({count})
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                
+                {selectedCategory && (
                   <Button
-                    key={category}
-                    variant={selectedCategory === category ? "default" : "outline"}
+                    variant="ghost"
                     size="sm"
-                    onClick={() => setSelectedCategory(category)}
-                    className="rounded-full"
+                    onClick={() => setSelectedCategory(null)}
+                    className="gap-1 text-muted-foreground hover:text-foreground"
                   >
-                    {category}
+                    <X className="h-3 w-3" />
+                    {language === 'ja' ? 'クリア' : 'Clear'}
                   </Button>
-                ))}
+                )}
               </div>
             </motion.div>
           )}

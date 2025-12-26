@@ -201,6 +201,7 @@ export const AIChatSection = () => {
   const [messages, setMessages] = useState<Message[]>(() => loadMessagesFromStorage());
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(() => loadConversationId());
   const [isTyping, setIsTyping] = useState(false);
   const [hasGreeted, setHasGreeted] = useState(() => {
@@ -775,10 +776,14 @@ export const AIChatSection = () => {
   };
 
   const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || isLoading || isSending) return;
+    
+    // Debounce: prevent rapid repeated sends
+    setIsSending(true);
 
     const convId = await ensureConversation();
     if (!convId) {
+      setIsSending(false);
       toast({
         title: t.errorTitle,
         description: t.errorConversation,
@@ -821,6 +826,8 @@ export const AIChatSection = () => {
       });
     } finally {
       setIsLoading(false);
+      // Add delay before allowing next send to prevent double-clicks
+      setTimeout(() => setIsSending(false), 500);
     }
   };
 

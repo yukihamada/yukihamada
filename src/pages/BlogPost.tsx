@@ -43,17 +43,17 @@ const blogImages: Record<string, string> = {
   'newt-chat-logo': '/images/newt-chat-logo.png',
 };
 
-const trackMapping: Record<string, { titleJa: string; titleEn: string }> = {
-  'free-to-change': { titleJa: 'Free to Change', titleEn: 'Free to Change' },
-  'hello-2150': { titleJa: 'Hello 2150', titleEn: 'Hello 2150' },
-  'everybody-say-bjj': { titleJa: 'Everybody say 柔術', titleEn: 'Everybody say BJJ' },
-  'everybody-bjj': { titleJa: 'Everybody say 柔術', titleEn: 'Everybody say BJJ' },
-  'i-love-you': { titleJa: 'I Love You', titleEn: 'I Love You' },
-  'attention': { titleJa: 'I need your attention', titleEn: 'I need your attention' },
-  'koi-jujutsu': { titleJa: 'それ恋じゃなくて柔術', titleEn: "That's not love, it's Jiu-Jitsu" },
-  'shio-to-pixel': { titleJa: '塩とピクセル', titleEn: 'Salt and Pixels' },
-  'musubinaosu': { titleJa: '結び直す朝', titleEn: 'Morning to Reconnect' },
-  'attention-please': { titleJa: 'アテンションください', titleEn: 'Attention Please' },
+const trackMapping: Record<string, { titleJa: string; titleEn: string; artwork: string }> = {
+  'free-to-change': { titleJa: 'Free to Change', titleEn: 'Free to Change', artwork: 'album-free-to-change.jpg' },
+  'hello-2150': { titleJa: 'Hello 2150', titleEn: 'Hello 2150', artwork: 'album-hello-2150.jpg' },
+  'everybody-say-bjj': { titleJa: 'Everybody say 柔術', titleEn: 'Everybody say BJJ', artwork: 'album-everybody-bjj.jpg' },
+  'everybody-bjj': { titleJa: 'Everybody say 柔術', titleEn: 'Everybody say BJJ', artwork: 'album-everybody-bjj.jpg' },
+  'i-love-you': { titleJa: 'I Love You', titleEn: 'I Love You', artwork: 'album-i-love-you.jpg' },
+  'attention': { titleJa: 'I need your attention', titleEn: 'I need your attention', artwork: 'album-attention.jpg' },
+  'koi-jujutsu': { titleJa: 'それ恋じゃなくて柔術', titleEn: "That's not love, it's Jiu-Jitsu", artwork: 'album-koi-jujutsu.jpg' },
+  'shio-to-pixel': { titleJa: '塩とピクセル', titleEn: 'Salt and Pixels', artwork: 'album-shio-pixel.jpg' },
+  'musubinaosu': { titleJa: '結び直す朝', titleEn: 'Morning to Reconnect', artwork: 'album-musubinaosu.jpg' },
+  'attention-please': { titleJa: 'アテンションください', titleEn: 'Attention Please', artwork: 'album-attention-please.jpg' },
 };
 
 const playTrackById = (trackId: string) => {
@@ -119,7 +119,8 @@ const processContent = (rawContent: string, lang: string): string => {
     .replace(/\[play:([a-zA-Z0-9_-]+)\]/g, (_, trackId) => {
       const track = trackMapping[trackId];
       const trackTitle = lang === 'ja' ? track?.titleJa : track?.titleEn;
-      const artworkPath = `/images/album-${trackId}.jpg`;
+      const artworkFile = track?.artwork || `album-${trackId}.jpg`;
+      const artworkPath = `/images/${artworkFile}`;
       return `<div class="my-8 flex justify-center"><button data-play-track-id="${trackId}" class="group relative inline-flex items-center gap-5 px-6 py-4 rounded-2xl bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 hover:from-primary/30 hover:via-primary/20 hover:to-primary/30 border border-primary/30 hover:border-primary/50 transition-all duration-500 shadow-lg hover:shadow-primary/20 hover:scale-[1.02] cursor-pointer"><span class="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></span><img src="${artworkPath}" alt="${trackTitle}" class="w-16 h-16 rounded-xl object-cover shadow-lg ring-1 ring-white/10 group-hover:ring-primary/30 transition-all" /><div class="text-left"><span class="block text-xs text-muted-foreground mb-0.5">${lang === 'ja' ? '🎵 曲を再生' : '🎵 Play Track'}</span><span class="block text-lg font-semibold text-foreground group-hover:text-primary transition-colors">${trackTitle || 'Unknown Track'}</span></div><div class="flex items-center justify-center w-10 h-10 rounded-full bg-primary/20 group-hover:bg-primary/30 transition-colors ml-2"><svg class="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></button></div>`;
     });
 

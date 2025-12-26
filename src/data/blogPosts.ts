@@ -1429,6 +1429,173 @@ Let's pioneer the new era together.
     `,
     },
   },
+  {
+    slug: 'ai-will-end-sns',
+    featured: true,
+    image: '/images/blog-default-ai.jpg',
+    ja: {
+      title: '【未来予測】AIは「SNS」を終わらせ、「新しい現実」を生成する。',
+      excerpt: 'MetaのCPO、クリス・コックスが語った「コミュニケーションの進化論」から、シミュレーション仮説まで。SNSはどこへ向かうのか。',
+      date: '2025年12月26日',
+      category: '未来予測',
+      content: `
+こんにちは！今日は、僕がメルカリ時代に「未来のロードマップ」を泥臭くリサーチしていた頃に出会った、ある衝撃的なビジョンについてお話しします。
+
+それは、MetaのCPO、クリス・コックスが語った「コミュニケーションの進化論」です。
+
+---
+
+## 1. クリス・コックスが描いた「100年単位の階段」
+
+コックスは、SNSの進化を「情報の密度（忠実度）」という物差しで定義しました。
+
+- **テキスト時代：** 概念の共有。
+- **写真時代：** 瞬間の共有。
+- **動画時代：** 時間の共有。
+- **VR/AR時代：** **「存在感（Presence）」**の共有。
+
+「今何してる？」という文字から始まったSNSは、動画を経て、最終的に**「相手と同じ空間にいるという感覚」**を再現する場所へと向かっています。
+
+---
+
+## 2. 同じ山頂を目指す「現代の予言者」たち
+
+この「デジタルが現実と区別できなくなる」というビジョンは、彼一人ではありません。
+
+### ジェンスン・フアン（NVIDIA CEO）
+
+彼は**「デジタルツイン（現実世界の完全なコピー）」**を提唱しています。AIが物理法則（重力や光の反射）を完全にシミュレートし、デジタル空間に「もう一つの地球」を作る。これが彼の描く未来です。
+
+### エリクソン（通信大手）
+
+彼らは**「Internet of Senses（五感のインターネット）」**を2030年のロードマップに掲げています。視覚や聴覚だけでなく、AIと通信技術によって「味、匂い、触覚」までをデジタルで届けるという計画です。
+
+### サム・アルトマン（OpenAI CEO）
+
+彼は、AIが単にコンテンツを作るのではなく、**「一貫性のある世界そのものをシミュレーション（World Model）」**するようになると示唆しています。
+
+---
+
+## 3. 「シミュレーション仮説」が現実味を帯びる日
+
+ここで、少し不気味で面白い話をしましょう。
+
+哲学者ニック・ボストロムやイーロン・マスクが支持する**「シミュレーション仮説」**です。
+
+> 「人類が完璧な現実シミュレーターを作れるなら、この世界もすでに誰かが作ったシミュレーションである確率は99.9%である」
+
+今のAIの進化を見ると、これは単なるSFではなく「技術の必然」に思えてきます。
+
+- **視覚・聴覚：** すでにVRと空間オーディオで脳を騙せます。
+- **触覚・嗅覚：** 電気刺激や化学合成で再現技術が進んでいます。
+- **意識：** イーロン・マスクの「Neuralink」のように、脳へ直接データを書き込む技術が始まっています。
+
+もしAIが、物理演算・五感への刺激・個人の記憶を完璧に統合し、「今のこの瞬間」をリアルタイムに生成できるようになったら？
+
+それはもう「SNS（ソーシャル・ネットワーキング・サービス）」ではありません。**「SRS（シンセティック・リアリティ・サービス：合成現実サービス）」**です。僕たちはスマホを眺めるのをやめ、AIが生成する「心地よい現実」の中に住むことになるかもしれません。
+
+---
+
+## 最後に：僕たちが準備すべきこと
+
+メルカリで未来を考えていた時、僕は「テクノロジーは不便を解決するもの」だと思っていました。でも、クリス・コックスの視点にAIを掛け合わせると、その先にあるのは**「現実のアップグレード」**そのものです。
+
+数十年後、このブログを読んでいるあなた。
+
+それは本当にデバイスの画面ですか？ それとも、AIがあなたの網膜に直接投影している「2025年のノスタルジー体験」ですか？
+
+もし後者なら、僕に「いいね」を送るのも忘れないでくださいね。あ、その「いいね」の感覚も、AIが作った偽物の快感かもしれませんが（笑）。
+
+---
+
+## 関連記事
+
+- [【衝撃】55年前の予言が的中。オムロン「サイニック理論」が示す、AIの次の未来](/blog/2025-12-20-sinic)
+- [【実践編】「働かなくていい未来」は本当か？AI時代に「逃げるべき仕事」と「磨くべき仕事」の境界線](/blog/2025-12-21-ai-jobs)
+      `,
+    },
+    en: {
+      title: '[Future Prediction] AI Will End "Social Media" and Generate "New Reality"',
+      excerpt: 'From Meta CPO Chris Cox\'s "Evolution of Communication" to the Simulation Hypothesis. Where is social media heading?',
+      date: 'December 26, 2025',
+      category: 'Future Prediction',
+      content: `
+Hello! Today, I want to talk about a shocking vision I encountered while doing grassroots research on "future roadmaps" during my Mercari days.
+
+It's the "Evolution of Communication" as described by Meta's CPO, Chris Cox.
+
+---
+
+## 1. The "100-Year Staircase" Chris Cox Envisioned
+
+Cox defined the evolution of social media using the metric of "information density (fidelity)."
+
+- **Text Era:** Sharing concepts.
+- **Photo Era:** Sharing moments.
+- **Video Era:** Sharing time.
+- **VR/AR Era:** Sharing **"Presence."**
+
+Social media, which started with "What are you doing now?" texts, is heading toward a place that reproduces **"the feeling of being in the same space as the other person"** through video and beyond.
+
+---
+
+## 2. "Modern Prophets" Aiming for the Same Summit
+
+This vision of "digital becoming indistinguishable from reality" isn't his alone.
+
+### Jensen Huang (NVIDIA CEO)
+
+He advocates for **"Digital Twins (complete copies of the real world)."** AI completely simulates physical laws (gravity and light reflection) to create "another Earth" in digital space. This is the future he envisions.
+
+### Ericsson (Telecom Giant)
+
+They've put **"Internet of Senses"** on their 2030 roadmap. Not just vision and hearing, but a plan to deliver "taste, smell, and touch" digitally through AI and communication technology.
+
+### Sam Altman (OpenAI CEO)
+
+He suggests that AI will not just create content, but will **"simulate consistent worlds themselves (World Model)."**
+
+---
+
+## 3. The Day "Simulation Hypothesis" Becomes Real
+
+Let's talk about something a bit eerie yet fascinating.
+
+It's the **"Simulation Hypothesis"** supported by philosopher Nick Bostrom and Elon Musk.
+
+> "If humanity can create a perfect reality simulator, there's a 99.9% probability that this world is already a simulation created by someone."
+
+Looking at current AI evolution, this seems less like science fiction and more like "technological inevitability."
+
+- **Vision/Hearing:** VR and spatial audio can already deceive our brains.
+- **Touch/Smell:** Reproduction technology using electrical stimulation and chemical synthesis is advancing.
+- **Consciousness:** Technology to directly write data to the brain, like Elon Musk's "Neuralink," has begun.
+
+What if AI perfectly integrates physics calculations, sensory stimulation, and personal memories to generate "this very moment" in real-time?
+
+That's no longer "SNS (Social Networking Service)." It's **"SRS (Synthetic Reality Service)."** We might stop looking at our smartphones and start living in the "comfortable reality" generated by AI.
+
+---
+
+## Conclusion: What We Should Prepare For
+
+When thinking about the future at Mercari, I thought "technology solves inconveniences." But when you combine Chris Cox's perspective with AI, what lies ahead is **"an upgrade of reality itself."**
+
+You, reading this blog decades from now.
+
+Is that really a device screen? Or is it a "2025 nostalgia experience" that AI is directly projecting onto your retina?
+
+If it's the latter, don't forget to send me a "like." Oh, but that "like" sensation might also be a fake pleasure created by AI (lol).
+
+---
+
+## Related Articles
+
+- [55-Year-Old Prophecy Comes True: Omron's SINIC Theory Reveals the Next Era of AI](/blog/2025-12-20-sinic)
+- [Practical Guide: Is "Not Working" Future Real? The Line Between "Jobs to Escape" and "Jobs to Master"](/blog/2025-12-21-ai-jobs)
+      `,
+    },
+  },
 ];
 
 export const getBlogPostBySlug = (slug: string): BlogPost | undefined => {

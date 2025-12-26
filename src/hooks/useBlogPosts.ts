@@ -1,6 +1,21 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { blogPosts as staticBlogPosts, BlogPost } from '@/data/blogPosts';
+
+export interface BlogPostContent {
+  title: string;
+  excerpt: string;
+  content: string;
+  date: string;
+  category: string;
+}
+
+export interface BlogPost {
+  slug: string;
+  featured: boolean;
+  image?: string;
+  ja: BlogPostContent;
+  en: BlogPostContent;
+}
 
 interface BlogPostDB {
   id: string;
@@ -100,7 +115,7 @@ const checkIsAdmin = async (): Promise<boolean> => {
 };
 
 export const useBlogPosts = (includeScheduled = false) => {
-  const [posts, setPosts] = useState<BlogPost[]>(processPublicPosts(staticBlogPosts as BlogPostWithPublishedAt[]));
+  const [posts, setPosts] = useState<BlogPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -132,14 +147,12 @@ export const useBlogPosts = (includeScheduled = false) => {
             setPosts(processPublicPosts(convertedPosts));
           }
         } else {
-          // Use processed static posts as fallback
-          setPosts(processPublicPosts(staticBlogPosts as BlogPostWithPublishedAt[]));
+          setPosts([]);
         }
       } catch (err) {
         console.error('Error fetching blog posts:', err);
         setError(err as Error);
-        // Fallback to processed static posts on error
-        setPosts(processPublicPosts(staticBlogPosts as BlogPostWithPublishedAt[]));
+        setPosts([]);
       } finally {
         setIsLoading(false);
       }
@@ -195,27 +208,12 @@ export const useBlogPost = (slug: string | undefined, allowScheduled = false) =>
             setPost(null);
           }
         } else {
-          // Fallback to static posts
-          const staticPost = staticBlogPosts.find(p => p.slug === slug);
-          if (staticPost) {
-            const postDate = parseDateString(staticPost.ja.date);
-            const isFuturePost = postDate > new Date();
-            setIsScheduled(isFuturePost);
-            if (!isFuturePost || isAdmin) {
-              setPost(staticPost);
-            } else {
-              setPost(null);
-            }
-          } else {
-            setPost(null);
-          }
+          setPost(null);
         }
       } catch (err) {
         console.error('Error fetching blog post:', err);
         setError(err as Error);
-        // Fallback to static posts
-        const staticPost = staticBlogPosts.find(p => p.slug === slug);
-        setPost(staticPost || null);
+        setPost(null);
       } finally {
         setIsLoading(false);
       }
@@ -225,4 +223,28 @@ export const useBlogPost = (slug: string | undefined, allowScheduled = false) =>
   }, [slug, allowScheduled]);
 
   return { post, isLoading, error, isScheduled };
+};
+
+// Helper function to get blog post by slug (for SSE/MCP)
+export const getBlogPostBySlug = async (slug: string): Promise<BlogPost | null> => {
+  const { data, error } = await supabase
+    .from('blog_posts')
+    .select('*')
+    .eq('slug', slug)
+    .eq('status', 'published')
+    .maybeSingle();
+
+  if (error || !data) return null;
+  return convertDBToAppFormat(data);
+};
+
+// Helper function to get localized blog post content
+export const getLocalizedBlogPost = (post: BlogPost, language: 'en' | 'ja') => {
+  const content = post[language];
+  return {
+    slug: post.slug,
+    featured: post.featured,
+    image: post.image,
+    ...content,
+  };
 };

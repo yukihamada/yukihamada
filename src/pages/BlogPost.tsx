@@ -101,10 +101,63 @@ const processContent = (rawContent: string, lang: string): string => {
       const bgColor = emoji === '⚠️' ? 'bg-amber-500/10 border-amber-500/30' : emoji === '🎉' ? 'bg-green-500/10 border-green-500/30' : 'bg-primary/10 border-primary/30';
       return `<div class="flex items-start gap-3 p-4 my-4 rounded-xl ${bgColor} border"><span class="text-2xl">${emoji}</span><span class="text-foreground leading-relaxed">${text}</span></div>`;
     })
-    .replace(/\[youtube:([a-zA-Z0-9_-]+)\]/g, '<div class="my-10 aspect-video rounded-2xl overflow-hidden shadow-xl ring-1 ring-border/20"><iframe class="w-full h-full" src="https://www.youtube.com/embed/$1" title="YouTube video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>')
-    // Support full YouTube URLs: https://www.youtube.com/watch?v=VIDEO_ID or https://youtu.be/VIDEO_ID
-    .replace(/https?:\/\/(?:www\.)?youtube\.com\/watch\?v=([a-zA-Z0-9_-]+)(?:[^\s<]*)?/g, '<div class="my-10 aspect-video rounded-2xl overflow-hidden shadow-xl ring-1 ring-border/20"><iframe class="w-full h-full" src="https://www.youtube.com/embed/$1" title="YouTube video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>')
-    .replace(/https?:\/\/youtu\.be\/([a-zA-Z0-9_-]+)(?:[^\s<]*)?/g, '<div class="my-10 aspect-video rounded-2xl overflow-hidden shadow-xl ring-1 ring-border/20"><iframe class="w-full h-full" src="https://www.youtube.com/embed/$1" title="YouTube video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>')
+    // YouTube links with thumbnail - convert [youtube:ID] or full URLs to clickable link cards
+    .replace(/\[youtube:([a-zA-Z0-9_-]+)\]/g, (_, videoId) => {
+      const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+      const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
+      return `<a href="${youtubeUrl}" target="_blank" rel="noopener noreferrer" class="block my-10 group">
+        <div class="relative aspect-video rounded-2xl overflow-hidden shadow-xl ring-1 ring-border/20 hover:ring-primary/50 transition-all duration-300">
+          <img src="${thumbnailUrl}" alt="YouTube video thumbnail" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.src='https://img.youtube.com/vi/${videoId}/hqdefault.jpg'" />
+          <div class="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+            <div class="w-16 h-16 md:w-20 md:h-20 rounded-full bg-red-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <svg class="w-8 h-8 md:w-10 md:h-10 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+          <div class="absolute bottom-3 left-3 px-3 py-1.5 rounded-lg bg-black/70 text-white text-sm font-medium flex items-center gap-2">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+            ${lang === 'ja' ? 'YouTubeで見る' : 'Watch on YouTube'}
+          </div>
+        </div>
+      </a>`;
+    })
+    // Support full YouTube URLs: https://www.youtube.com/watch?v=VIDEO_ID
+    .replace(/https?:\/\/(?:www\.)?youtube\.com\/watch\?v=([a-zA-Z0-9_-]+)(?:[^\s<]*)?/g, (_, videoId) => {
+      const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+      const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
+      return `<a href="${youtubeUrl}" target="_blank" rel="noopener noreferrer" class="block my-10 group">
+        <div class="relative aspect-video rounded-2xl overflow-hidden shadow-xl ring-1 ring-border/20 hover:ring-primary/50 transition-all duration-300">
+          <img src="${thumbnailUrl}" alt="YouTube video thumbnail" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.src='https://img.youtube.com/vi/${videoId}/hqdefault.jpg'" />
+          <div class="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+            <div class="w-16 h-16 md:w-20 md:h-20 rounded-full bg-red-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <svg class="w-8 h-8 md:w-10 md:h-10 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+          <div class="absolute bottom-3 left-3 px-3 py-1.5 rounded-lg bg-black/70 text-white text-sm font-medium flex items-center gap-2">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+            ${lang === 'ja' ? 'YouTubeで見る' : 'Watch on YouTube'}
+          </div>
+        </div>
+      </a>`;
+    })
+    // Support short YouTube URLs: https://youtu.be/VIDEO_ID
+    .replace(/https?:\/\/youtu\.be\/([a-zA-Z0-9_-]+)(?:[^\s<]*)?/g, (_, videoId) => {
+      const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+      const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
+      return `<a href="${youtubeUrl}" target="_blank" rel="noopener noreferrer" class="block my-10 group">
+        <div class="relative aspect-video rounded-2xl overflow-hidden shadow-xl ring-1 ring-border/20 hover:ring-primary/50 transition-all duration-300">
+          <img src="${thumbnailUrl}" alt="YouTube video thumbnail" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.src='https://img.youtube.com/vi/${videoId}/hqdefault.jpg'" />
+          <div class="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+            <div class="w-16 h-16 md:w-20 md:h-20 rounded-full bg-red-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <svg class="w-8 h-8 md:w-10 md:h-10 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+          </div>
+          <div class="absolute bottom-3 left-3 px-3 py-1.5 rounded-lg bg-black/70 text-white text-sm font-medium flex items-center gap-2">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+            ${lang === 'ja' ? 'YouTubeで見る' : 'Watch on YouTube'}
+          </div>
+        </div>
+      </a>`;
+    })
     .replace(/\[image:([^\]]+)\]/g, (_, imageInfo) => {
       if (imageInfo.startsWith('/')) {
         const parts = imageInfo.split(':');

@@ -28,7 +28,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
-import { blogPosts } from '@/data/blogPosts';
+// Blog posts are now fully database-driven - no static import needed
 
 interface BlogPostDB {
   id: string;
@@ -1258,12 +1258,8 @@ const AdminDashboard = () => {
   };
 
   const getPostTitle = (slug: string) => {
-    // First check database posts
     const dbPost = posts.find(p => p.slug === slug);
-    if (dbPost) return dbPost.title_ja;
-    // Fallback to static blog posts
-    const staticPost = blogPosts.find(p => p.slug === slug);
-    return staticPost?.ja.title || slug;
+    return dbPost?.title_ja || slug;
   };
 
   const totalViews = blogAnalytics.reduce((sum, a) => sum + a.view_count, 0);

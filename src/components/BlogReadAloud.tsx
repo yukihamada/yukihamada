@@ -144,11 +144,18 @@ const BlogReadAloud = ({ content, title, postSlug }: BlogReadAloudProps) => {
           ) : (
             <Volume2 className="h-5 w-5 text-primary" />
           )}
-          <span className="font-medium">
-            {isLoading 
-              ? (language === 'ja' ? '音声生成中...' : 'Generating...') 
-              : (language === 'ja' ? '記事を読み上げる' : 'Read Aloud')}
-          </span>
+          <div className="flex flex-col items-start gap-0.5">
+            <span className="font-medium">
+              {isLoading 
+                ? (language === 'ja' ? '音声生成中...' : 'Generating...') 
+                : (language === 'ja' ? 'Yukiの声で読み上げる' : 'Read by Yuki')}
+            </span>
+            {!isLoading && (
+              <span className="text-xs text-muted-foreground">
+                {language === 'ja' ? 'AI音声で記事を朗読' : 'AI voice narration'}
+              </span>
+            )}
+          </div>
         </Button>
       )}
 

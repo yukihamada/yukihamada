@@ -5,6 +5,45 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Generate visual-only prompt based on title and category
+function generateVisualPrompt(title: string, category: string): string {
+  const lowerTitle = title.toLowerCase();
+  const lowerCategory = category.toLowerCase();
+  
+  // BJJ / Martial Arts
+  if (lowerCategory.includes('柔術') || lowerTitle.includes('柔術') || lowerTitle.includes('bjj')) {
+    return 'A dramatic scene of Brazilian Jiu-Jitsu practitioners on a mat, dynamic grappling positions, gym environment with soft lighting, sweat and intensity, cinematic sports photography';
+  }
+  
+  // AI / Technology
+  if (lowerCategory.includes('テクノロジー') || lowerCategory.includes('ai') || lowerTitle.includes('ai') || lowerTitle.includes('人工知能')) {
+    return 'Futuristic abstract visualization of neural networks and data streams, glowing blue and purple circuits, holographic interfaces, sleek technological aesthetic';
+  }
+  
+  // Career / Business
+  if (lowerCategory.includes('キャリア') || lowerCategory.includes('経営') || lowerTitle.includes('仕事') || lowerTitle.includes('キャリア')) {
+    return 'Professional business environment, modern office with large windows, person contemplating at a desk, warm golden hour lighting, aspirational atmosphere';
+  }
+  
+  // Security
+  if (lowerCategory.includes('セキュリティ') || lowerTitle.includes('セキュリティ') || lowerTitle.includes('警告')) {
+    return 'Digital security concept, glowing shield icon protecting data, dark background with red alert accents, cyber defense visualization';
+  }
+  
+  // Life / Philosophy
+  if (lowerCategory.includes('ライフ') || lowerTitle.includes('愛') || lowerTitle.includes('人生')) {
+    return 'Artistic still life with warm colors, peaceful nature scene, sunrise or sunset with beautiful clouds, contemplative and serene atmosphere';
+  }
+  
+  // Future / Prediction
+  if (lowerCategory.includes('未来') || lowerTitle.includes('未来')) {
+    return 'Futuristic cityscape at twilight, hovering vehicles, holographic displays, blend of organic and technological elements, sci-fi optimism';
+  }
+  
+  // Default: Abstract professional
+  return 'Abstract artistic composition with flowing shapes and gradients, professional color palette of blues and teals, dynamic movement, modern and sophisticated';
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -28,20 +67,25 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Generate OGP image using Lovable AI with image generation model
-    const prompt = `Create a professional blog OGP (Open Graph Protocol) image for social media sharing.
+    // Create visual-only prompt based on title and category
+    const visualPrompt = generateVisualPrompt(title, category);
+    
+    const prompt = `Create a stunning, artistic blog header image. NO TEXT OR LETTERS ALLOWED.
 
-Title: "${title}"
+Topic: "${title}"
 Category: ${category}
-Style: Modern, clean, professional blog header image
-Dimensions: 1200x630 (OGP standard)
+
 Requirements:
-- Dark gradient background (deep blue to purple or similar professional colors)
-- The title text "${title}" should be prominently displayed in white/light text
-- Add subtle decorative elements related to the topic (tech icons, abstract shapes)
-- Include a small category badge showing "${category}"
-- Modern typography with good contrast
-- Professional and eye-catching design suitable for Twitter/Facebook/LinkedIn sharing
-- Ultra high resolution, sharp text`;
+- ABSOLUTELY NO TEXT, LETTERS, WORDS, OR TYPOGRAPHY in the image
+- Dimensions: 1200x630 (OGP standard, 16:9 aspect ratio)
+- Cinematic, high-quality photography or artistic illustration style
+- Rich colors, dramatic lighting, professional composition
+- Visual metaphors and symbolic imagery that represent the topic
+- Ultra high resolution, photorealistic or artistic quality
+
+Visual concept: ${visualPrompt}
+
+CRITICAL: The image must contain NO TEXT whatsoever. Only visual elements.`;
 
     console.log('[generate-ogp] Calling AI image generation...');
 

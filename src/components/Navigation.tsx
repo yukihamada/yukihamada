@@ -428,10 +428,10 @@ const Navigation = () => {
         {isMobileMenuOpen && (
           <motion.div 
             className="md:hidden fixed inset-0 top-0 bg-background/98 backdrop-blur-xl z-[-1]"
-            initial={{ opacity: 0, clipPath: 'circle(0% at calc(100% - 40px) 40px)' }}
-            animate={{ opacity: 1, clipPath: 'circle(150% at calc(100% - 40px) 40px)' }}
-            exit={{ opacity: 0, clipPath: 'circle(0% at calc(100% - 40px) 40px)' }}
-            transition={{ duration: 0.5, ease: [0.25, 0.4, 0.25, 1] }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
           >
             <div className="container mx-auto px-6 pt-24 pb-8 h-full flex flex-col">
               <div className="flex-1 flex flex-col justify-center space-y-2">
@@ -446,9 +446,9 @@ const Navigation = () => {
                         href={href}
                         className="group flex items-center gap-4 py-4 border-b border-border/20"
                         onClick={() => setIsMobileMenuOpen(false)}
-                        initial={{ opacity: 0, x: -40 }}
+                        initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.08 + 0.2 }}
+                        transition={{ delay: index * 0.03, duration: 0.15 }}
                       >
                         <span className="text-2xl font-medium text-foreground group-hover:text-primary transition-colors">
                           {item.name}
@@ -471,9 +471,9 @@ const Navigation = () => {
                       >
                         <motion.span
                           className="text-2xl font-medium text-foreground group-hover:text-primary transition-colors"
-                          initial={{ opacity: 0, x: -40 }}
+                          initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: (index + 4) * 0.08 + 0.2 }}
+                          transition={{ delay: (index + 4) * 0.03, duration: 0.15 }}
                         >
                           {link.name}
                         </motion.span>
@@ -489,9 +489,9 @@ const Navigation = () => {
                       href={href}
                       className="group flex items-center gap-4 py-4 border-b border-border/20"
                       onClick={() => setIsMobileMenuOpen(false)}
-                      initial={{ opacity: 0, x: -40 }}
+                      initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: (index + 4) * 0.08 + 0.2 }}
+                      transition={{ delay: (index + 4) * 0.03, duration: 0.15 }}
                     >
                       <span className="text-2xl font-medium text-foreground group-hover:text-primary transition-colors">
                         {link.name}
@@ -504,9 +504,9 @@ const Navigation = () => {
               
               {/* Mobile Menu Bottom Buttons */}
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
+                transition={{ delay: 0.1, duration: 0.15 }}
                 className="pt-8 space-y-3"
               >
                 <Button

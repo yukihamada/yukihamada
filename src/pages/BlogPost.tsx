@@ -1,5 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { useEffect, useRef, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { ArrowLeft, Calendar, Tag, RefreshCw, Twitter, Clock, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useBlogPost, useBlogPosts } from '@/hooks/useBlogPosts';
@@ -23,6 +24,7 @@ import { useAuth } from '@/hooks/useAuth';
 import jiuflowHero from '@/assets/jiuflow-hero.png';
 import jiuflowLesson from '@/assets/jiuflow-lesson.png';
 import yukiProfile from '@/assets/yuki-profile.jpg';
+import ElioSignupForm from '@/components/ElioSignupForm';
 
 const blogImages: Record<string, string> = {
   'jiuflow-hero': jiuflowHero,
@@ -205,6 +207,8 @@ const BlogPost = () => {
     };
   }, [post, language, setPageContext, setCurrentBlogTitle]);
 
+  const [signupFormContainer, setSignupFormContainer] = useState<HTMLElement | null>(null);
+
   useEffect(() => {
     if (!contentRef.current) return;
     
@@ -217,6 +221,12 @@ const BlogPost = () => {
       button.addEventListener('click', handleClick);
       handlers.push({ button, handler: handleClick });
     });
+
+    // Find elio signup form placeholder
+    const signupPlaceholder = contentRef.current.querySelector('[data-component="elio-signup-form"]');
+    if (signupPlaceholder) {
+      setSignupFormContainer(signupPlaceholder as HTMLElement);
+    }
 
     return () => {
       handlers.forEach(({ button, handler }) => {
@@ -396,6 +406,11 @@ const BlogPost = () => {
                 className="blog-content prose prose-lg dark:prose-invert max-w-none"
                 dangerouslySetInnerHTML={{ __html: processedContent }}
               />
+              {/* Render ElioSignupForm via portal */}
+              {signupFormContainer && createPortal(
+                <ElioSignupForm lang={language} />,
+                signupFormContainer
+              )}
             </div>
           </div>
 

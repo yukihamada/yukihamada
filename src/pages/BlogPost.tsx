@@ -306,9 +306,10 @@ const BlogPost = () => {
       
       <main className="pt-24 pb-20">
         <div className="container mx-auto px-6">
-          <div className="lg:flex lg:gap-8">
+          <div className="flex justify-center">
+            <div className="w-full max-w-4xl lg:mr-80">
             {/* Main content */}
-            <article className="flex-1 max-w-4xl">
+            <article className="w-full">
               <div>
                 <Button variant="ghost" asChild className="mb-8 text-muted-foreground hover:text-foreground">
                   <Link to="/#blog">
@@ -449,9 +450,10 @@ const BlogPost = () => {
                 </Button>
               </div>
             </article>
+            </div>
 
             {/* Sticky Sidebar TOC - Desktop only */}
-            <aside className="hidden lg:block w-72 flex-shrink-0">
+            <aside className="hidden lg:block fixed right-8 xl:right-16 top-28 w-72">
               <TableOfContents content={content.content} sticky />
             </aside>
           </div>

@@ -1,73 +1,112 @@
-# Welcome to your Lovable project
+# Yuki Hamada - Personal Website
 
-## Project info
+濱田優貴の個人ウェブサイト。イネブラ創業者、エンジェル投資家として、AI・テクノロジー・柔術など多様な分野で活動中。
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Tech Stack
 
-## How can I edit this code?
+- **Framework**: React 18 + Vite
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS + shadcn/ui
+- **State**: TanStack Query
+- **Backend**: Supabase
+- **Hosting**: Cloudflare Pages
 
-There are several ways of editing your application.
+## Development
 
-**Use Lovable**
+```bash
+# Install dependencies
+npm install
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
 ```
 
-**Edit a file directly in GitHub**
+## Cloudflare Pages Deployment
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Initial Setup
 
-**Use GitHub Codespaces**
+1. [Cloudflare Dashboard](https://dash.cloudflare.com/) にログイン
+2. **Pages** > **Create a project** > **Connect to Git**
+3. GitHubリポジトリを選択
+4. ビルド設定:
+   - **Build command**: `npm run build`
+   - **Build output directory**: `dist`
+   - **Root directory**: `/`
+5. **Deploy** をクリック
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Custom Domain Setup
 
-## What technologies are used for this project?
+1. Cloudflare Pages プロジェクト設定 > **Custom domains**
+2. `yukihamada.jp` を追加
+3. DNSレコードを設定:
+   ```
+   Type: CNAME
+   Name: @
+   Content: <your-project>.pages.dev
+   ```
 
-This project is built with:
+### Environment Variables
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+必要に応じて以下の環境変数を設定:
 
-## How can I deploy this project?
+| Variable | Description |
+|----------|-------------|
+| `VITE_SUPABASE_URL` | Supabase URL |
+| `VITE_SUPABASE_ANON_KEY` | Supabase anonymous key |
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+## SEO Features
 
-## Can I connect a custom domain to my Lovable project?
+### Implemented
 
-Yes, you can!
+- **Basic SEO Meta Tags**: title, description, keywords, robots
+- **Open Graph Protocol**: og:title, og:description, og:image, etc.
+- **Twitter Cards**: summary_large_image
+- **Structured Data (JSON-LD)**: Person, WebSite schemas
+- **Dynamic OGP**: Cloudflare Functions middleware for social crawlers
+- **Sitemap**: `public/sitemap.xml`
+- **Robots.txt**: `public/robots.txt`
+- **Performance**: Preconnect, DNS Prefetch, Preload LCP
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### Dynamic OGP for Social Sharing
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Cloudflare Functions (`functions/_middleware.ts`) がTwitter、Facebook等のクローラーを検知し、サーバーサイドでOGPタグをインジェクトします。これによりSPAでも正しくOGP画像が表示されます。
+
+### Adding New Blog Posts
+
+ブログ記事を追加した場合:
+
+1. `functions/_middleware.ts` の `blogPosts` オブジェクトに記事情報を追加
+2. `public/sitemap.xml` にURLを追加
+3. OGP画像を `public/images/` に配置
+
+## Project Structure
+
+```
+├── functions/              # Cloudflare Pages Functions
+│   └── _middleware.ts      # OGP injection for crawlers
+├── public/
+│   ├── _headers           # HTTP headers config
+│   ├── _redirects         # SPA routing
+│   ├── images/            # Static images
+│   ├── robots.txt         # Robots config
+│   └── sitemap.xml        # Sitemap
+├── src/
+│   ├── components/        # React components
+│   ├── contexts/          # React contexts
+│   ├── hooks/             # Custom hooks
+│   ├── pages/             # Page components
+│   └── lib/               # Utilities
+├── index.html             # Entry HTML with SEO meta
+├── vite.config.ts         # Vite config
+└── wrangler.toml          # Cloudflare config
+```
+
+## License
+
+All rights reserved.

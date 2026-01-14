@@ -1,0 +1,11 @@
+# Cloudflare Pages configuration
+name = "yukihamada"
+compatibility_date = "2024-01-01"
+
+# Pages specific settings
+[site]
+bucket = "./dist"
+
+# Environment variables (if needed)
+# [vars]
+# MY_VAR = "my-value"

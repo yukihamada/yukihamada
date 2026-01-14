@@ -1,0 +1,12 @@
+name = "yukihamada-ogp"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+workers_dev = true
+
+# Standard route configuration
+routes = [
+  { pattern = "yukihamada.jp/*", zone_name = "yukihamada.jp" }
+]
+
+[vars]
+ORIGIN_URL = "https://yukihamada.lovable.app"

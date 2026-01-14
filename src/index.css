@@ -307,3 +307,313 @@ html {
   outline: 2px solid hsl(var(--primary));
   outline-offset: 2px;
 }
+
+/* Blog Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+@media (min-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.stat-card {
+  @apply bg-gradient-to-br from-primary/10 to-accent/5 rounded-2xl p-6 text-center border border-primary/20;
+}
+
+.stat-number {
+  @apply text-4xl md:text-5xl font-bold bg-clip-text text-transparent;
+  background-image: var(--gradient-primary);
+}
+
+.stat-label {
+  @apply text-sm text-muted-foreground mt-2;
+}
+
+/* AI Team Grid */
+.ai-team-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+@media (min-width: 768px) {
+  .ai-team-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.ai-card {
+  @apply rounded-2xl p-6 text-center border transition-all duration-300 hover:-translate-y-1;
+}
+
+.ai-card.gemini {
+  @apply bg-gradient-to-br from-blue-500/10 to-cyan-500/5 border-blue-500/30;
+}
+
+.ai-card.lovable {
+  @apply bg-gradient-to-br from-purple-500/10 to-pink-500/5 border-purple-500/30;
+}
+
+.ai-card.claude {
+  @apply bg-gradient-to-br from-orange-500/10 to-yellow-500/5 border-orange-500/30;
+}
+
+.ai-icon {
+  @apply text-4xl mb-3;
+}
+
+.ai-name {
+  @apply text-xl font-bold text-foreground;
+}
+
+.ai-role {
+  @apply text-sm text-muted-foreground mt-1;
+}
+
+.ai-price {
+  @apply text-lg font-semibold text-primary mt-2;
+}
+
+.ai-tasks {
+  @apply flex flex-wrap gap-2 justify-center mt-4;
+}
+
+.ai-tasks span {
+  @apply text-xs px-3 py-1 rounded-full bg-background/50 text-muted-foreground border border-border/50;
+}
+
+/* Modules Grid */
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+@media (min-width: 640px) {
+  .modules-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .modules-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.module-card {
+  @apply bg-card rounded-xl p-5 border border-border/50 transition-all duration-300 hover:border-primary/50 hover:shadow-lg;
+}
+
+.module-icon {
+  @apply text-3xl mb-2;
+}
+
+.module-name {
+  @apply text-lg font-bold text-foreground;
+}
+
+.module-compare {
+  @apply text-xs text-primary font-medium;
+}
+
+.module-pages {
+  @apply text-sm text-muted-foreground mt-1;
+}
+
+.module-features {
+  @apply text-xs text-muted-foreground mt-3 leading-relaxed;
+}
+
+/* Timeline */
+.timeline {
+  @apply relative pl-8 my-8;
+}
+
+.timeline::before {
+  content: '';
+  @apply absolute left-3 top-0 bottom-0 w-0.5;
+  background: linear-gradient(to bottom, hsl(var(--primary)), hsl(var(--accent)), transparent);
+}
+
+.timeline-item {
+  @apply relative mb-6;
+}
+
+.timeline-item::before {
+  content: '';
+  @apply absolute -left-5 top-2 w-4 h-4 rounded-full border-2 border-primary bg-background;
+}
+
+.timeline-time {
+  @apply text-xs font-medium text-primary mb-1;
+}
+
+.timeline-content {
+  @apply bg-card rounded-lg p-4 border border-border/50;
+}
+
+.timeline-title {
+  @apply font-semibold text-foreground;
+}
+
+.timeline-desc {
+  @apply text-sm text-muted-foreground mt-1;
+}
+
+/* Enterprise Features */
+.enterprise-features {
+  @apply flex flex-wrap gap-2 my-4;
+}
+
+.feature-tag {
+  @apply px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium border border-primary/20;
+}
+
+/* Tech Stack */
+.tech-stack {
+  @apply grid gap-4 my-6;
+}
+
+.tech-category {
+  @apply bg-card rounded-xl p-4 border border-border/50;
+}
+
+.tech-title {
+  @apply text-sm font-medium text-primary mb-1;
+}
+
+.tech-items {
+  @apply text-foreground;
+}
+
+/* Pricing Comparison */
+.pricing-comparison {
+  @apply flex items-center justify-center gap-4 my-8 flex-wrap;
+}
+
+.pricing-old, .pricing-new {
+  @apply rounded-xl p-6 text-center min-w-[200px];
+}
+
+.pricing-old {
+  @apply bg-muted/50 border border-border;
+}
+
+.pricing-new {
+  @apply bg-gradient-to-br from-primary/10 to-accent/5 border border-primary/30;
+}
+
+.pricing-title {
+  @apply text-sm text-muted-foreground;
+}
+
+.pricing-amount {
+  @apply text-2xl font-bold text-foreground mt-1;
+}
+
+.pricing-note {
+  @apply text-xs text-muted-foreground mt-1;
+}
+
+.pricing-arrow {
+  @apply text-3xl text-primary font-bold;
+}
+
+/* Cost Breakdown */
+.cost-breakdown {
+  @apply bg-card rounded-xl p-6 my-6 border border-border/50;
+}
+
+.cost-item {
+  @apply flex justify-between py-2 border-b border-border/30;
+}
+
+.cost-service {
+  @apply text-muted-foreground;
+}
+
+.cost-amount {
+  @apply font-semibold text-foreground;
+}
+
+.cost-total {
+  @apply flex justify-between py-3 mt-2 font-bold;
+}
+
+.cost-total .cost-service {
+  @apply text-foreground;
+}
+
+.cost-total .cost-amount {
+  @apply text-primary text-lg;
+}
+
+/* Feedback Flow */
+.feedback-flow {
+  @apply flex items-center justify-center gap-2 my-8 flex-wrap;
+}
+
+.flow-step {
+  @apply flex flex-col items-center text-center;
+}
+
+.flow-icon {
+  @apply text-3xl mb-2;
+}
+
+.flow-text {
+  @apply text-sm text-muted-foreground;
+}
+
+.flow-arrow {
+  @apply text-2xl text-primary;
+}
+
+/* Future Features */
+.future-features {
+  @apply grid gap-4 my-6;
+}
+
+@media (min-width: 768px) {
+  .future-features {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.future-item {
+  @apply bg-card rounded-xl p-5 border border-border/50 text-center;
+}
+
+.future-icon {
+  @apply text-3xl mb-3;
+}
+
+.future-title {
+  @apply font-semibold text-foreground;
+}
+
+.future-desc {
+  @apply text-sm text-muted-foreground mt-2;
+}
+
+/* CTA Box */
+.cta-box {
+  @apply bg-gradient-to-br from-primary/10 to-accent/5 rounded-2xl p-6 my-8 border border-primary/30;
+}
+
+.cta-box p {
+  @apply mb-2 last:mb-0;
+}
+
+.cta-box a {
+  @apply text-primary hover:underline;
+}

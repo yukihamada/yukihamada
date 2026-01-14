@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { List, ChevronDown, ChevronUp } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -10,11 +10,13 @@ interface TocItem {
 
 interface TableOfContentsProps {
   content: string;
+  sticky?: boolean;
 }
 
-const TableOfContents = ({ content }: TableOfContentsProps) => {
+const TableOfContents = ({ content, sticky = false }: TableOfContentsProps) => {
   const { language } = useLanguage();
   const [isExpanded, setIsExpanded] = useState(true);
+  const [activeId, setActiveId] = useState<string>('');
 
   // Memoize TOC items parsing
   const tocItems = useMemo(() => {
@@ -52,12 +54,46 @@ const TableOfContents = ({ content }: TableOfContentsProps) => {
     return items;
   }, [content]);
 
+  // Track active section with IntersectionObserver
+  useEffect(() => {
+    if (tocItems.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // Find the first visible heading
+        const visibleEntries = entries.filter(entry => entry.isIntersecting);
+        if (visibleEntries.length > 0) {
+          // Sort by position and get the topmost visible heading
+          const topEntry = visibleEntries.reduce((prev, curr) => 
+            prev.boundingClientRect.top < curr.boundingClientRect.top ? prev : curr
+          );
+          setActiveId(topEntry.target.id);
+        }
+      },
+      {
+        rootMargin: '-80px 0px -60% 0px',
+        threshold: 0
+      }
+    );
+
+    // Observe all heading elements
+    tocItems.forEach(item => {
+      const element = document.getElementById(item.id);
+      if (element) {
+        observer.observe(element);
+      }
+    });
+
+    return () => observer.disconnect();
+  }, [tocItems]);
+
   const handleClick = useCallback((id: string) => {
     const element = document.getElementById(id);
     if (element) {
       const yOffset = -100;
       const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
       window.scrollTo({ top: y, behavior: 'smooth' });
+      setActiveId(id);
     }
   }, []);
 
@@ -65,8 +101,12 @@ const TableOfContents = ({ content }: TableOfContentsProps) => {
     return null;
   }
 
+  const containerClass = sticky 
+    ? "glass rounded-2xl p-4 sticky top-24 max-h-[calc(100vh-120px)] overflow-y-auto"
+    : "glass rounded-2xl p-4 mb-6";
+
   return (
-    <div className="glass rounded-2xl p-4 mb-6">
+    <div className={containerClass}>
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="flex items-center justify-between w-full text-left"
@@ -90,19 +130,29 @@ const TableOfContents = ({ content }: TableOfContentsProps) => {
       {isExpanded && (
         <nav className="mt-3 border-l-2 border-border/50">
           <ul className="space-y-1">
-            {tocItems.map((item, index) => (
-              <li
-                key={`${item.id}-${index}`}
-                style={{ paddingLeft: `${(item.level - 2) * 12 + 12}px` }}
-              >
-                <button
-                  onClick={() => handleClick(item.id)}
-                  className="block w-full text-left py-1.5 text-sm text-muted-foreground hover:text-primary transition-colors"
+            {tocItems.map((item, index) => {
+              const isActive = activeId === item.id;
+              return (
+                <li
+                  key={`${item.id}-${index}`}
+                  style={{ paddingLeft: `${(item.level - 2) * 12 + 12}px` }}
                 >
-                  {item.text}
-                </button>
-              </li>
-            ))}
+                  <button
+                    onClick={() => handleClick(item.id)}
+                    className={`block w-full text-left py-1.5 text-sm transition-all duration-300 relative ${
+                      isActive 
+                        ? 'text-primary font-medium pl-2' 
+                        : 'text-muted-foreground hover:text-primary'
+                    }`}
+                  >
+                    {isActive && (
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-primary rounded-full animate-pulse" />
+                    )}
+                    {item.text}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </nav>
       )}

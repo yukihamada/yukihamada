@@ -20,6 +20,7 @@ import { useChat } from '@/contexts/ChatContext';
 import { calculateReadingTime, formatReadingTime } from '@/lib/readingTime';
 import ShareCounts from '@/components/ShareCounts';
 import TableOfContents from '@/components/TableOfContents';
+import CuteLoader from '@/components/CuteLoader';
 import { useAuth } from '@/hooks/useAuth';
 import jiuflowHero from '@/assets/jiuflow-hero.png';
 import jiuflowLesson from '@/assets/jiuflow-lesson.png';
@@ -265,11 +266,7 @@ const BlogPost = () => {
   }, [post, language, isAuthenticated]);
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <RefreshCw className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
+    return <CuteLoader />;
   }
 
   if (!post) {
@@ -308,145 +305,157 @@ const BlogPost = () => {
       <Navigation />
       
       <main className="pt-24 pb-20">
-        <article className="container mx-auto px-6 max-w-4xl">
-          <div>
-            <Button variant="ghost" asChild className="mb-8 text-muted-foreground hover:text-foreground">
-              <Link to="/#blog">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                {language === 'ja' ? 'ブログに戻る' : 'Back to Blog'}
-              </Link>
-            </Button>
-          </div>
+        <div className="container mx-auto px-6">
+          <div className="lg:flex lg:gap-8">
+            {/* Main content */}
+            <article className="flex-1 max-w-4xl">
+              <div>
+                <Button variant="ghost" asChild className="mb-8 text-muted-foreground hover:text-foreground">
+                  <Link to="/#blog">
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    {language === 'ja' ? 'ブログに戻る' : 'Back to Blog'}
+                  </Link>
+                </Button>
+              </div>
 
-          <header className="mb-12">
-            {/* Category and Date */}
-            <div className="flex flex-wrap items-center gap-3 mb-6">
-              {isScheduled && isAdmin && (
-                <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500 text-white text-sm font-medium">
-                  <Clock className="h-3.5 w-3.5" />
-                  {language === 'ja' ? '予約投稿（管理者プレビュー）' : 'Scheduled (Admin Preview)'}
-                </span>
-              )}
-              <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/15 text-primary text-sm font-medium">
-                <Tag className="h-3.5 w-3.5" />
-                {content.category}
-              </span>
-              <span className="flex items-center gap-1.5 text-muted-foreground text-sm">
-                <Calendar className="h-4 w-4" />
-                {content.date}
-              </span>
-              <span className="flex items-center gap-1.5 text-muted-foreground text-sm">
-                <Clock className="h-4 w-4" />
-                {formatReadingTime(calculateReadingTime(content.content, language), language)}
-              </span>
-              <BlogViewStats postSlug={post.slug} />
-              <ShareCounts postSlug={post.slug} />
-            </div>
+              <header className="mb-12">
+                {/* Category and Date */}
+                <div className="flex flex-wrap items-center gap-3 mb-6">
+                  {isScheduled && isAdmin && (
+                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500 text-white text-sm font-medium">
+                      <Clock className="h-3.5 w-3.5" />
+                      {language === 'ja' ? '予約投稿（管理者プレビュー）' : 'Scheduled (Admin Preview)'}
+                    </span>
+                  )}
+                  <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/15 text-primary text-sm font-medium">
+                    <Tag className="h-3.5 w-3.5" />
+                    {content.category}
+                  </span>
+                  <span className="flex items-center gap-1.5 text-muted-foreground text-sm">
+                    <Calendar className="h-4 w-4" />
+                    {content.date}
+                  </span>
+                  <span className="flex items-center gap-1.5 text-muted-foreground text-sm">
+                    <Clock className="h-4 w-4" />
+                    {formatReadingTime(calculateReadingTime(content.content, language), language)}
+                  </span>
+                  <BlogViewStats postSlug={post.slug} />
+                  <ShareCounts postSlug={post.slug} />
+                </div>
 
-            {/* Title */}
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight mb-4">
-              {content.title}
-            </h1>
+                {/* Title */}
+                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight mb-4">
+                  {content.title}
+                </h1>
 
-            {/* Excerpt */}
-            <p className="text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed mb-6">
-              {content.excerpt}
-            </p>
+                {/* Excerpt */}
+                <p className="text-base sm:text-lg md:text-xl text-muted-foreground leading-relaxed mb-6">
+                  {content.excerpt}
+                </p>
 
-            {/* Author and Actions */}
-            <div className="flex items-center justify-between gap-3 p-4 glass rounded-2xl mb-6">
-              <div className="flex items-center gap-3 min-w-0">
-                <OptimizedImage
-                  src={yukiProfile}
-                  alt="Yuki Hamada"
-                  width={48}
-                  height={48}
-                  loading="eager"
-                  className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover ring-2 ring-primary/30 flex-shrink-0"
+                {/* Author and Actions */}
+                <div className="flex items-center justify-between gap-3 p-4 glass rounded-2xl mb-6">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <OptimizedImage
+                      src={yukiProfile}
+                      alt="Yuki Hamada"
+                      width={48}
+                      height={48}
+                      loading="eager"
+                      className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover ring-2 ring-primary/30 flex-shrink-0"
+                    />
+                    <div className="min-w-0">
+                      <p className="font-semibold text-foreground text-sm truncate">Yuki Hamada</p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {language === 'ja' ? '株式会社イネブラ' : 'Enebular Inc.'}
+                      </p>
+                    </div>
+                  </div>
+                  <a
+                    href="https://x.com/yukihamada"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-foreground text-background hover:bg-foreground/90 transition-colors text-xs font-medium flex-shrink-0 whitespace-nowrap"
+                  >
+                    <Twitter className="h-3.5 w-3.5" />
+                    <span>{language === 'ja' ? 'フォロー' : 'Follow'}</span>
+                  </a>
+                </div>
+
+                {/* Share Buttons */}
+                <div className="mb-6">
+                  <ShareButtons title={content.title} url={window.location.href} />
+                </div>
+
+                {/* AI Summary and Read Aloud */}
+                <BlogSummary 
+                  postSlug={post.slug}
+                  title={content.title}
+                  category={content.category}
+                  content={content.content}
                 />
-                <div className="min-w-0">
-                  <p className="font-semibold text-foreground text-sm truncate">Yuki Hamada</p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {language === 'ja' ? '株式会社イネブラ' : 'Enebular Inc.'}
-                  </p>
+
+                {/* Table of Contents - Mobile (inline) */}
+                <div className="lg:hidden">
+                  <TableOfContents content={content.content} />
+                </div>
+              </header>
+
+              <div className="prose prose-lg dark:prose-invert max-w-none">
+                <div className="glass rounded-3xl p-4 md:p-8 lg:p-12">
+                  <div 
+                    ref={contentRef}
+                    className="blog-content prose prose-lg dark:prose-invert max-w-none"
+                    dangerouslySetInnerHTML={{ __html: processedContent }}
+                  />
+                  {/* Render ElioSignupForm via portal */}
+                  {signupFormContainer && createPortal(
+                    <ElioSignupForm lang={language} />,
+                    signupFormContainer
+                  )}
                 </div>
               </div>
-              <a
-                href="https://x.com/yukihamada"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-foreground text-background hover:bg-foreground/90 transition-colors text-xs font-medium flex-shrink-0 whitespace-nowrap"
-              >
-                <Twitter className="h-3.5 w-3.5" />
-                <span>{language === 'ja' ? 'フォロー' : 'Follow'}</span>
-              </a>
-            </div>
 
-            {/* Share Buttons */}
-            <div className="mb-6">
-              <ShareButtons title={content.title} url={window.location.href} />
-            </div>
+              {/* Bottom Share Buttons */}
+              <div className="mt-12 pt-8 border-t border-border/30">
+                <p className="text-center text-muted-foreground mb-4">
+                  {language === 'ja' ? 'この記事をシェアする' : 'Share this article'}
+                </p>
+                <ShareButtons title={content.title} url={window.location.href} />
+              </div>
 
-            {/* AI Summary and Read Aloud */}
-            <BlogSummary 
-              postSlug={post.slug}
-              title={content.title}
-              category={content.category}
-              content={content.content}
-            />
+              {/* Like Button */}
+              <div className="mt-8 flex flex-col items-center gap-4">
+                <LikeButton postSlug={post.slug} />
+              </div>
 
-            {/* Table of Contents */}
-            <TableOfContents content={content.content} />
-          </header>
-
-          <div className="prose prose-lg dark:prose-invert max-w-none">
-            <div className="glass rounded-3xl p-4 md:p-8 lg:p-12">
-              <div 
-                ref={contentRef}
-                className="blog-content prose prose-lg dark:prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: processedContent }}
+              {/* AI Suggested Questions */}
+              <BlogSuggestedQuestions 
+                postSlug={post.slug}
+                blogTitle={content.title}
+                blogCategory={content.category}
+                content={content.content}
               />
-              {/* Render ElioSignupForm via portal */}
-              {signupFormContainer && createPortal(
-                <ElioSignupForm lang={language} />,
-                signupFormContainer
-              )}
-            </div>
+
+              {/* Comments Section */}
+              <BlogComments blogSlug={post.slug} />
+
+              {/* Back to Blog */}
+              <div className="mt-12 text-center">
+                <Button variant="outline" asChild>
+                  <Link to="/#blog">
+                    {language === 'ja' ? 'すべての記事を見る' : 'View All Posts'}
+                  </Link>
+                </Button>
+              </div>
+            </article>
+
+            {/* Sticky Sidebar TOC - Desktop only */}
+            <aside className="hidden lg:block w-72 flex-shrink-0">
+              <TableOfContents content={content.content} sticky />
+            </aside>
           </div>
-
-          {/* Bottom Share Buttons */}
-          <div className="mt-12 pt-8 border-t border-border/30">
-            <p className="text-center text-muted-foreground mb-4">
-              {language === 'ja' ? 'この記事をシェアする' : 'Share this article'}
-            </p>
-            <ShareButtons title={content.title} url={window.location.href} />
-          </div>
-
-          {/* Like Button */}
-          <div className="mt-8 flex flex-col items-center gap-4">
-            <LikeButton postSlug={post.slug} />
-          </div>
-
-          {/* AI Suggested Questions */}
-          <BlogSuggestedQuestions 
-            postSlug={post.slug}
-            blogTitle={content.title}
-            blogCategory={content.category}
-            content={content.content}
-          />
-
-          {/* Comments Section */}
-          <BlogComments blogSlug={post.slug} />
-
-          {/* Back to Blog */}
-          <div className="mt-12 text-center">
-            <Button variant="outline" asChild>
-              <Link to="/#blog">
-                {language === 'ja' ? 'すべての記事を見る' : 'View All Posts'}
-              </Link>
-            </Button>
-          </div>
-        </article>
+        </div>
       </main>
 
       <Footer />

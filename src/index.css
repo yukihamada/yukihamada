@@ -785,3 +785,20 @@ html {
 .section-divider-icon {
   @apply text-2xl text-primary;
 }
+
+/* Totonos Screenshots */
+.totonos-screenshots {
+  @apply my-8 space-y-6;
+}
+
+.screenshot-item {
+  @apply rounded-2xl overflow-hidden border border-border/50 bg-card shadow-lg;
+}
+
+.screenshot-item img {
+  @apply w-full h-auto;
+}
+
+.screenshot-caption {
+  @apply py-4 px-5 text-center text-sm text-muted-foreground bg-muted/30 border-t border-border/30;
+}

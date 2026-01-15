@@ -26,6 +26,7 @@ import jiuflowHero from '@/assets/jiuflow-hero.png';
 import jiuflowLesson from '@/assets/jiuflow-lesson.png';
 import yukiProfile from '@/assets/yuki-profile.jpg';
 import ElioSignupForm from '@/components/ElioSignupForm';
+import { AnimatePresence } from 'framer-motion';
 
 const blogImages: Record<string, string> = {
   'jiuflow-hero': jiuflowHero,
@@ -266,7 +267,11 @@ const BlogPost = () => {
   }, [post, language, isAuthenticated]);
 
   if (isLoading) {
-    return <CuteLoader />;
+    return (
+      <AnimatePresence mode="wait">
+        <CuteLoader key="loader" />
+      </AnimatePresence>
+    );
   }
 
   if (!post) {

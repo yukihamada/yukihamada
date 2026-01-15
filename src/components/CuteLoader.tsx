@@ -1,23 +1,24 @@
 import { useLanguage } from '@/contexts/LanguageContext';
+import { motion } from 'framer-motion';
 
 const loadingMessages = {
   ja: [
-    "コーヒー淹れてます ☕",
-    "ビションフリーゼと遊んでます 🐕",
-    "柔術の技を研究中 🥋",
-    "AIと会話中... 🤖",
-    "データをこねこね中 ✨",
-    "宇宙の真理を探索中 🌌",
-    "クリエイティブモード発動！ 🎨",
+    "システム起動中... 🚀",
+    "データをダウンロード中... 📡",
+    "世界を構築中... 🌍",
+    "AIを覚醒中... 🤖",
+    "レベルをロード中... 🎮",
+    "次元を接続中... ✨",
+    "マトリックスに接続中... 💫",
   ],
   en: [
-    "Brewing coffee ☕",
-    "Playing with Bichon Frise 🐕",
-    "Studying BJJ techniques 🥋",
-    "Chatting with AI... 🤖",
-    "Kneading data ✨",
-    "Exploring cosmic truths 🌌",
-    "Creative mode activated! 🎨",
+    "Booting system... 🚀",
+    "Downloading data... 📡",
+    "Building world... 🌍",
+    "Awakening AI... 🤖",
+    "Loading level... 🎮",
+    "Connecting dimensions... ✨",
+    "Entering the matrix... 💫",
   ]
 };
 
@@ -27,75 +28,208 @@ const CuteLoader = () => {
   const randomMessage = messages[Math.floor(Math.random() * messages.length)];
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-8">
-      {/* Cute animated character */}
-      <div className="relative">
-        {/* Bouncing circles - like a cute loading animation */}
-        <div className="flex items-end gap-2">
-          <div 
-            className="w-4 h-4 rounded-full bg-primary animate-bounce"
-            style={{ animationDelay: '0ms', animationDuration: '600ms' }}
-          />
-          <div 
-            className="w-6 h-6 rounded-full bg-primary/80 animate-bounce"
-            style={{ animationDelay: '100ms', animationDuration: '600ms' }}
-          />
-          <div 
-            className="w-8 h-8 rounded-full bg-primary/60 animate-bounce"
-            style={{ animationDelay: '200ms', animationDuration: '600ms' }}
-          />
-          <div 
-            className="w-6 h-6 rounded-full bg-primary/80 animate-bounce"
-            style={{ animationDelay: '300ms', animationDuration: '600ms' }}
-          />
-          <div 
-            className="w-4 h-4 rounded-full bg-primary animate-bounce"
-            style={{ animationDelay: '400ms', animationDuration: '600ms' }}
-          />
-        </div>
-        
-        {/* Cute face overlay */}
-        <div className="absolute -top-16 left-1/2 -translate-x-1/2">
-          <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center animate-pulse">
-            {/* Eyes */}
-            <div className="absolute top-6 left-4 w-2 h-3 bg-foreground rounded-full animate-blink" />
-            <div className="absolute top-6 right-4 w-2 h-3 bg-foreground rounded-full animate-blink" />
-            {/* Blush */}
-            <div className="absolute top-9 left-2 w-3 h-2 rounded-full bg-pink-300/50" />
-            <div className="absolute top-9 right-2 w-3 h-2 rounded-full bg-pink-300/50" />
-            {/* Mouth */}
-            <div className="absolute bottom-5 w-4 h-2 border-b-2 border-foreground/70 rounded-b-full" />
-          </div>
-        </div>
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-8 relative overflow-hidden">
+      {/* Animated grid background */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div 
+          className="absolute inset-0 opacity-10"
+          style={{
+            backgroundImage: `
+              linear-gradient(hsl(var(--primary) / 0.3) 1px, transparent 1px),
+              linear-gradient(90deg, hsl(var(--primary) / 0.3) 1px, transparent 1px)
+            `,
+            backgroundSize: '50px 50px',
+            animation: 'gridMove 20s linear infinite',
+          }}
+        />
       </div>
 
-      {/* Loading message */}
-      <div className="flex flex-col items-center gap-3 mt-8">
-        <p className="text-lg font-medium text-foreground animate-fade-in">
-          {randomMessage}
-        </p>
-        <div className="flex gap-1">
-          <span className="w-2 h-2 rounded-full bg-primary animate-pulse" style={{ animationDelay: '0ms' }} />
-          <span className="w-2 h-2 rounded-full bg-primary animate-pulse" style={{ animationDelay: '150ms' }} />
-          <span className="w-2 h-2 rounded-full bg-primary animate-pulse" style={{ animationDelay: '300ms' }} />
-        </div>
-      </div>
+      {/* Glowing orbs */}
+      <motion.div
+        className="absolute w-64 h-64 rounded-full blur-3xl"
+        style={{ background: 'hsl(var(--primary) / 0.2)' }}
+        animate={{
+          x: [0, 100, -50, 0],
+          y: [0, -50, 100, 0],
+          scale: [1, 1.2, 0.8, 1],
+        }}
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.div
+        className="absolute w-48 h-48 rounded-full blur-3xl"
+        style={{ background: 'hsl(var(--accent) / 0.15)' }}
+        animate={{
+          x: [0, -80, 60, 0],
+          y: [0, 80, -40, 0],
+          scale: [1, 0.9, 1.1, 1],
+        }}
+        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+      />
 
-      {/* Floating particles for extra cuteness */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(6)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-2 h-2 rounded-full bg-primary/30 animate-float"
-            style={{
-              left: `${20 + i * 12}%`,
-              top: `${30 + (i % 3) * 20}%`,
-              animationDelay: `${i * 0.5}s`,
-              animationDuration: `${3 + i * 0.5}s`
+      {/* Main loader container */}
+      <div className="relative z-10 flex flex-col items-center gap-8">
+        {/* Hexagon loader */}
+        <div className="relative w-32 h-32">
+          {/* Outer spinning ring */}
+          <motion.div
+            className="absolute inset-0 rounded-full border-2 border-primary/30"
+            style={{ borderTopColor: 'hsl(var(--primary))' }}
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+          />
+          
+          {/* Middle spinning ring (opposite direction) */}
+          <motion.div
+            className="absolute inset-3 rounded-full border-2 border-primary/20"
+            style={{ borderBottomColor: 'hsl(var(--primary) / 0.7)' }}
+            animate={{ rotate: -360 }}
+            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+          />
+          
+          {/* Inner pulsing core */}
+          <motion.div
+            className="absolute inset-6 rounded-full bg-gradient-to-br from-primary/40 to-primary/10 backdrop-blur-sm"
+            animate={{ 
+              scale: [1, 1.1, 1],
+              opacity: [0.5, 1, 0.5],
+            }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+          />
+          
+          {/* Center icon */}
+          <motion.div
+            className="absolute inset-0 flex items-center justify-center"
+            animate={{ 
+              rotateY: [0, 180, 360],
+            }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <span className="text-2xl">⚡</span>
+          </motion.div>
+        </div>
+
+        {/* Progress bar */}
+        <div className="w-64 h-1 bg-muted rounded-full overflow-hidden">
+          <motion.div
+            className="h-full bg-gradient-to-r from-primary via-primary/80 to-primary rounded-full"
+            initial={{ width: '0%' }}
+            animate={{ width: '100%' }}
+            transition={{ 
+              duration: 2, 
+              repeat: Infinity,
+              ease: "easeInOut",
             }}
           />
-        ))}
+        </div>
+
+        {/* Loading message */}
+        <motion.div 
+          className="flex flex-col items-center gap-3"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <p className="text-lg font-mono font-medium text-foreground tracking-wider">
+            {randomMessage}
+          </p>
+          
+          {/* Typing indicator dots */}
+          <div className="flex gap-2">
+            {[0, 1, 2].map((i) => (
+              <motion.span
+                key={i}
+                className="w-2 h-2 rounded-full bg-primary"
+                animate={{
+                  y: [0, -8, 0],
+                  opacity: [0.3, 1, 0.3],
+                }}
+                transition={{
+                  duration: 0.6,
+                  repeat: Infinity,
+                  delay: i * 0.15,
+                  ease: "easeInOut",
+                }}
+              />
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Game-style stats */}
+        <motion.div 
+          className="flex gap-6 text-xs font-mono text-muted-foreground"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+        >
+          <span className="flex items-center gap-1">
+            <span className="text-primary">●</span> CPU: 
+            <motion.span
+              animate={{ opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 1, repeat: Infinity }}
+            >
+              87%
+            </motion.span>
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="text-green-500">●</span> RAM: 
+            <motion.span
+              animate={{ opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 1.2, repeat: Infinity }}
+            >
+              2.4GB
+            </motion.span>
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="text-yellow-500">●</span> NET: 
+            <motion.span
+              animate={{ opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 0.8, repeat: Infinity }}
+            >
+              128ms
+            </motion.span>
+          </span>
+        </motion.div>
       </div>
+
+      {/* Floating particles */}
+      {[...Array(12)].map((_, i) => (
+        <motion.div
+          key={i}
+          className="absolute w-1 h-1 rounded-full bg-primary/50"
+          style={{
+            left: `${10 + (i * 7)}%`,
+            top: `${20 + (i % 4) * 20}%`,
+          }}
+          animate={{
+            y: [-20, 20, -20],
+            x: [-10, 10, -10],
+            opacity: [0.2, 0.8, 0.2],
+            scale: [0.5, 1.5, 0.5],
+          }}
+          transition={{
+            duration: 3 + i * 0.3,
+            repeat: Infinity,
+            delay: i * 0.2,
+            ease: "easeInOut",
+          }}
+        />
+      ))}
+
+      {/* Scanline effect */}
+      <div 
+        className="absolute inset-0 pointer-events-none opacity-[0.02]"
+        style={{
+          background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, hsl(var(--foreground)) 2px, hsl(var(--foreground)) 4px)',
+        }}
+      />
+
+      {/* CSS for grid animation */}
+      <style>{`
+        @keyframes gridMove {
+          0% { transform: translate(0, 0); }
+          100% { transform: translate(50px, 50px); }
+        }
+      `}</style>
     </div>
   );
 };

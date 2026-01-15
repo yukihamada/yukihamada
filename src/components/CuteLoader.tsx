@@ -22,14 +22,32 @@ const loadingMessages = {
   ]
 };
 
+// Export animation variants for exit animation
+export const loaderVariants = {
+  initial: { opacity: 1, scale: 1 },
+  exit: {
+    opacity: 0,
+    scale: 1.5,
+    filter: "blur(20px)",
+    transition: {
+      duration: 0.6,
+      ease: [0.4, 0, 0.2, 1],
+    }
+  }
+};
+
 const CuteLoader = () => {
   const { language } = useLanguage();
   const messages = loadingMessages[language === 'ja' ? 'ja' : 'en'];
   const randomMessage = messages[Math.floor(Math.random() * messages.length)];
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-8 relative overflow-hidden">
-      {/* Animated grid background */}
+    <motion.div 
+      className="min-h-screen bg-background flex flex-col items-center justify-center gap-8 relative overflow-hidden fixed inset-0 z-50"
+      variants={loaderVariants}
+      initial="initial"
+      exit="exit"
+    >
       <div className="absolute inset-0 overflow-hidden">
         <div 
           className="absolute inset-0 opacity-10"
@@ -230,7 +248,7 @@ const CuteLoader = () => {
           100% { transform: translate(50px, 50px); }
         }
       `}</style>
-    </div>
+    </motion.div>
   );
 };
 

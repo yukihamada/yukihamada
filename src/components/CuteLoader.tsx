@@ -1,5 +1,6 @@
 import { useLanguage } from '@/contexts/LanguageContext';
 import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
 
 const loadingMessages = {
   ja: [
@@ -39,7 +40,46 @@ export const loaderVariants = {
 const CuteLoader = () => {
   const { language } = useLanguage();
   const messages = loadingMessages[language === 'ja' ? 'ja' : 'en'];
-  const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+  const [messageIndex, setMessageIndex] = useState(0);
+  const [displayedText, setDisplayedText] = useState('');
+  const [progress, setProgress] = useState(0);
+  
+  const currentMessage = messages[messageIndex];
+
+  // Typing animation effect
+  useEffect(() => {
+    setDisplayedText('');
+    let charIndex = 0;
+    
+    const typingInterval = setInterval(() => {
+      if (charIndex < currentMessage.length) {
+        setDisplayedText(currentMessage.slice(0, charIndex + 1));
+        charIndex++;
+      } else {
+        clearInterval(typingInterval);
+        // Wait a bit then move to next message
+        setTimeout(() => {
+          setMessageIndex((prev) => (prev + 1) % messages.length);
+        }, 1500);
+      }
+    }, 50);
+
+    return () => clearInterval(typingInterval);
+  }, [messageIndex, currentMessage, messages.length]);
+
+  // Progress animation
+  useEffect(() => {
+    const progressInterval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) return 0;
+        return prev + Math.random() * 3 + 1;
+      });
+    }, 100);
+
+    return () => clearInterval(progressInterval);
+  }, []);
+
+  const displayProgress = Math.min(Math.round(progress), 100);
 
   return (
     <motion.div 
@@ -114,42 +154,53 @@ const CuteLoader = () => {
             transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
           />
           
-          {/* Center icon */}
+          {/* Center percentage */}
           <motion.div
             className="absolute inset-0 flex items-center justify-center"
-            animate={{ 
-              rotateY: [0, 180, 360],
-            }}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
           >
-            <span className="text-2xl">⚡</span>
+            <span className="text-lg font-mono font-bold text-primary">
+              {displayProgress}%
+            </span>
           </motion.div>
         </div>
 
-        {/* Progress bar */}
-        <div className="w-64 h-1 bg-muted rounded-full overflow-hidden">
-          <motion.div
-            className="h-full bg-gradient-to-r from-primary via-primary/80 to-primary rounded-full"
-            initial={{ width: '0%' }}
-            animate={{ width: '100%' }}
-            transition={{ 
-              duration: 2, 
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
+        {/* Progress bar with percentage */}
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-64 h-2 bg-muted rounded-full overflow-hidden relative">
+            <motion.div
+              className="h-full bg-gradient-to-r from-primary via-primary/80 to-primary rounded-full"
+              style={{ width: `${displayProgress}%` }}
+              transition={{ duration: 0.1 }}
+            />
+            {/* Glowing effect on progress bar */}
+            <motion.div
+              className="absolute top-0 h-full w-8 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+              animate={{ x: [-32, 256] }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+            />
+          </div>
+          <span className="text-xs font-mono text-muted-foreground">
+            {language === 'ja' ? '読み込み中' : 'Loading'} {displayProgress}%
+          </span>
         </div>
 
-        {/* Loading message */}
+        {/* Loading message with typing animation */}
         <motion.div 
           className="flex flex-col items-center gap-3"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <p className="text-lg font-mono font-medium text-foreground tracking-wider">
-            {randomMessage}
-          </p>
+          <div className="h-8 flex items-center">
+            <p className="text-lg font-mono font-medium text-foreground tracking-wider">
+              {displayedText}
+              <motion.span
+                className="inline-block w-0.5 h-5 bg-primary ml-1"
+                animate={{ opacity: [1, 0] }}
+                transition={{ duration: 0.5, repeat: Infinity }}
+              />
+            </p>
+          </div>
           
           {/* Typing indicator dots */}
           <div className="flex gap-2">

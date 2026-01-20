@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
-import { useEffect, useRef, useMemo, useState } from 'react';
+import { useEffect, useRef, useMemo, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { ArrowLeft, Calendar, Tag, RefreshCw, Twitter, Clock, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -27,6 +27,32 @@ import jiuflowLesson from '@/assets/jiuflow-lesson.png';
 import yukiProfile from '@/assets/yuki-profile.jpg';
 import ElioSignupForm from '@/components/ElioSignupForm';
 import { AnimatePresence } from 'framer-motion';
+import mermaid from 'mermaid';
+
+// Initialize mermaid with dark theme support
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'dark',
+  themeVariables: {
+    primaryColor: '#3b82f6',
+    primaryTextColor: '#f8fafc',
+    primaryBorderColor: '#3b82f6',
+    lineColor: '#64748b',
+    secondaryColor: '#1e293b',
+    tertiaryColor: '#0f172a',
+    background: '#0f172a',
+    mainBkg: '#1e293b',
+    nodeBorder: '#3b82f6',
+    clusterBkg: '#1e293b',
+    titleColor: '#f8fafc',
+    edgeLabelBackground: '#1e293b',
+  },
+  flowchart: {
+    htmlLabels: true,
+    curve: 'basis',
+  },
+  securityLevel: 'loose',
+});
 
 const blogImages: Record<string, string> = {
   'jiuflow-hero': jiuflowHero,
@@ -73,8 +99,18 @@ const generateAnchorLink = (id: string) => {
 const processContent = (rawContent: string, lang: string): string => {
   // First, process code blocks to protect them from other regex replacements
   const codeBlocks: string[] = [];
+  const mermaidBlocks: string[] = [];
+  let mermaidIndex = 0;
+  
   let processed = rawContent
-    // Process fenced code blocks (```language ... ```)
+    // Process mermaid code blocks first
+    .replace(/```mermaid\n([\s\S]*?)```/g, (_, code) => {
+      const placeholder = `__MERMAID_BLOCK_${mermaidIndex}__`;
+      mermaidBlocks.push(code.trim());
+      mermaidIndex++;
+      return placeholder;
+    })
+    // Process other fenced code blocks (```language ... ```)
     .replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
       const langLabel = lang || 'code';
       const escapedCode = code.replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -248,6 +284,15 @@ const processContent = (rawContent: string, lang: string): string => {
       return `<div class="my-8 flex justify-center"><button data-play-track-id="${trackId}" class="group relative inline-flex items-center gap-5 px-6 py-4 rounded-2xl bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 hover:from-primary/30 hover:via-primary/20 hover:to-primary/30 border border-primary/30 hover:border-primary/50 transition-all duration-500 shadow-lg hover:shadow-primary/20 hover:scale-[1.02] cursor-pointer"><span class="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></span><img src="${artworkPath}" alt="${trackTitle}" class="w-16 h-16 rounded-xl object-cover shadow-lg ring-1 ring-white/10 group-hover:ring-primary/30 transition-all" /><div class="text-left"><span class="block text-xs text-muted-foreground mb-0.5">${lang === 'ja' ? '🎵 曲を再生' : '🎵 Play Track'}</span><span class="block text-lg font-semibold text-foreground group-hover:text-primary transition-colors">${trackTitle || 'Unknown Track'}</span></div><div class="flex items-center justify-center w-10 h-10 rounded-full bg-primary/20 group-hover:bg-primary/30 transition-colors ml-2"><svg class="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></button></div>`;
     });
 
+  // Restore mermaid blocks as placeholder divs for client-side rendering
+  mermaidBlocks.forEach((code, i) => {
+    const escapedCode = code.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    processed = processed.replace(
+      `__MERMAID_BLOCK_${i}__`,
+      `<div class="mermaid-container my-8 flex justify-center"><div class="mermaid-diagram w-full max-w-4xl rounded-xl bg-slate-900/50 p-6 ring-1 ring-white/10 overflow-x-auto" data-mermaid-code="${encodeURIComponent(code)}"><pre class="text-xs text-muted-foreground">${escapedCode}</pre></div></div>`
+    );
+  });
+  
   // Restore code blocks
   codeBlocks.forEach((block, i) => {
     processed = processed.replace(`__CODE_BLOCK_${i}__`, block);
@@ -330,12 +375,32 @@ const BlogPost = () => {
       setSignupFormContainer(signupPlaceholder as HTMLElement);
     }
 
+    // Render mermaid diagrams
+    const mermaidDiagrams = contentRef.current.querySelectorAll('[data-mermaid-code]');
+    mermaidDiagrams.forEach(async (container, index) => {
+      const code = decodeURIComponent(container.getAttribute('data-mermaid-code') || '');
+      if (code) {
+        try {
+          const { svg } = await mermaid.render(`mermaid-${slug}-${index}`, code);
+          container.innerHTML = svg;
+          // Add styling to the generated SVG
+          const svgElement = container.querySelector('svg');
+          if (svgElement) {
+            svgElement.style.maxWidth = '100%';
+            svgElement.style.height = 'auto';
+          }
+        } catch (error) {
+          console.error('Mermaid render error:', error);
+        }
+      }
+    });
+
     return () => {
       handlers.forEach(({ button, handler }) => {
         button.removeEventListener('click', handler);
       });
     };
-  }, [post, language]);
+  }, [post, language, slug]);
 
   // Memoize processed content to avoid recalculation on every render
   const processedContent = useMemo(() => {

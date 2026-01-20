@@ -85,14 +85,38 @@ const processContent = (rawContent: string, lang: string): string => {
       const id = heading.replace(/\*\*/g, '').trim().toLowerCase().replace(/[^\w\s\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/g, '').replace(/\s+/g, '-').slice(0, 50);
       return `<h3 id="${id}" class="text-xl md:text-2xl font-semibold mt-8 mb-4 text-foreground">${heading}</h3>`;
     })
-    .replace(/\|(.+)\|/g, (match) => {
+    .replace(/\|(.+)\|/g, (match, _, offset, fullStr) => {
       const cells = match.split('|').filter(c => c.trim());
       if (cells.every(c => c.trim().match(/^[-:]+$/))) return '';
-      const cellsHtml = cells.map(c => `<td class="px-4 py-3 border border-border/30">${c.trim()}</td>`).join('');
-      return `<tr class="even:bg-muted/30">${cellsHtml}</tr>`;
+      // Check if this is the first row (header)
+      const beforeThis = fullStr.substring(0, offset);
+      const tableStarted = beforeThis.match(/\|[^|]+\|[^|]*$/);
+      const isHeader = !tableStarted || beforeThis.endsWith('\n\n') || beforeThis.endsWith('---\n');
+      
+      if (isHeader && !beforeThis.includes('<th')) {
+        const headerCells = cells.map(c => `<th class="blog-table-th">${c.trim()}</th>`).join('');
+        return `<tr class="blog-table-header">${headerCells}</tr>`;
+      }
+      const cellsHtml = cells.map((c, i) => {
+        const value = c.trim();
+        // Style based on content type
+        const isNumber = /^[¥$€]?[\d,]+(?:\.\d+)?%?$/.test(value);
+        const isCheck = value === '✓' || value === '✔' || value === '○';
+        const isCross = value === '✗' || value === '×' || value === '-';
+        const isBadge = value.startsWith('✅') || value.startsWith('❌') || value.startsWith('⚠️');
+        
+        let cellClass = 'blog-table-td';
+        if (i === 0) cellClass += ' blog-table-td-first';
+        if (isNumber) cellClass += ' blog-table-td-number';
+        if (isCheck) cellClass += ' blog-table-td-check';
+        if (isCross) cellClass += ' blog-table-td-cross';
+        
+        return `<td class="${cellClass}">${value}</td>`;
+      }).join('');
+      return `<tr class="blog-table-row">${cellsHtml}</tr>`;
     })
-    .replace(/(<tr.*?<\/tr>\s*)+/g, (match) => {
-      return `<div class="overflow-x-auto my-8"><table class="w-full border-collapse rounded-xl overflow-hidden shadow-lg ring-1 ring-border/20"><tbody>${match}</tbody></table></div>`;
+    .replace(/(<tr class="blog-table-(?:header|row)".*?<\/tr>\s*)+/g, (match) => {
+      return `<div class="blog-table-wrapper"><table class="blog-table"><tbody>${match}</tbody></table></div>`;
     })
     .replace(/<blockquote>([^<]+)<\/blockquote>/g, '<div class="blog-quote"><p>$1</p></div>')
     .replace(/^> (.+)$/gm, '<div class="blog-quote"><p>$1</p></div>')

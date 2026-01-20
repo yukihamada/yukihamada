@@ -695,6 +695,95 @@ html {
   @apply text-destructive;
 }
 
+/* Modern Blog Table Styles */
+.blog-table-wrapper {
+  @apply my-10 rounded-2xl overflow-hidden;
+  background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card) / 0.8) 100%);
+  box-shadow: 
+    0 4px 6px -1px hsl(var(--primary) / 0.05),
+    0 2px 4px -2px hsl(var(--primary) / 0.05),
+    0 0 0 1px hsl(var(--border) / 0.5);
+}
+
+.blog-table {
+  @apply w-full;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.blog-table-header {
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.15) 0%, hsl(var(--accent) / 0.1) 100%);
+}
+
+.blog-table-th {
+  @apply py-4 px-6 text-left font-bold text-sm tracking-wide;
+  color: hsl(var(--foreground));
+  border-bottom: 2px solid hsl(var(--primary) / 0.3);
+}
+
+.blog-table-th:first-child {
+  @apply rounded-tl-xl;
+}
+
+.blog-table-th:last-child {
+  @apply rounded-tr-xl;
+}
+
+.blog-table-row {
+  @apply transition-all duration-300;
+}
+
+.blog-table-row:hover {
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.08) 0%, hsl(var(--accent) / 0.05) 100%);
+}
+
+.blog-table-row:not(:last-child) .blog-table-td {
+  border-bottom: 1px solid hsl(var(--border) / 0.5);
+}
+
+.blog-table-td {
+  @apply py-4 px-6 text-sm;
+  color: hsl(var(--muted-foreground));
+}
+
+.blog-table-td-first {
+  @apply font-semibold;
+  color: hsl(var(--foreground));
+}
+
+.blog-table-td-number {
+  @apply font-mono font-semibold tabular-nums;
+  color: hsl(var(--primary));
+}
+
+.blog-table-td-check {
+  @apply font-bold text-center;
+  color: hsl(142 71% 45%);
+}
+
+.blog-table-td-cross {
+  @apply text-center;
+  color: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* Table row alternating with subtle gradient */
+.blog-table-row:nth-child(even) {
+  background: hsl(var(--muted) / 0.3);
+}
+
+.blog-table-row:nth-child(even):hover {
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.1) 0%, hsl(var(--accent) / 0.06) 100%);
+}
+
+/* Last row special styling */
+.blog-table-row:last-child .blog-table-td:first-child {
+  @apply rounded-bl-xl;
+}
+
+.blog-table-row:last-child .blog-table-td:last-child {
+  @apply rounded-br-xl;
+}
+
 /* Related Articles Section */
 .related-articles {
   @apply my-12 pt-8 border-t border-border/50;

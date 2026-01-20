@@ -12,16 +12,29 @@ const MarkdownPreview = ({ content, title, excerpt }: MarkdownPreviewProps) => {
       text
         .replace(/^## (.+)$/gm, '<h2 class="text-xl md:text-2xl font-bold mt-8 mb-4 text-foreground border-l-4 border-primary pl-4">$1</h2>')
         .replace(/^### (.+)$/gm, '<h3 class="text-lg md:text-xl font-semibold mt-6 mb-3 text-foreground">$1</h3>')
-        .replace(/\|(.+)\|/g, (match) => {
+        .replace(/\|(.+)\|/g, (match, _, offset, fullStr) => {
           const cells = match.split('|').filter(c => c.trim());
-          if (cells.every(c => c.trim().match(/^[-:]+$/))) {
-            return '';
+          if (cells.every(c => c.trim().match(/^[-:]+$/))) return '';
+          const beforeThis = fullStr.substring(0, offset);
+          const tableStarted = beforeThis.match(/\|[^|]+\|[^|]*$/);
+          const isHeader = !tableStarted || beforeThis.endsWith('\n\n') || beforeThis.endsWith('---\n');
+          
+          if (isHeader && !beforeThis.includes('<th')) {
+            const headerCells = cells.map(c => `<th class="blog-table-th">${c.trim()}</th>`).join('');
+            return `<tr class="blog-table-header">${headerCells}</tr>`;
           }
-          const cellsHtml = cells.map(c => `<td class="px-3 py-2 border border-border/30 text-sm">${c.trim()}</td>`).join('');
-          return `<tr class="even:bg-muted/30">${cellsHtml}</tr>`;
+          const cellsHtml = cells.map((c, i) => {
+            const value = c.trim();
+            const isNumber = /^[¥$€]?[\d,]+(?:\.\d+)?%?$/.test(value);
+            let cellClass = 'blog-table-td';
+            if (i === 0) cellClass += ' blog-table-td-first';
+            if (isNumber) cellClass += ' blog-table-td-number';
+            return `<td class="${cellClass}">${value}</td>`;
+          }).join('');
+          return `<tr class="blog-table-row">${cellsHtml}</tr>`;
         })
-        .replace(/(<tr.*?<\/tr>\s*)+/g, (match) => {
-          return `<div class="overflow-x-auto my-6"><table class="w-full border-collapse rounded-lg overflow-hidden shadow ring-1 ring-border/20 text-sm"><tbody>${match}</tbody></table></div>`;
+        .replace(/(<tr class="blog-table-(?:header|row)".*?<\/tr>\s*)+/g, (match) => {
+          return `<div class="blog-table-wrapper"><table class="blog-table"><tbody>${match}</tbody></table></div>`;
         })
         .replace(/^> (.+)$/gm, '<blockquote class="border-l-4 border-primary/50 pl-4 py-3 my-6 bg-primary/5 rounded-r-lg italic text-muted-foreground">$1</blockquote>')
         .replace(/^---$/gm, '<hr class="my-8 border-t border-border/30" />')

@@ -71,7 +71,41 @@ const generateAnchorLink = (id: string) => {
 
 // Memoized content processing function
 const processContent = (rawContent: string, lang: string): string => {
+  // First, process code blocks to protect them from other regex replacements
+  const codeBlocks: string[] = [];
   let processed = rawContent
+    // Process fenced code blocks (```language ... ```)
+    .replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
+      const langLabel = lang || 'code';
+      const escapedCode = code.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const placeholder = `__CODE_BLOCK_${codeBlocks.length}__`;
+      codeBlocks.push(`<div class="my-6 rounded-xl overflow-hidden bg-zinc-900 ring-1 ring-white/10">
+        <div class="flex items-center justify-between px-4 py-2 bg-zinc-800/50 border-b border-white/5">
+          <span class="text-xs text-zinc-400 font-mono">${langLabel}</span>
+        </div>
+        <pre class="p-4 overflow-x-auto text-sm"><code class="text-zinc-100 font-mono leading-relaxed">${escapedCode}</code></pre>
+      </div>`);
+      return placeholder;
+    })
+    // Process inline code
+    .replace(/`([^`]+)`/g, '<code class="px-1.5 py-0.5 rounded bg-muted text-primary font-mono text-sm">$1</code>')
+    // Process details/summary tags
+    .replace(/<details>\s*<summary>([^<]+)<\/summary>([\s\S]*?)<\/details>/g, (_, summary, content) => {
+      return `<details class="my-6 rounded-xl border border-border/50 bg-muted/20 overflow-hidden group">
+        <summary class="px-5 py-4 cursor-pointer font-medium text-foreground hover:bg-muted/40 transition-colors flex items-center gap-3">
+          <svg class="w-4 h-4 text-muted-foreground transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+          ${summary}
+        </summary>
+        <div class="px-5 py-4 border-t border-border/30 bg-background/50 prose prose-sm max-w-none">
+          ${content}
+        </div>
+      </details>`;
+    });
+  
+  // Continue with other replacements
+  processed = processed
     .replace(/<h2([^>]*)>([^<]+)<\/h2>/g, (_, attrs, text) => {
       const hasId = attrs.includes('id=');
       const id = text.trim().toLowerCase().replace(/[^\w\s\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/g, '').replace(/\s+/g, '-').slice(0, 50);
@@ -214,9 +248,14 @@ const processContent = (rawContent: string, lang: string): string => {
       return `<div class="my-8 flex justify-center"><button data-play-track-id="${trackId}" class="group relative inline-flex items-center gap-5 px-6 py-4 rounded-2xl bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 hover:from-primary/30 hover:via-primary/20 hover:to-primary/30 border border-primary/30 hover:border-primary/50 transition-all duration-500 shadow-lg hover:shadow-primary/20 hover:scale-[1.02] cursor-pointer"><span class="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></span><img src="${artworkPath}" alt="${trackTitle}" class="w-16 h-16 rounded-xl object-cover shadow-lg ring-1 ring-white/10 group-hover:ring-primary/30 transition-all" /><div class="text-left"><span class="block text-xs text-muted-foreground mb-0.5">${lang === 'ja' ? '🎵 曲を再生' : '🎵 Play Track'}</span><span class="block text-lg font-semibold text-foreground group-hover:text-primary transition-colors">${trackTitle || 'Unknown Track'}</span></div><div class="flex items-center justify-center w-10 h-10 rounded-full bg-primary/20 group-hover:bg-primary/30 transition-colors ml-2"><svg class="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></button></div>`;
     });
 
+  // Restore code blocks
+  codeBlocks.forEach((block, i) => {
+    processed = processed.replace(`__CODE_BLOCK_${i}__`, block);
+  });
+
   return DOMPurify.sanitize(processed, {
-    ADD_TAGS: ['figure', 'figcaption', 'iframe'],
-    ADD_ATTR: ['data-play-track-id', 'style', 'allow', 'allowfullscreen', 'frameborder', 'loading', 'decoding'],
+    ADD_TAGS: ['figure', 'figcaption', 'iframe', 'details', 'summary', 'pre', 'code'],
+    ADD_ATTR: ['data-play-track-id', 'style', 'allow', 'allowfullscreen', 'frameborder', 'loading', 'decoding', 'open'],
     // Allow same-origin relative URLs like /images/... in addition to https:// and data:
     ALLOWED_URI_REGEXP: /^(?:(?:https?|data):|\/)/i,
   });

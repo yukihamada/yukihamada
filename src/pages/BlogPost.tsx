@@ -64,26 +64,35 @@ const playTrackById = (trackId: string) => {
   window.dispatchEvent(new CustomEvent('playTrackById', { detail: { trackId } }));
 };
 
+// Helper to generate anchor link HTML
+const generateAnchorLink = (id: string) => {
+  return `<a href="#${id}" class="blog-heading-anchor" aria-label="Link to this section" data-copy-anchor="${id}"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a>`;
+};
+
 // Memoized content processing function
 const processContent = (rawContent: string, lang: string): string => {
   let processed = rawContent
     .replace(/<h2([^>]*)>([^<]+)<\/h2>/g, (_, attrs, text) => {
       const hasId = attrs.includes('id=');
-      const id = hasId ? '' : ` id="${text.trim().toLowerCase().replace(/[^\w\s\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/g, '').replace(/\s+/g, '-').slice(0, 50)}"`;
-      return `<h2${attrs}${id} class="text-2xl md:text-3xl font-bold mt-12 mb-6 text-foreground border-l-4 border-primary pl-4">${text}</h2>`;
+      const id = text.trim().toLowerCase().replace(/[^\w\s\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/g, '').replace(/\s+/g, '-').slice(0, 50);
+      const idAttr = hasId ? '' : ` id="${id}"`;
+      return `<h2${attrs}${idAttr} class="blog-heading blog-heading-h2 group">${text}${generateAnchorLink(id)}</h2>`;
     })
     .replace(/<h3([^>]*)>([^<]+)<\/h3>/g, (_, attrs, text) => {
       const hasId = attrs.includes('id=');
-      const id = hasId ? '' : ` id="${text.trim().toLowerCase().replace(/[^\w\s\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/g, '').replace(/\s+/g, '-').slice(0, 50)}"`;
-      return `<h3${attrs}${id} class="text-xl md:text-2xl font-semibold mt-8 mb-4 text-foreground">${text}</h3>`;
+      const id = text.trim().toLowerCase().replace(/[^\w\s\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/g, '').replace(/\s+/g, '-').slice(0, 50);
+      const idAttr = hasId ? '' : ` id="${id}"`;
+      return `<h3${attrs}${idAttr} class="blog-heading blog-heading-h3 group">${text}${generateAnchorLink(id)}</h3>`;
     })
     .replace(/^## (.+)$/gm, (_, heading) => {
-      const id = heading.replace(/\*\*/g, '').trim().toLowerCase().replace(/[^\w\s\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/g, '').replace(/\s+/g, '-').slice(0, 50);
-      return `<h2 id="${id}" class="text-2xl md:text-3xl font-bold mt-12 mb-6 text-foreground border-l-4 border-primary pl-4">${heading}</h2>`;
+      const cleanHeading = heading.replace(/\*\*/g, '').trim();
+      const id = cleanHeading.toLowerCase().replace(/[^\w\s\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/g, '').replace(/\s+/g, '-').slice(0, 50);
+      return `<h2 id="${id}" class="blog-heading blog-heading-h2 group">${heading}${generateAnchorLink(id)}</h2>`;
     })
     .replace(/^### (.+)$/gm, (_, heading) => {
-      const id = heading.replace(/\*\*/g, '').trim().toLowerCase().replace(/[^\w\s\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/g, '').replace(/\s+/g, '-').slice(0, 50);
-      return `<h3 id="${id}" class="text-xl md:text-2xl font-semibold mt-8 mb-4 text-foreground">${heading}</h3>`;
+      const cleanHeading = heading.replace(/\*\*/g, '').trim();
+      const id = cleanHeading.toLowerCase().replace(/[^\w\s\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/g, '').replace(/\s+/g, '-').slice(0, 50);
+      return `<h3 id="${id}" class="blog-heading blog-heading-h3 group">${heading}${generateAnchorLink(id)}</h3>`;
     })
     .replace(/\|(.+)\|/g, (match, _, offset, fullStr) => {
       const cells = match.split('|').filter(c => c.trim());
@@ -246,6 +255,34 @@ const BlogPost = () => {
       const handleClick = () => playTrackById(trackId);
       button.addEventListener('click', handleClick);
       handlers.push({ button, handler: handleClick });
+    });
+
+    // Add anchor link click handlers for copying URL
+    const anchorLinks = contentRef.current.querySelectorAll('[data-copy-anchor]');
+    anchorLinks.forEach((anchor) => {
+      const anchorId = anchor.getAttribute('data-copy-anchor') || '';
+      const handleAnchorClick = () => {
+        const url = `${window.location.origin}${window.location.pathname}#${anchorId}`;
+        navigator.clipboard.writeText(url).then(() => {
+          // Add copied class for visual feedback
+          anchor.classList.add('copied');
+          setTimeout(() => {
+            anchor.classList.remove('copied');
+          }, 1000);
+          // Also scroll to the section
+          const targetElement = document.getElementById(anchorId);
+          if (targetElement) {
+            targetElement.scrollIntoView({ behavior: 'smooth' });
+            // Update URL hash without page jump
+            window.history.pushState(null, '', `#${anchorId}`);
+          }
+        });
+      };
+      anchor.addEventListener('click', (e) => {
+        e.preventDefault();
+        handleAnchorClick();
+      });
+      handlers.push({ button: anchor, handler: handleAnchorClick });
     });
 
     // Find elio signup form placeholder

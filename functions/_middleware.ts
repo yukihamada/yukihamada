@@ -68,6 +68,14 @@ const blogPosts: Record<string, BlogPostData> = {
     image: '/images/blog-ai-human.jpg',
     date: '2025-12-15',
     category: 'AI'
+  },
+  'hybrid-lifestyle-longevity-performance-2026': {
+    slug: 'hybrid-lifestyle-longevity-performance-2026',
+    title: '【2026年完全版】「引き算」で寿命を伸ばし、「タイミング」で最強になる究極の食事法',
+    description: 'ミトコンドリア最適化・オートファジー活性化・ケトン体活用を科学的根拠とともに解説。ON/OFFモードを使い分ける次世代の食事戦略。',
+    image: '/images/blog-hybrid-lifestyle-hero.jpg',
+    date: '2026-01-20',
+    category: 'Health'
   }
 };
 

@@ -35,13 +35,20 @@ const loadingMessages = {
   ]
 };
 
-const BlogPostSkeleton = () => {
+interface BlogPostSkeletonProps {
+  progress?: number; // 0-100, if provided syncs with actual loading
+}
+
+const BlogPostSkeleton = ({ progress: externalProgress }: BlogPostSkeletonProps) => {
   const { language } = useLanguage();
   const messages = loadingMessages[language === 'ja' ? 'ja' : 'en'];
   const [messageIndex, setMessageIndex] = useState(0);
   const [displayedText, setDisplayedText] = useState('');
-  const [progress, setProgress] = useState(0);
+  const [internalProgress, setInternalProgress] = useState(0);
   const [showOverlay, setShowOverlay] = useState(true);
+  
+  // Use external progress if provided, otherwise use internal simulation
+  const progress = externalProgress !== undefined ? externalProgress : internalProgress;
   
   const currentMessage = messages[messageIndex];
 
@@ -65,13 +72,14 @@ const BlogPostSkeleton = () => {
     return () => clearInterval(typingInterval);
   }, [messageIndex, currentMessage, messages.length]);
 
-  // Progress animation - hide overlay when complete
+  // Internal progress simulation (only when no external progress)
   useEffect(() => {
+    if (externalProgress !== undefined) return;
+    
     const progressInterval = setInterval(() => {
-      setProgress((prev) => {
+      setInternalProgress((prev) => {
         if (prev >= 100) {
           clearInterval(progressInterval);
-          setTimeout(() => setShowOverlay(false), 300);
           return 100;
         }
         return prev + Math.random() * 2 + 0.5;
@@ -79,7 +87,15 @@ const BlogPostSkeleton = () => {
     }, 100);
 
     return () => clearInterval(progressInterval);
-  }, []);
+  }, [externalProgress]);
+
+  // Hide overlay when progress reaches 100
+  useEffect(() => {
+    if (progress >= 100) {
+      const timer = setTimeout(() => setShowOverlay(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [progress]);
 
   const displayProgress = Math.min(Math.round(progress), 100);
   

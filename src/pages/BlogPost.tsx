@@ -322,7 +322,7 @@ const processContent = (rawContent: string, lang: string): string => {
 
 const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { post, isLoading, isScheduled } = useBlogPost(slug, true);
+  const { post, isLoading, isScheduled, loadingProgress } = useBlogPost(slug, true);
   const { isAdmin } = useBlogPosts(true);
   const contentRef = useRef<HTMLDivElement>(null);
   const { language } = useLanguage();
@@ -448,7 +448,7 @@ const BlogPost = () => {
   if (isLoading) {
     return (
       <AnimatePresence mode="wait">
-        <BlogPostSkeleton key="skeleton" />
+        <BlogPostSkeleton key="skeleton" progress={loadingProgress} />
       </AnimatePresence>
     );
   }

@@ -169,21 +169,31 @@ export const useBlogPost = (slug: string | undefined, allowScheduled = false) =>
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [isScheduled, setIsScheduled] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
 
   useEffect(() => {
     if (!slug) {
       setIsLoading(false);
+      setLoadingProgress(100);
       return;
     }
 
+    // Reset progress on slug change
+    setLoadingProgress(0);
+
     const fetchPost = async () => {
       try {
+        // Stage 1: Starting fetch (0-20%)
+        setLoadingProgress(10);
+        
         // Check admin status if allowScheduled
         let isAdmin = false;
         if (allowScheduled) {
           isAdmin = await checkIsAdmin();
         }
+        setLoadingProgress(30);
 
+        // Stage 2: Fetching from database (30-70%)
         const { data, error } = await supabase
           .from('blog_posts')
           .select('*')
@@ -191,8 +201,11 @@ export const useBlogPost = (slug: string | undefined, allowScheduled = false) =>
           .eq('status', 'published')
           .maybeSingle();
 
+        setLoadingProgress(70);
+
         if (error) throw error;
 
+        // Stage 3: Processing data (70-90%)
         if (data) {
           const convertedPost = convertDBToAppFormat(data);
           const now = new Date();
@@ -200,6 +213,7 @@ export const useBlogPost = (slug: string | undefined, allowScheduled = false) =>
           const isFuturePost = postDate > now;
           
           setIsScheduled(isFuturePost);
+          setLoadingProgress(85);
           
           // Show post if it's not future, or if user is admin
           if (!isFuturePost || isAdmin) {
@@ -210,10 +224,13 @@ export const useBlogPost = (slug: string | undefined, allowScheduled = false) =>
         } else {
           setPost(null);
         }
+        
+        setLoadingProgress(100);
       } catch (err) {
         console.error('Error fetching blog post:', err);
         setError(err as Error);
         setPost(null);
+        setLoadingProgress(100);
       } finally {
         setIsLoading(false);
       }
@@ -222,7 +239,7 @@ export const useBlogPost = (slug: string | undefined, allowScheduled = false) =>
     fetchPost();
   }, [slug, allowScheduled]);
 
-  return { post, isLoading, error, isScheduled };
+  return { post, isLoading, error, isScheduled, loadingProgress };
 };
 
 // Helper function to get blog post by slug (for SSE/MCP)

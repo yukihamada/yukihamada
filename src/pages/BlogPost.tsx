@@ -20,7 +20,7 @@ import { useChat } from '@/contexts/ChatContext';
 import { calculateReadingTime, formatReadingTime } from '@/lib/readingTime';
 import ShareCounts from '@/components/ShareCounts';
 import TableOfContents from '@/components/TableOfContents';
-import CuteLoader from '@/components/CuteLoader';
+import BlogPostSkeleton from '@/components/BlogPostSkeleton';
 import { useAuth } from '@/hooks/useAuth';
 import jiuflowHero from '@/assets/jiuflow-hero.png';
 import jiuflowLesson from '@/assets/jiuflow-lesson.png';
@@ -163,26 +163,38 @@ const processContent = (rawContent: string, lang: string): string => {
       const cleanHeading = heading.replace(/\*\*/g, '').trim();
       const id = cleanHeading.toLowerCase().replace(/[^\w\s\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/g, '').replace(/\s+/g, '-').slice(0, 50);
       return `<h3 id="${id}" class="blog-heading blog-heading-h3 group">${heading}${generateAnchorLink(id)}</h3>`;
-    })
-    .replace(/\|(.+)\|/g, (match, _, offset, fullStr) => {
-      const cells = match.split('|').filter(c => c.trim());
-      if (cells.every(c => c.trim().match(/^[-:]+$/))) return '';
-      // Check if this is the first row (header)
-      const beforeThis = fullStr.substring(0, offset);
-      const tableStarted = beforeThis.match(/\|[^|]+\|[^|]*$/);
-      const isHeader = !tableStarted || beforeThis.endsWith('\n\n') || beforeThis.endsWith('---\n');
-      
-      if (isHeader && !beforeThis.includes('<th')) {
-        const headerCells = cells.map(c => `<th class="blog-table-th">${c.trim()}</th>`).join('');
-        return `<tr class="blog-table-header">${headerCells}</tr>`;
-      }
+    });
+  
+  // Process markdown tables properly (handle multiline)
+  processed = processed.replace(/(?:^\|.+\|$\n?)+/gm, (tableBlock) => {
+    const lines = tableBlock.trim().split('\n').filter(line => line.trim());
+    if (lines.length < 2) return tableBlock;
+    
+    // Find separator line (|---|---|)
+    const separatorIndex = lines.findIndex(line => 
+      line.split('|').filter(c => c.trim()).every(c => c.trim().match(/^[-:]+$/))
+    );
+    
+    if (separatorIndex === -1) return tableBlock;
+    
+    const headerLines = lines.slice(0, separatorIndex);
+    const bodyLines = lines.slice(separatorIndex + 1);
+    
+    // Process header
+    const headerHtml = headerLines.map(line => {
+      const cells = line.split('|').filter(c => c.trim());
+      const cellsHtml = cells.map(c => `<th class="blog-table-th">${c.trim()}</th>`).join('');
+      return `<tr class="blog-table-header">${cellsHtml}</tr>`;
+    }).join('');
+    
+    // Process body
+    const bodyHtml = bodyLines.map(line => {
+      const cells = line.split('|').filter(c => c.trim());
       const cellsHtml = cells.map((c, i) => {
         const value = c.trim();
-        // Style based on content type
         const isNumber = /^[¥$€]?[\d,]+(?:\.\d+)?%?$/.test(value);
         const isCheck = value === '✓' || value === '✔' || value === '○';
         const isCross = value === '✗' || value === '×' || value === '-';
-        const isBadge = value.startsWith('✅') || value.startsWith('❌') || value.startsWith('⚠️');
         
         let cellClass = 'blog-table-td';
         if (i === 0) cellClass += ' blog-table-td-first';
@@ -193,10 +205,12 @@ const processContent = (rawContent: string, lang: string): string => {
         return `<td class="${cellClass}">${value}</td>`;
       }).join('');
       return `<tr class="blog-table-row">${cellsHtml}</tr>`;
-    })
-    .replace(/(<tr class="blog-table-(?:header|row)".*?<\/tr>\s*)+/g, (match) => {
-      return `<div class="blog-table-wrapper"><table class="blog-table"><tbody>${match}</tbody></table></div>`;
-    })
+    }).join('');
+    
+    return `<div class="blog-table-wrapper"><table class="blog-table"><thead>${headerHtml}</thead><tbody>${bodyHtml}</tbody></table></div>`;
+  });
+  
+  processed = processed
     .replace(/<blockquote>([^<]+)<\/blockquote>/g, '<div class="blog-quote"><p>$1</p></div>')
     .replace(/^> (.+)$/gm, '<div class="blog-quote"><p>$1</p></div>')
     .replace(/^---$/gm, '<hr class="my-12 border-t border-border/30" />')
@@ -434,7 +448,7 @@ const BlogPost = () => {
   if (isLoading) {
     return (
       <AnimatePresence mode="wait">
-        <CuteLoader key="loader" />
+        <BlogPostSkeleton key="skeleton" />
       </AnimatePresence>
     );
   }

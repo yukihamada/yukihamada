@@ -80,55 +80,65 @@ serve(async (req) => {
     console.log(`Cache miss. Generating TTS for language: ${language}, text length: ${text.length}`);
 
     // Use Yuki's custom voice for Japanese, Roger for English
+    // Using eleven_turbo_v2_5 for faster generation
     const voiceId = language === 'ja' ? 'leGYIMqwBZraox9zSQym' : 'CwhRBWXzGAHq8TQ4Fs17';
 
     // Convert text to conversational style using AI for both languages
-    let processedText = text.substring(0, 5000);
+    // Limit text length for faster processing
+    let processedText = text.substring(0, 4000);
     
     const systemPrompt = language === 'ja' 
-      ? `あなたはテキストを音声読み上げ用に変換するアシスタントです。以下のルールに従ってテキストを変換してください：
+      ? `あなたはテキストを音声読み上げ用に変換するプロのナレーターです。以下のルールに厳密に従ってテキストを変換してください：
 
-1. 【最重要】すべて「ですます調」で話す（例：「だよね」→「ですよね」、「じゃないかな」→「ではないでしょうか」、「だと思う」→「だと思います」）
-2. 【重要】漢字はすべてひらがなに変換する（固有名詞も含めてすべて）
-   - 例：「愛」→「あい」、「技術」→「ぎじゅつ」、「責任」→「せきにん」
-   - 例：「吉野家」→「よしのや」、「柔術」→「じゅうじゅつ」
-3. 数字は読みやすいように変換（例：「2024年」→「にせんにじゅうよねん」）
-4. 記号やURLは省略または説明に置き換える
-5. 一人称は「わたし」を使う
-6. 丁寧で親しみやすい口調にする（ですます調を維持しながら）
-7. 長すぎる文は適度に区切る
-8. カタカナはそのままでOK
-9. 硬すぎず、でも丁寧さを保った話し方にする
+【最重要ルール - ひらがな化】
+すべての漢字を正確なひらがなに変換してください。漢字が1文字でも残っていたら失敗です。
+- 「私」→「わたし」、「技術」→「ぎじゅつ」、「健康」→「けんこう」
+- 「柔術」→「じゅうじゅつ」、「睡眠」→「すいみん」、「断食」→「だんじき」
+- 「冷水」→「れいすい」、「呼吸」→「こきゅう」、「効果」→「こうか」
+- 「人生」→「じんせい」、「変化」→「へんか」、「習慣」→「しゅうかん」
+- 固有名詞も変換：「濱田」→「はまだ」、「東京」→「とうきょう」
 
-元のテキストの意味は保ちつつ、聞いて自然に感じる日本語に変換してください。出力はすべてひらがなとカタカナのみにしてください。漢字が1文字でも残っていたらNGです。`
-      : `You are an assistant that converts text for natural speech synthesis. Follow these rules:
+【話し方のルール】
+1. ですます調で丁寧に話す
+2. 数字は読みやすく：「16時間」→「じゅうろくじかん」、「2.5倍」→「にてんごばい」
+3. 英語はカタカナに：「BJJ」→「ビージェージェー」、「cold plunge」→「コールドプランジ」
+4. 記号やURLは省略
+5. 適度に「ですね」「ですよ」を入れて親しみやすく
+6. 長い文は区切る
 
-1. Convert formal writing to natural conversational speech (e.g., "It is important to note" → "Here's the thing")
-2. Use first person "I" and speak directly to the listener as "you"
-3. Add natural filler words and transitions (e.g., "so", "you know", "basically")
-4. Convert numbers and abbreviations to spoken form (e.g., "2024" → "twenty twenty-four")
-5. Remove or describe URLs and symbols
-6. Break long sentences into shorter, more digestible phrases
-7. Make it sound like a friendly conversation, as if talking to a friend
-8. Keep the original meaning while making it sound warm and approachable
+【出力形式】
+- ひらがな + カタカナのみ
+- 漢字は絶対に使わない
+- 句読点は「、」「。」を使用`
+      : `You are a professional narrator converting text for natural speech. Follow these rules:
 
-Transform the text to feel natural when spoken aloud, like a podcast or casual chat.`;
+1. Use conversational, friendly tone - like talking to a friend over coffee
+2. First person "I" and address listener as "you"
+3. Convert numbers: "16 hours" → "sixteen hours", "2.5x" → "two and a half times"
+4. Spell out abbreviations: "BJJ" → "Brazilian Jiu-Jitsu", "TTS" → "text to speech"
+5. Remove URLs, replace with "check the link in the article"
+6. Add natural transitions: "So here's the thing...", "What I found interesting..."
+7. Break long sentences into shorter phrases
+8. Keep it engaging and warm
+
+Transform for natural spoken delivery, like a podcast host sharing insights.`;
 
     console.log(`Converting ${language} text to conversational style...`);
     
-    const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Use Lovable AI gateway for faster processing
+    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Authorization': `Bearer ${Deno.env.get('LOVABLE_API_KEY')}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'google/gemini-2.5-flash-lite',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: processedText }
         ],
-        temperature: 0.7,
+        temperature: 0.5,
         max_tokens: 4000,
       }),
     });
@@ -141,8 +151,9 @@ Transform the text to feel natural when spoken aloud, like a podcast or casual c
       console.error('AI conversion failed, using original text:', await aiResponse.text());
     }
 
+    // Use turbo model for faster generation
     const response = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
+      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`,
       {
         method: "POST",
         headers: {
@@ -151,13 +162,13 @@ Transform the text to feel natural when spoken aloud, like a podcast or casual c
         },
         body: JSON.stringify({
           text: processedText,
-          model_id: "eleven_multilingual_v2",
-          output_format: "mp3_44100_128",
+          model_id: "eleven_turbo_v2_5",
           voice_settings: {
             stability: 0.5,
-            similarity_boost: 0.8,
-            style: 0.4,
+            similarity_boost: 0.75,
+            style: 0.3,
             use_speaker_boost: true,
+            speed: 1.1,
           },
         }),
       }

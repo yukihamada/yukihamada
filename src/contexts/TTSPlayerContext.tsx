@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useRef, useCallback, ReactNode, useEffect } from 'react';
 import { toast } from 'sonner';
+import { useLocation } from 'react-router-dom';
 
 interface TTSPlayerState {
   isLoading: boolean;
@@ -20,6 +21,7 @@ interface TTSPlayerContextType extends TTSPlayerState {
   restart: () => void;
   seek: (time: number) => void;
   setPlaybackRate: (rate: number) => void;
+  isOnSamePost: () => boolean;
 }
 
 const TTSPlayerContext = createContext<TTSPlayerContextType | undefined>(undefined);
@@ -210,6 +212,20 @@ export const TTSPlayerProvider = ({ children }: { children: ReactNode }) => {
     setState(prev => ({ ...prev, playbackRate: rate }));
   }, []);
 
+  // Check if we're on the same blog post page
+  const isOnSamePost = useCallback(() => {
+    if (typeof window === 'undefined') return false;
+    const currentPath = window.location.pathname;
+    return state.postSlug ? currentPath === `/blog/${state.postSlug}` : false;
+  }, [state.postSlug]);
+
+  // Dispatch event when TTS starts/stops for music ducking
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('ttsStateChange', { 
+      detail: { isPlaying: state.isPlaying } 
+    }));
+  }, [state.isPlaying]);
+
   return (
     <TTSPlayerContext.Provider value={{ 
       ...state,
@@ -220,6 +236,7 @@ export const TTSPlayerProvider = ({ children }: { children: ReactNode }) => {
       restart,
       seek,
       setPlaybackRate,
+      isOnSamePost,
     }}>
       {children}
     </TTSPlayerContext.Provider>

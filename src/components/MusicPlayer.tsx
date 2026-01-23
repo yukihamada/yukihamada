@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Music, X, ChevronUp, Shuffle, Repeat, Repeat1, SlidersHorizontal, FileText, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence, useDragControls } from 'framer-motion';
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Music, X, ChevronUp, Shuffle, Repeat, Repeat1, SlidersHorizontal, FileText, Loader2, GripVertical } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import { useUIVisibility } from '@/contexts/UIVisibilityContext';
+import { Slider } from '@/components/ui/slider';
 
 // Artwork mapping for dynamic imports
 import albumFreeToChange from '@/assets/album-free-to-change.jpg';
@@ -129,6 +130,7 @@ const MusicPlayer = () => {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.7);
+  const [savedVolume, setSavedVolume] = useState(0.7); // For ducking restore
   const [isMuted, setIsMuted] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
@@ -146,6 +148,8 @@ const MusicPlayer = () => {
   const [currentLyricIndex, setCurrentLyricIndex] = useState(-1);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [transcribeError, setTranscribeError] = useState<string | null>(null);
+  const [isDucking, setIsDucking] = useState(false); // TTS is playing
+  const [position, setPosition] = useState({ x: 0, y: 0 }); // Draggable position
   const lyricsContainerRef = useRef<HTMLDivElement>(null);
 
   // Fetch tracks from database
@@ -292,11 +296,36 @@ const MusicPlayer = () => {
     };
   }, [isPlaying, initializeAudioContext, updateVisualizer]);
 
+  // Listen for TTS state changes for ducking
+  useEffect(() => {
+    const handleTTSStateChange = (event: CustomEvent<{ isPlaying: boolean }>) => {
+      const ttsPlaying = event.detail.isPlaying;
+      setIsDucking(ttsPlaying);
+      
+      if (audioRef.current) {
+        if (ttsPlaying) {
+          // Duck music volume to 20%
+          setSavedVolume(volume);
+          audioRef.current.volume = isMuted ? 0 : volume * 0.2;
+        } else {
+          // Restore volume
+          audioRef.current.volume = isMuted ? 0 : savedVolume;
+        }
+      }
+    };
+    
+    window.addEventListener('ttsStateChange', handleTTSStateChange as EventListener);
+    return () => {
+      window.removeEventListener('ttsStateChange', handleTTSStateChange as EventListener);
+    };
+  }, [volume, isMuted, savedVolume]);
+
   useEffect(() => {
     if (audioRef.current) {
-      audioRef.current.volume = isMuted ? 0 : volume;
+      const effectiveVolume = isDucking ? volume * 0.2 : volume;
+      audioRef.current.volume = isMuted ? 0 : effectiveVolume;
     }
-  }, [volume, isMuted]);
+  }, [volume, isMuted, isDucking]);
 
   const getNextTrack = useCallback(() => {
     if (tracks.length === 0) return 0;
@@ -1175,7 +1204,7 @@ const MusicPlayer = () => {
           ) : (
             <motion.div
               key="compact"
-              className="rounded-2xl p-3 flex items-center gap-3 shadow-xl cursor-pointer"
+              className="rounded-2xl p-3 shadow-xl"
               style={{
                 background: `linear-gradient(145deg, ${track.color}20 0%, hsl(var(--background)) 50%, ${track.color}10 100%)`,
                 backdropFilter: 'blur(20px)',
@@ -1185,64 +1214,103 @@ const MusicPlayer = () => {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              onClick={() => setIsExpanded(true)}
-              whileHover={{ scale: 1.03, boxShadow: `0 20px 40px -10px ${track.color}50` }}
             >
-              <motion.div
-                className="w-12 h-12 rounded-xl flex-shrink-0 overflow-hidden relative shadow-lg"
-                animate={isPlaying ? { scale: [1, 1.05, 1] } : {}}
-                transition={{ duration: 2, repeat: Infinity }}
-                style={{ boxShadow: `0 5px 20px -5px ${track.color}60` }}
+              {/* Main row - clickable to expand */}
+              <div 
+                className="flex items-center gap-3 cursor-pointer"
+                onClick={() => setIsExpanded(true)}
               >
-                <img 
-                  src={track.artwork} 
-                  alt={track.title}
-                  className="w-full h-full object-cover"
-                />
-                {isPlaying && (
-                  <motion.div
-                    className="absolute inset-0 bg-black/30 flex items-center justify-center"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                  >
-                    <div className="flex items-end gap-0.5 h-4">
-                      {[0, 1, 2].map((i) => (
-                        <motion.div
-                          key={i}
-                          className="w-0.5 bg-white rounded-full"
-                          animate={{ height: ['30%', '100%', '30%'] }}
-                          transition={{ duration: 0.4, repeat: Infinity, delay: i * 0.1 }}
-                        />
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </motion.div>
-              
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground truncate">{track.title}</p>
-                <p className="text-[10px] text-muted-foreground truncate">{track.artist}</p>
+                <motion.div
+                  className="w-12 h-12 rounded-xl flex-shrink-0 overflow-hidden relative shadow-lg"
+                  animate={isPlaying ? { scale: [1, 1.05, 1] } : {}}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  style={{ boxShadow: `0 5px 20px -5px ${track.color}60` }}
+                >
+                  <img 
+                    src={track.artwork} 
+                    alt={track.title}
+                    className="w-full h-full object-cover"
+                  />
+                  {isPlaying && (
+                    <motion.div
+                      className="absolute inset-0 bg-black/30 flex items-center justify-center"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                    >
+                      <div className="flex items-end gap-0.5 h-4">
+                        {[0, 1, 2].map((i) => (
+                          <motion.div
+                            key={i}
+                            className="w-0.5 bg-white rounded-full"
+                            animate={{ height: ['30%', '100%', '30%'] }}
+                            transition={{ duration: 0.4, repeat: Infinity, delay: i * 0.1 }}
+                          />
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </motion.div>
+                
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">{track.title}</p>
+                  <p className="text-[10px] text-muted-foreground truncate">
+                    {track.artist}
+                    {isDucking && <span className="ml-1 text-primary/70">(読み上げ中)</span>}
+                  </p>
+                </div>
+                
+                <motion.button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    togglePlay();
+                  }}
+                  className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{
+                    background: `linear-gradient(135deg, ${track.color}, ${track.color}cc)`,
+                    boxShadow: `0 5px 15px -5px ${track.color}80`,
+                  }}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  {isPlaying ? (
+                    <Pause className="h-4 w-4 text-white" />
+                  ) : (
+                    <Play className="h-4 w-4 text-white ml-0.5" />
+                  )}
+                </motion.button>
               </div>
               
-              <motion.button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  togglePlay();
-                }}
-                className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-                style={{
-                  background: `linear-gradient(135deg, ${track.color}, ${track.color}cc)`,
-                  boxShadow: `0 5px 15px -5px ${track.color}80`,
-                }}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
+              {/* Volume control row for mobile - always visible in compact mode */}
+              <div 
+                className="flex items-center gap-2 mt-2 pt-2 border-t border-white/10"
+                onClick={(e) => e.stopPropagation()}
               >
-                {isPlaying ? (
-                  <Pause className="h-4 w-4 text-white" />
-                ) : (
-                  <Play className="h-4 w-4 text-white ml-0.5" />
-                )}
-              </motion.button>
+                <motion.button
+                  onClick={() => setIsMuted(!isMuted)}
+                  className="p-1 rounded-full hover:bg-white/10 transition-colors"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  {isMuted ? (
+                    <VolumeX className="h-3.5 w-3.5 text-muted-foreground" />
+                  ) : (
+                    <Volume2 className="h-3.5 w-3.5 text-muted-foreground" />
+                  )}
+                </motion.button>
+                <Slider
+                  value={[isMuted ? 0 : volume]}
+                  onValueChange={([value]) => {
+                    setVolume(value);
+                    setIsMuted(false);
+                  }}
+                  max={1}
+                  step={0.01}
+                  className="flex-1"
+                />
+                <span className="text-[10px] text-muted-foreground min-w-[28px] text-right">
+                  {Math.round((isMuted ? 0 : volume) * 100)}%
+                </span>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

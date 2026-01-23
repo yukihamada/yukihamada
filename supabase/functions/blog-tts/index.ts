@@ -98,28 +98,56 @@ serve(async (req) => {
 - 「人生」→「じんせい」、「変化」→「へんか」、「習慣」→「しゅうかん」
 - 固有名詞も変換：「濱田」→「はまだ」、「東京」→「とうきょう」
 
-【話し方のルール】
-1. ですます調で丁寧に話す
-2. 数字は読みやすく：「16時間」→「じゅうろくじかん」、「2.5倍」→「にてんごばい」
-3. 英語はカタカナに：「BJJ」→「ビージェージェー」、「cold plunge」→「コールドプランジ」
-4. 記号やURLは省略
-5. 適度に「ですね」「ですよ」を入れて親しみやすく
-6. 長い文は区切る
+【重複・冗長表現の削除 - 超重要】
+1. 括弧内の補足は完全に省略する：
+   - 「柔術（BJJ）」→「じゅうじゅつ」（BJJは読まない）
+   - 「16時間断食（インターミッテントファスティング）」→「じゅうろくじかんだんじき」
+   - 「睡眠の質（スリープクオリティ）」→「すいみんのしつ」
+   - 「冷水浴（コールドプランジ）」→「れいすいよく」
+2. 同じ意味の言い換えは最初の表現のみ使用
+3. 注釈や参照（※、注：、*など）は完全に省略
+4. URLやリンクテキストは省略
+
+【話し言葉への変換】
+1. 「〜である」「〜となる」→「〜なんですよね」「〜になりますね」
+2. 「〜について述べる」→「〜についておはなしします」
+3. 「重要なのは」→「だいじなのは」
+4. 「〜が挙げられる」→「〜がありますね」
+5. 読者に語りかけるように：「みなさん」「〜ですよね」「〜してみてください」
+6. 箇条書きは「まずひとつめは」「つぎに」「さいごに」で自然につなぐ
+7. ですます調で丁寧に、でも堅すぎず親しみやすく
+
+【数字と英語の読み方】
+1. 数字は読みやすく：「16時間」→「じゅうろくじかん」、「2.5倍」→「にてんごばい」
+2. 英語は自然なカタカナに：「BJJ」→「ビージェージェー」、「cold plunge」→「コールドプランジ」
 
 【出力形式】
 - ひらがな + カタカナのみ
 - 漢字は絶対に使わない
-- 句読点は「、」「。」を使用`
+- 句読点は「、」「。」を使用
+- 長い文は適度に区切って読みやすく`
       : `You are a professional narrator converting text for natural speech. Follow these rules:
 
+【Remove Duplicates and Redundancy - CRITICAL】
+1. Skip parenthetical explanations that repeat the same concept:
+   - "BJJ (Brazilian Jiu-Jitsu)" → just "Brazilian Jiu-Jitsu"
+   - "16-hour fasting (intermittent fasting)" → just "sixteen hour fasting"
+   - "sleep quality (sleep score)" → just "sleep quality"
+2. Skip footnotes, references, and annotations (*, †, ※, etc.)
+3. Choose one term when synonyms are listed together
+4. Skip URLs and link text
+
+【Conversational Style】
 1. Use conversational, friendly tone - like talking to a friend over coffee
 2. First person "I" and address listener as "you"
-3. Convert numbers: "16 hours" → "sixteen hours", "2.5x" → "two and a half times"
-4. Spell out abbreviations: "BJJ" → "Brazilian Jiu-Jitsu", "TTS" → "text to speech"
-5. Remove URLs, replace with "check the link in the article"
-6. Add natural transitions: "So here's the thing...", "What I found interesting..."
-7. Break long sentences into shorter phrases
-8. Keep it engaging and warm
+3. Add natural transitions: "So here's the thing...", "What I found interesting..."
+4. For lists, use: "First...", "Next...", "And finally..."
+5. Break long sentences into shorter phrases
+6. Keep it engaging and warm
+
+【Numbers and Abbreviations】
+1. Convert numbers: "16 hours" → "sixteen hours", "2.5x" → "two and a half times"
+2. Spell out abbreviations naturally: "TTS" → "text to speech"
 
 Transform for natural spoken delivery, like a podcast host sharing insights.`;
 

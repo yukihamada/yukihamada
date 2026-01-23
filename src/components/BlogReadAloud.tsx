@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Volume2, Pause, Loader2, Square, RotateCcw } from 'lucide-react';
+import { Volume2, Pause, Loader2, Square, RotateCcw, Gauge } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Slider } from '@/components/ui/slider';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
 
@@ -15,6 +17,7 @@ const BlogReadAloud = ({ content, title, postSlug }: BlogReadAloudProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [playbackRate, setPlaybackRate] = useState(1.0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const currentLanguageRef = useRef<string>(language);
 
@@ -28,6 +31,13 @@ const BlogReadAloud = ({ content, title, postSlug }: BlogReadAloudProps) => {
     }
     currentLanguageRef.current = language;
   }, [language]);
+
+  // Update playback rate when changed
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.playbackRate = playbackRate;
+    }
+  }, [playbackRate]);
 
   // Clean content for TTS
   const cleanContent = useCallback((text: string): string => {
@@ -70,6 +80,7 @@ const BlogReadAloud = ({ content, title, postSlug }: BlogReadAloudProps) => {
       if (data.error) throw new Error(data.error);
 
       const audio = new Audio(data.audioUrl);
+      audio.playbackRate = playbackRate;
       audioRef.current = audio;
       
       audio.onended = () => {
@@ -86,6 +97,10 @@ const BlogReadAloud = ({ content, title, postSlug }: BlogReadAloudProps) => {
       await audio.play();
       setIsPlaying(true);
       setIsPaused(false);
+      
+      if (data.cached) {
+        toast.success(language === 'ja' ? 'キャッシュから読み込みました' : 'Loaded from cache');
+      }
     } catch (err) {
       console.error('Error generating audio:', err);
       toast.error(language === 'ja' ? '音声生成に失敗しました' : 'Failed to generate audio');
@@ -160,7 +175,7 @@ const BlogReadAloud = ({ content, title, postSlug }: BlogReadAloudProps) => {
       )}
 
       {(isPlaying || isPaused) && (
-        <div className="flex-1 flex items-center justify-center gap-3 px-6 py-4 rounded-xl bg-primary/10 border border-primary/30">
+        <div className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-primary/10 border border-primary/30">
           {isPlaying ? (
             <>
               <div className="flex items-center gap-0.5">
@@ -175,8 +190,8 @@ const BlogReadAloud = ({ content, title, postSlug }: BlogReadAloudProps) => {
                   />
                 ))}
               </div>
-              <span className="text-sm font-medium text-primary">
-                {language === 'ja' ? '再生中...' : 'Playing...'}
+              <span className="text-xs font-medium text-primary hidden sm:inline">
+                {language === 'ja' ? '再生中' : 'Playing'}
               </span>
               <Button onClick={handlePause} variant="ghost" size="icon" className="h-8 w-8">
                 <Pause className="h-4 w-4" />
@@ -184,14 +199,47 @@ const BlogReadAloud = ({ content, title, postSlug }: BlogReadAloudProps) => {
             </>
           ) : (
             <>
-              <span className="text-sm font-medium text-muted-foreground">
-                {language === 'ja' ? '一時停止中' : 'Paused'}
+              <span className="text-xs font-medium text-muted-foreground hidden sm:inline">
+                {language === 'ja' ? '一時停止' : 'Paused'}
               </span>
               <Button onClick={handlePlay} variant="ghost" size="icon" className="h-8 w-8">
                 <Volume2 className="h-4 w-4" />
               </Button>
             </>
           )}
+          
+          {/* Speed control */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 px-2 text-xs gap-1">
+                <Gauge className="h-3 w-3" />
+                <span>{playbackRate}x</span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-48 p-3" align="center">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">
+                    {language === 'ja' ? '再生速度' : 'Speed'}
+                  </span>
+                  <span className="text-sm font-medium">{playbackRate}x</span>
+                </div>
+                <Slider
+                  value={[playbackRate]}
+                  onValueChange={([value]) => setPlaybackRate(value)}
+                  min={0.5}
+                  max={2.0}
+                  step={0.25}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>0.5x</span>
+                  <span>1x</span>
+                  <span>2x</span>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
           
           <Button onClick={handleRestart} variant="ghost" size="icon" className="h-8 w-8">
             <RotateCcw className="h-4 w-4" />

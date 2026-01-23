@@ -194,21 +194,24 @@ const BlogReadAloud = ({ content, title, postSlug }: BlogReadAloudProps) => {
   }, []);
 
   return (
-    <div className="flex flex-col gap-2 flex-1">
+    <div className="flex flex-col gap-2 w-full">
       {!isPlaying && !isPaused && (
         <Button
           onClick={handlePlay}
           variant="outline"
-          className="flex-1 flex items-center justify-center gap-2 py-6 border-primary/30 hover:border-primary hover:bg-primary/5"
+          className="w-full flex items-center justify-center gap-3 py-8 border-primary/40 hover:border-primary hover:bg-primary/5 bg-gradient-to-r from-primary/5 to-accent/5"
           disabled={isLoading}
         >
           {isLoading ? (
-            <Loader2 className="h-5 w-5 animate-spin" />
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
           ) : (
-            <Volume2 className="h-5 w-5 text-primary" />
+            <div className="relative">
+              <Volume2 className="h-6 w-6 text-primary" />
+              <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full animate-pulse" />
+            </div>
           )}
           <div className="flex flex-col items-start gap-0.5">
-            <span className="font-medium">
+            <span className="font-semibold text-base">
               {isLoading 
                 ? (language === 'ja' ? '音声生成中...' : 'Generating...') 
                 : (language === 'ja' ? 'Yukiの声で読み上げる' : 'Read by Yuki')}

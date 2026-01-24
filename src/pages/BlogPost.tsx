@@ -290,6 +290,76 @@ const processContent = (rawContent: string, lang: string): string => {
         return imageSrc ? `<div class="my-8 flex justify-center"><img src="${imageSrc}" alt="${imageInfo}" loading="lazy" decoding="async" class="w-full md:w-1/2 lg:w-2/5 rounded-xl shadow-lg ring-1 ring-border/20" /></div>` : '';
       }
     })
+    // Transform Amazon affiliate links into product cards
+    .replace(/<a\s+href="(https?:\/\/(?:www\.)?amazon\.co\.jp\/dp\/([A-Z0-9]+)[^"]*)"[^>]*>([^<]+)<\/a>/gi, (_, url, asin, linkText) => {
+      const cleanText = linkText.replace(/^👉\s*/, '').trim();
+      const productImageUrl = `https://images-na.ssl-images-amazon.com/images/P/${asin}.09.LZZZZZZZ.jpg`;
+      return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="block my-6 group">
+        <div class="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-amber-500/10 border border-amber-500/20 hover:border-amber-500/40 transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/10">
+          <div class="flex-shrink-0 w-16 h-16 rounded-lg bg-white flex items-center justify-center overflow-hidden shadow-md">
+            <img src="${productImageUrl}" alt="${cleanText}" class="w-14 h-14 object-contain" onerror="this.parentElement.innerHTML='<svg class=\\'w-8 h-8 text-amber-500\\' viewBox=\\'0 0 24 24\\' fill=\\'currentColor\\'><path d=\\'M21.6 9.4c-.1-.1-.3-.2-.5-.2h-6.1l-1.6-5.6c-.1-.3-.4-.6-.8-.6s-.7.2-.8.6l-1.6 5.6h-6.1c-.2 0-.4.1-.5.2-.2.1-.2.3-.2.5s.1.3.2.5l4.9 3.6-1.9 5.9c-.1.2 0 .4.1.6.1.2.3.3.5.3s.4-.1.5-.2l4.9-3.6 4.9 3.6c.1.1.3.2.5.2s.4-.1.5-.3c.1-.2.2-.4.1-.6l-1.9-5.9 4.9-3.6c.2-.1.3-.3.3-.5s-.1-.4-.3-.5z\\'/></svg>'"/>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <svg class="w-4 h-4 text-amber-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M21.6 9.4c-.1-.1-.3-.2-.5-.2h-6.1l-1.6-5.6c-.1-.3-.4-.6-.8-.6s-.7.2-.8.6l-1.6 5.6h-6.1c-.2 0-.4.1-.5.2-.2.1-.2.3-.2.5s.1.3.2.5l4.9 3.6-1.9 5.9c-.1.2 0 .4.1.6.1.2.3.3.5.3s.4-.1.5-.2l4.9-3.6 4.9 3.6c.1.1.3.2.5.2s.4-.1.5-.3c.1-.2.2-.4.1-.6l-1.9-5.9 4.9-3.6c.2-.1.3-.3.3-.5s-.1-.4-.3-.5z"/></svg>
+              <span class="text-xs font-medium text-amber-500 uppercase tracking-wide">${lang === 'ja' ? 'Amazon で購入' : 'Buy on Amazon'}</span>
+            </div>
+            <p class="font-semibold text-foreground group-hover:text-amber-500 transition-colors truncate">${cleanText}</p>
+          </div>
+          <div class="flex-shrink-0 w-10 h-10 rounded-full bg-amber-500/20 group-hover:bg-amber-500/30 flex items-center justify-center transition-colors">
+            <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+          </div>
+        </div>
+      </a>`;
+    })
+    // Also handle Amazon links with simpler href patterns
+    .replace(/<a\s+href="(https?:\/\/(?:www\.)?amazon\.(?:co\.jp|com)\/[^"]+)"[^>]*>([^<]*(?:Amazon|amazon)[^<]*)<\/a>/gi, (_, url, linkText) => {
+      const cleanText = linkText.replace(/^👉\s*/, '').trim();
+      // Try to extract ASIN from URL
+      const asinMatch = url.match(/\/dp\/([A-Z0-9]{10})/i) || url.match(/\/product\/([A-Z0-9]{10})/i);
+      const asin = asinMatch ? asinMatch[1] : null;
+      const productImageUrl = asin ? `https://images-na.ssl-images-amazon.com/images/P/${asin}.09.LZZZZZZZ.jpg` : null;
+      
+      return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="block my-6 group">
+        <div class="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-amber-500/10 border border-amber-500/20 hover:border-amber-500/40 transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/10">
+          ${productImageUrl ? `<div class="flex-shrink-0 w-16 h-16 rounded-lg bg-white flex items-center justify-center overflow-hidden shadow-md">
+            <img src="${productImageUrl}" alt="${cleanText}" class="w-14 h-14 object-contain" onerror="this.parentElement.innerHTML='<svg class=\\'w-8 h-8 text-amber-500\\' viewBox=\\'0 0 24 24\\' fill=\\'currentColor\\'><path d=\\'M21.6 9.4c-.1-.1-.3-.2-.5-.2h-6.1l-1.6-5.6c-.1-.3-.4-.6-.8-.6s-.7.2-.8.6l-1.6 5.6h-6.1c-.2 0-.4.1-.5.2-.2.1-.2.3-.2.5s.1.3.2.5l4.9 3.6-1.9 5.9c-.1.2 0 .4.1.6.1.2.3.3.5.3s.4-.1.5-.2l4.9-3.6 4.9 3.6c.1.1.3.2.5.2s.4-.1.5-.3c.1-.2.2-.4.1-.6l-1.9-5.9 4.9-3.6c.2-.1.3-.3.3-.5s-.1-.4-.3-.5z\\'/></svg>'"/>
+          </div>` : `<div class="flex-shrink-0 w-16 h-16 rounded-lg bg-amber-500/20 flex items-center justify-center">
+            <svg class="w-8 h-8 text-amber-500" viewBox="0 0 24 24" fill="currentColor"><path d="M21.6 9.4c-.1-.1-.3-.2-.5-.2h-6.1l-1.6-5.6c-.1-.3-.4-.6-.8-.6s-.7.2-.8.6l-1.6 5.6h-6.1c-.2 0-.4.1-.5.2-.2.1-.2.3-.2.5s.1.3.2.5l4.9 3.6-1.9 5.9c-.1.2 0 .4.1.6.1.2.3.3.5.3s.4-.1.5-.2l4.9-3.6 4.9 3.6c.1.1.3.2.5.2s.4-.1.5-.3c.1-.2.2-.4.1-.6l-1.9-5.9 4.9-3.6c.2-.1.3-.3.3-.5s-.1-.4-.3-.5z"/></svg>
+          </div>`}
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <svg class="w-4 h-4 text-amber-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M21.6 9.4c-.1-.1-.3-.2-.5-.2h-6.1l-1.6-5.6c-.1-.3-.4-.6-.8-.6s-.7.2-.8.6l-1.6 5.6h-6.1c-.2 0-.4.1-.5.2-.2.1-.2.3-.2.5s.1.3.2.5l4.9 3.6-1.9 5.9c-.1.2 0 .4.1.6.1.2.3.3.5.3s.4-.1.5-.2l4.9-3.6 4.9 3.6c.1.1.3.2.5.2s.4-.1.5-.3c.1-.2.2-.4.1-.6l-1.9-5.9 4.9-3.6c.2-.1.3-.3.3-.5s-.1-.4-.3-.5z"/></svg>
+              <span class="text-xs font-medium text-amber-500 uppercase tracking-wide">${lang === 'ja' ? 'Amazon で購入' : 'Buy on Amazon'}</span>
+            </div>
+            <p class="font-semibold text-foreground group-hover:text-amber-500 transition-colors truncate">${cleanText}</p>
+          </div>
+          <div class="flex-shrink-0 w-10 h-10 rounded-full bg-amber-500/20 group-hover:bg-amber-500/30 flex items-center justify-center transition-colors">
+            <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+          </div>
+        </div>
+      </a>`;
+    })
+    // Handle Oura Ring link with special styling
+    .replace(/<a\s+href="(https?:\/\/ouraring\.com[^"]*)"[^>]*>([^<]+)<\/a>/gi, (_, url, linkText) => {
+      const cleanText = linkText.replace(/^👉\s*/, '').trim();
+      return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="block my-6 group">
+        <div class="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-sky-500/10 via-indigo-500/5 to-sky-500/10 border border-sky-500/20 hover:border-sky-500/40 transition-all duration-300 hover:shadow-lg hover:shadow-sky-500/10">
+          <div class="flex-shrink-0 w-16 h-16 rounded-lg bg-gradient-to-br from-sky-500/20 to-indigo-500/20 flex items-center justify-center">
+            <svg class="w-8 h-8 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke-width="2"/></svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-xs font-medium text-sky-500 uppercase tracking-wide">${lang === 'ja' ? '公式サイト' : 'Official Site'}</span>
+            </div>
+            <p class="font-semibold text-foreground group-hover:text-sky-500 transition-colors">${cleanText}</p>
+          </div>
+          <div class="flex-shrink-0 w-10 h-10 rounded-full bg-sky-500/20 group-hover:bg-sky-500/30 flex items-center justify-center transition-colors">
+            <svg class="w-5 h-5 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+          </div>
+        </div>
+      </a>`;
+    })
     .replace(/\[play:([a-zA-Z0-9_-]+)\]/g, (_, trackId) => {
       const track = trackMapping[trackId];
       const trackTitle = lang === 'ja' ? track?.titleJa : track?.titleEn;

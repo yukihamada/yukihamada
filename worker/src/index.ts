@@ -306,11 +306,55 @@ async function fetchBlogPost(slug: string, env: Env): Promise<BlogPost | null> {
   }
 }
 
+// 静的アセットの拡張子パターン
+const STATIC_ASSET_EXTENSIONS = [
+  '.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.ico',
+  '.css', '.js', '.woff', '.woff2', '.ttf', '.eot',
+  '.mp4', '.webm', '.mp3', '.wav', '.ogg',
+  '.pdf', '.zip', '.json', '.xml'
+];
+
+function isStaticAsset(pathname: string): boolean {
+  const lowerPath = pathname.toLowerCase();
+  return STATIC_ASSET_EXTENSIONS.some(ext => lowerPath.endsWith(ext));
+}
+
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
     const userAgent = request.headers.get('user-agent') || '';
     const pathname = url.pathname;
+
+    // 静的アセット（画像、CSS、JS等）は常にオリジンにプロキシ
+    if (isStaticAsset(pathname)) {
+      const originUrl = new URL(pathname + url.search, env.ORIGIN_URL);
+      const newRequestHeaders = new Headers();
+      request.headers.forEach((value, key) => {
+        if (key.toLowerCase() !== 'host') {
+          newRequestHeaders.set(key, value);
+        }
+      });
+
+      const originRequest = new Request(originUrl.toString(), {
+        method: request.method,
+        headers: newRequestHeaders,
+        body: request.method !== 'GET' && request.method !== 'HEAD' ? request.body : undefined,
+        redirect: 'follow',
+      });
+
+      try {
+        const response = await fetch(originRequest);
+        const newHeaders = new Headers(response.headers);
+        return new Response(response.body, {
+          status: response.status,
+          statusText: response.statusText,
+          headers: newHeaders,
+        });
+      } catch (error) {
+        console.error('Static asset proxy error:', error);
+        return new Response('Proxy Error', { status: 502 });
+      }
+    }
 
     // 動的サイトマップ
     if (pathname === '/sitemap.xml') {

@@ -698,12 +698,20 @@ const BlogPost = () => {
       <Footer />
 
       {/* YouTube Video Modal */}
-      <Dialog open={!!youtubeVideoId} onOpenChange={(open) => !open && setYoutubeVideoId(null)}>
+      <Dialog 
+        open={!!youtubeVideoId} 
+        onOpenChange={(open) => {
+          if (!open) {
+            setYoutubeVideoId(null);
+          }
+        }}
+      >
         <DialogContent className="max-w-4xl w-[95vw] p-0 bg-black border-none overflow-hidden">
           <div className="relative aspect-video w-full">
             {youtubeVideoId && (
               <iframe
-                src={`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1`}
+                key={youtubeVideoId}
+                src={`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&enablejsapi=1`}
                 title="YouTube video"
                 className="absolute inset-0 w-full h-full"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

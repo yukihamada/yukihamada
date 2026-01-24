@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Volume2, Pause, Square, RotateCcw, Gauge, X, Loader2, GripVertical } from 'lucide-react';
+import { useState } from 'react';
+import { Volume2, Pause, Square, RotateCcw, Gauge, X, Loader2, GripVertical, Minimize2, Maximize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -30,6 +30,7 @@ const TTSFloatingPlayer = () => {
 
   const dragControls = useDragControls();
   const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isMinimized, setIsMinimized] = useState(false);
 
   // Format time as mm:ss
   const formatTime = (seconds: number): string => {
@@ -46,6 +47,75 @@ const TTSFloatingPlayer = () => {
 
   // Only show if playing or paused
   if (!isPlaying && !isPaused && !isLoading) return null;
+
+  // Minimized view - just an icon
+  if (isMinimized) {
+    return (
+      <motion.div
+        drag
+        dragControls={dragControls}
+        dragMomentum={false}
+        dragElastic={0.1}
+        onDragEnd={(_, info) => {
+          setPosition({ x: position.x + info.offset.x, y: position.y + info.offset.y });
+        }}
+        initial={{ scale: 0 }}
+        animate={{ scale: 1, x: position.x }}
+        exit={{ scale: 0 }}
+        className="fixed bottom-32 right-4 z-40 touch-none"
+        style={{ y: position.y }}
+      >
+        <motion.button
+          onClick={() => setIsMinimized(false)}
+          className="w-14 h-14 rounded-full bg-primary shadow-xl flex items-center justify-center relative"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+          style={{ boxShadow: '0 10px 25px -5px hsl(var(--primary) / 0.4)' }}
+        >
+          {isLoading ? (
+            <Loader2 className="h-6 w-6 text-primary-foreground animate-spin" />
+          ) : (
+            <>
+              <Volume2 className="h-6 w-6 text-primary-foreground" />
+              {isPlaying && (
+                <motion.div
+                  className="absolute inset-0 rounded-full border-2 border-primary-foreground/50"
+                  animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0, 0.5] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                />
+              )}
+            </>
+          )}
+          {/* Progress ring */}
+          {!isLoading && duration > 0 && (
+            <svg className="absolute inset-0 -rotate-90" viewBox="0 0 56 56">
+              <circle
+                cx="28"
+                cy="28"
+                r="26"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                className="text-primary-foreground/20"
+              />
+              <circle
+                cx="28"
+                cy="28"
+                r="26"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeDasharray={2 * Math.PI * 26}
+                strokeDashoffset={2 * Math.PI * 26 * (1 - currentTime / duration)}
+                className="text-primary-foreground"
+                strokeLinecap="round"
+              />
+            </svg>
+          )}
+        </motion.button>
+      </motion.div>
+    );
+  }
 
   return (
     <AnimatePresence>
@@ -73,7 +143,7 @@ const TTSFloatingPlayer = () => {
             <GripVertical className="h-4 w-4 text-muted-foreground/50" />
           </div>
 
-          {/* Header with title and close */}
+          {/* Header with title and controls */}
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2 min-w-0 flex-1">
               <div className="relative shrink-0">
@@ -91,14 +161,25 @@ const TTSFloatingPlayer = () => {
                 </p>
               </div>
             </div>
-            <Button 
-              onClick={stop} 
-              variant="ghost" 
-              size="icon" 
-              className="h-7 w-7 shrink-0"
-            >
-              <X className="h-3.5 w-3.5" />
-            </Button>
+            <div className="flex items-center gap-1 shrink-0">
+              <Button 
+                onClick={() => setIsMinimized(true)} 
+                variant="ghost" 
+                size="icon" 
+                className="h-7 w-7"
+                title={language === 'ja' ? '最小化' : 'Minimize'}
+              >
+                <Minimize2 className="h-3.5 w-3.5" />
+              </Button>
+              <Button 
+                onClick={stop} 
+                variant="ghost" 
+                size="icon" 
+                className="h-7 w-7"
+              >
+                <X className="h-3.5 w-3.5" />
+              </Button>
+            </div>
           </div>
 
           {isLoading ? (

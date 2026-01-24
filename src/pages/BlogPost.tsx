@@ -15,6 +15,7 @@ import BlogSuggestedQuestions from '@/components/BlogSuggestedQuestions';
 import BlogSummary from '@/components/BlogSummary';
 import OptimizedImage from '@/components/OptimizedImage';
 import DOMPurify from 'dompurify';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useChat } from '@/contexts/ChatContext';
 import { calculateReadingTime, formatReadingTime } from '@/lib/readingTime';
@@ -330,11 +331,10 @@ const processContent = (rawContent: string, lang: string): string => {
     processed = processed.replace(`__CODE_BLOCK_${i}__`, block);
   });
 
-  // Restore YouTube embeds from placeholders (smaller, more compact size)
+  // Restore YouTube embeds from placeholders (clickable to open modal)
   processed = processed.replace(/__YOUTUBE_EMBED_([a-zA-Z0-9_-]+)__/g, (_, videoId) => {
     const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-    const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
-    return `<a href="${youtubeUrl}" target="_blank" rel="noopener noreferrer" class="block my-6 group max-w-lg mx-auto">
+    return `<button data-youtube-video-id="${videoId}" class="block my-6 group max-w-lg mx-auto w-full cursor-pointer bg-transparent border-0 p-0">
       <div class="relative aspect-video rounded-xl overflow-hidden shadow-lg ring-1 ring-border/20 hover:ring-primary/50 transition-all duration-300">
         <img src="${thumbnailUrl}" alt="YouTube video thumbnail" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.src='https://img.youtube.com/vi/${videoId}/hqdefault.jpg'" />
         <div class="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-colors flex items-center justify-center">
@@ -344,15 +344,15 @@ const processContent = (rawContent: string, lang: string): string => {
         </div>
         <div class="absolute bottom-2 left-2 px-2.5 py-1 rounded-md bg-black/70 text-white text-xs font-medium flex items-center gap-1.5">
           <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
-          ${lang === 'ja' ? 'YouTubeで見る' : 'Watch on YouTube'}
+          ${lang === 'ja' ? 'クリックで再生' : 'Click to play'}
         </div>
       </div>
-    </a>`;
+    </button>`;
   });
 
   return DOMPurify.sanitize(processed, {
-    ADD_TAGS: ['figure', 'figcaption', 'iframe', 'details', 'summary', 'pre', 'code'],
-    ADD_ATTR: ['data-play-track-id', 'style', 'allow', 'allowfullscreen', 'frameborder', 'loading', 'decoding', 'open'],
+    ADD_TAGS: ['figure', 'figcaption', 'iframe', 'details', 'summary', 'pre', 'code', 'button'],
+    ADD_ATTR: ['data-play-track-id', 'data-youtube-video-id', 'style', 'allow', 'allowfullscreen', 'frameborder', 'loading', 'decoding', 'open'],
     // Allow same-origin relative URLs like /images/... in addition to https:// and data:
     ALLOWED_URI_REGEXP: /^(?:(?:https?|data):|\/)/i,
   });
@@ -379,16 +379,29 @@ const BlogPost = () => {
   }, [post, language, setPageContext, setCurrentBlogTitle]);
 
   const [signupFormContainer, setSignupFormContainer] = useState<HTMLElement | null>(null);
+  const [youtubeVideoId, setYoutubeVideoId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!contentRef.current) return;
     
     const playButtons = contentRef.current.querySelectorAll('[data-play-track-id]');
-    const handlers: Array<{ button: Element; handler: () => void }> = [];
+    const handlers: Array<{ button: Element; handler: (e: Event) => void }> = [];
     
     playButtons.forEach((button) => {
       const trackId = button.getAttribute('data-play-track-id') || '';
       const handleClick = () => playTrackById(trackId);
+      button.addEventListener('click', handleClick);
+      handlers.push({ button, handler: handleClick });
+    });
+
+    // Add YouTube video button handlers
+    const youtubeButtons = contentRef.current.querySelectorAll('[data-youtube-video-id]');
+    youtubeButtons.forEach((button) => {
+      const videoId = button.getAttribute('data-youtube-video-id') || '';
+      const handleClick = (e: Event) => {
+        e.preventDefault();
+        setYoutubeVideoId(videoId);
+      };
       button.addEventListener('click', handleClick);
       handlers.push({ button, handler: handleClick });
     });
@@ -683,6 +696,23 @@ const BlogPost = () => {
       </main>
 
       <Footer />
+
+      {/* YouTube Video Modal */}
+      <Dialog open={!!youtubeVideoId} onOpenChange={(open) => !open && setYoutubeVideoId(null)}>
+        <DialogContent className="max-w-4xl w-[95vw] p-0 bg-black border-none overflow-hidden">
+          <div className="relative aspect-video w-full">
+            {youtubeVideoId && (
+              <iframe
+                src={`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1`}
+                title="YouTube video"
+                className="absolute inset-0 w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

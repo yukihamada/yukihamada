@@ -700,10 +700,17 @@ const MusicPlayer = () => {
       
       <motion.div
         ref={playerContainerRef}
-        className="fixed bottom-6 right-6 z-50"
+        drag
+        dragMomentum={false}
+        dragElastic={0.1}
+        onDragEnd={(_, info) => {
+          setPosition({ x: position.x + info.offset.x, y: position.y + info.offset.y });
+        }}
+        className="fixed bottom-6 right-6 z-50 touch-none"
         initial={{ y: 100, opacity: 0 }}
         animate={{ 
-          y: (!isUIVisible && !isExpanded) ? 150 : 0, 
+          y: (!isUIVisible && !isExpanded) ? 150 : position.y, 
+          x: position.x,
           opacity: (!isUIVisible && !isExpanded) ? 0 : 1 
         }}
         transition={{ duration: 0.3, ease: [0.25, 0.4, 0.25, 1] }}
@@ -724,6 +731,11 @@ const MusicPlayer = () => {
               exit={{ scale: 0.9, opacity: 0 }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
             >
+            {/* Drag handle */}
+              <div className="absolute top-2 left-1/2 -translate-x-1/2 cursor-grab active:cursor-grabbing p-1">
+                <GripVertical className="h-4 w-4 text-muted-foreground/30" />
+              </div>
+
               {/* Header with glassmorphism */}
               <div className="relative px-5 pt-4 pb-2">
                 <div className="flex items-center justify-between">
@@ -1280,36 +1292,72 @@ const MusicPlayer = () => {
                 </motion.button>
               </div>
               
-              {/* Volume control row for mobile - always visible in compact mode */}
+              {/* Controls row - volume only when playing, expand button always visible */}
               <div 
                 className="flex items-center gap-2 mt-2 pt-2 border-t border-white/10"
                 onClick={(e) => e.stopPropagation()}
               >
+                {/* Volume control - only show when playing */}
+                {isPlaying && (
+                  <>
+                    <motion.button
+                      onClick={() => setIsMuted(!isMuted)}
+                      className="p-1 rounded-full hover:bg-white/10 transition-colors"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                    >
+                      {isMuted ? (
+                        <VolumeX className="h-3.5 w-3.5 text-muted-foreground" />
+                      ) : (
+                        <Volume2 className="h-3.5 w-3.5 text-muted-foreground" />
+                      )}
+                    </motion.button>
+                    <motion.div
+                      className="flex-1"
+                      initial={{ opacity: 0, width: 0 }}
+                      animate={{ opacity: 1, width: 'auto' }}
+                    >
+                      <Slider
+                        value={[isMuted ? 0 : volume]}
+                        onValueChange={([value]) => {
+                          setVolume(value);
+                          setIsMuted(false);
+                        }}
+                        max={1}
+                        step={0.01}
+                        className="w-full"
+                      />
+                    </motion.div>
+                    <motion.span 
+                      className="text-[10px] text-muted-foreground min-w-[28px] text-right"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                    >
+                      {Math.round((isMuted ? 0 : volume) * 100)}%
+                    </motion.span>
+                  </>
+                )}
+                
+                {/* Expand button - always visible and prominent */}
                 <motion.button
-                  onClick={() => setIsMuted(!isMuted)}
-                  className="p-1 rounded-full hover:bg-white/10 transition-colors"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  {isMuted ? (
-                    <VolumeX className="h-3.5 w-3.5 text-muted-foreground" />
-                  ) : (
-                    <Volume2 className="h-3.5 w-3.5 text-muted-foreground" />
-                  )}
-                </motion.button>
-                <Slider
-                  value={[isMuted ? 0 : volume]}
-                  onValueChange={([value]) => {
-                    setVolume(value);
-                    setIsMuted(false);
+                  onClick={() => setIsExpanded(true)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                    isPlaying ? '' : 'flex-1 justify-center'
+                  }`}
+                  style={{
+                    background: `linear-gradient(135deg, ${track.color}30, ${track.color}10)`,
+                    border: `1px solid ${track.color}40`,
                   }}
-                  max={1}
-                  step={0.01}
-                  className="flex-1"
-                />
-                <span className="text-[10px] text-muted-foreground min-w-[28px] text-right">
-                  {Math.round((isMuted ? 0 : volume) * 100)}%
-                </span>
+                  whileHover={{ scale: 1.05, boxShadow: `0 5px 15px -5px ${track.color}40` }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <ChevronUp className="h-3.5 w-3.5" />
+                  <span className="text-foreground/80">
+                    {isPlaying ? '' : 'プレイリストを開く'}
+                  </span>
+                </motion.button>
               </div>
             </motion.div>
           )}

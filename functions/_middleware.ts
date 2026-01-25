@@ -56,12 +56,13 @@ interface BlogPost {
   category_en: string;
   date_ja: string;
   date_en: string;
+  updated_at: string;
 }
 
 async function fetchBlogPost(slug: string, supabaseUrl: string, supabaseAnonKey: string): Promise<BlogPost | null> {
   try {
     const response = await fetch(
-      `${supabaseUrl}/rest/v1/blog_posts?slug=eq.${encodeURIComponent(slug)}&select=slug,title_ja,title_en,excerpt_ja,excerpt_en,image,category_ja,category_en,date_ja,date_en&limit=1`,
+      `${supabaseUrl}/rest/v1/blog_posts?slug=eq.${encodeURIComponent(slug)}&select=slug,title_ja,title_en,excerpt_ja,excerpt_en,image,category_ja,category_en,date_ja,date_en,updated_at&limit=1`,
       {
         headers: {
           'apikey': supabaseAnonKey,
@@ -80,6 +81,37 @@ async function fetchBlogPost(slug: string, supabaseUrl: string, supabaseAnonKey:
   } catch (error) {
     console.error('Error fetching blog post:', error);
     return null;
+  }
+}
+
+// 画像URLの存在確認（HEAD リクエストで疎通チェック）
+async function checkImageExists(imageUrl: string): Promise<boolean> {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000); // 3秒タイムアウト
+    
+    const response = await fetch(imageUrl, {
+      method: 'HEAD',
+      signal: controller.signal,
+    });
+    
+    clearTimeout(timeoutId);
+    
+    if (!response.ok) {
+      console.log(`[OGP] Image check failed: ${imageUrl} - status ${response.status}`);
+      return false;
+    }
+    
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.startsWith('image/')) {
+      console.log(`[OGP] Image check failed: ${imageUrl} - invalid content-type: ${contentType}`);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.log(`[OGP] Image check error: ${imageUrl} - ${error}`);
+    return false;
   }
 }
 
@@ -171,16 +203,33 @@ export const onRequest: PagesFunction = async (context) => {
     const defaultImage = `${baseUrl}/images/default-ogp.jpg`;
     
     if (post) {
-      // 画像URLを構築（nullや空文字の場合もデフォルトにフォールバック）
+      // 画像URLを構築
       let imageUrl = defaultImage;
+      let candidateImageUrl: string | null = null;
+      
       if (post.image && post.image.trim() !== '') {
-        imageUrl = post.image.startsWith('http') ? post.image : `${baseUrl}${post.image}`;
+        candidateImageUrl = post.image.startsWith('http') ? post.image : `${baseUrl}${post.image}`;
       }
+      
+      // 画像が設定されている場合は存在チェック
+      if (candidateImageUrl) {
+        const imageExists = await checkImageExists(candidateImageUrl);
+        if (imageExists) {
+          imageUrl = candidateImageUrl;
+          console.log(`[OGP Middleware] Image exists: ${candidateImageUrl}`);
+        } else {
+          console.log(`[OGP Middleware] Image not accessible, falling back to default: ${candidateImageUrl}`);
+        }
+      }
+      
+      // キャッシュバスター（updated_at を利用）
+      const cacheVersion = post.updated_at ? new Date(post.updated_at).getTime() : Date.now();
+      const imageUrlWithCacheBuster = `${imageUrl}?v=${cacheVersion}`;
       
       const html = generateOGPHtml(
         `${post.title_ja} | Yuki Hamada`,
         post.excerpt_ja || 'Yuki Hamadaのブログ記事',
-        imageUrl,
+        imageUrlWithCacheBuster,
         `${baseUrl}/blog/${slug}`,
         'article',
         post.date_ja || '',
@@ -188,7 +237,7 @@ export const onRequest: PagesFunction = async (context) => {
         'ja'
       );
       
-      console.log(`[OGP Middleware] Serving OGP for: ${post.title_ja}, image: ${imageUrl}`);
+      console.log(`[OGP Middleware] Serving OGP for: ${post.title_ja}, image: ${imageUrlWithCacheBuster}`);
       
       return new Response(html, {
         headers: {

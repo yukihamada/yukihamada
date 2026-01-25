@@ -167,19 +167,24 @@ export const onRequest: PagesFunction = async (context) => {
     // ブログ記事を取得
     const post = await fetchBlogPost(slug, supabaseUrl, supabaseAnonKey);
     
+    // 記事が見つからなくてもデフォルトOGPを返す
+    const defaultImage = `${baseUrl}/images/default-ogp.jpg`;
+    
     if (post) {
-      const imageUrl = post.image 
-        ? (post.image.startsWith('http') ? post.image : `${baseUrl}${post.image}`)
-        : `${baseUrl}/images/default-ogp.jpg`;
+      // 画像URLを構築（nullや空文字の場合もデフォルトにフォールバック）
+      let imageUrl = defaultImage;
+      if (post.image && post.image.trim() !== '') {
+        imageUrl = post.image.startsWith('http') ? post.image : `${baseUrl}${post.image}`;
+      }
       
       const html = generateOGPHtml(
         `${post.title_ja} | Yuki Hamada`,
-        post.excerpt_ja,
+        post.excerpt_ja || 'Yuki Hamadaのブログ記事',
         imageUrl,
         `${baseUrl}/blog/${slug}`,
         'article',
-        post.date_ja,
-        post.category_ja,
+        post.date_ja || '',
+        post.category_ja || '',
         'ja'
       );
       

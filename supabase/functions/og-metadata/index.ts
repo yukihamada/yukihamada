@@ -1,34 +1,8 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-// Check if the request is from a social media crawler
-const isCrawler = (userAgent: string): boolean => {
-  const crawlerPatterns = [
-    'facebookexternalhit',
-    'Facebot',
-    'Twitterbot',
-    'LinkedInBot',
-    'Pinterest',
-    'Slackbot',
-    'Discordbot',
-    'TelegramBot',
-    'WhatsApp',
-    'Line',
-    'Hatena',
-    'Mixi',
-    'bot',
-    'crawler',
-    'spider',
-    'curl',
-    'wget',
-  ];
-  const ua = userAgent.toLowerCase();
-  return crawlerPatterns.some(pattern => ua.includes(pattern.toLowerCase()));
 };
 
 // Escape HTML special characters
@@ -41,7 +15,7 @@ const escapeHtml = (text: string): string => {
     .replace(/'/g, '&#039;');
 };
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -51,27 +25,15 @@ serve(async (req) => {
     const url = new URL(req.url);
     const slug = url.searchParams.get('slug');
     const lang = url.searchParams.get('lang') || 'ja';
-    const format = url.searchParams.get('format') || 'auto';
-    const userAgent = req.headers.get('user-agent') || '';
+    const format = url.searchParams.get('format') || 'json';
+    const path = url.searchParams.get('path') || '/';
     
-    if (!slug) {
-      return new Response(
-        JSON.stringify({ error: 'slug parameter is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    console.log(`[og-metadata] Request: slug=${slug}, path=${path}, format=${format}`);
 
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
-
-    // Fetch blog post from database
-    const { data: post, error } = await supabase
-      .from('blog_posts')
-      .select('*')
-      .eq('slug', slug)
-      .maybeSingle();
 
     const baseUrl = 'https://yukihamada.jp';
     
@@ -81,7 +43,7 @@ serve(async (req) => {
       description: '濱田優貴 - イネブラ創業者、エンジェル投資家。世界中のクリエイターを支援し、新しい価値を生み出すコミュニティを構築。',
       image: `${baseUrl}/images/default-ogp.jpg`,
       url: baseUrl,
-      type: 'website',
+      type: 'website' as 'website' | 'article',
       publishedTime: '',
       section: '',
       siteName: 'Yuki Hamada',
@@ -91,37 +53,47 @@ serve(async (req) => {
       locale: 'ja_JP',
     };
 
-    if (post && !error) {
-      // Get language-specific content
-      const title = lang === 'en' ? post.title_en : post.title_ja;
-      const excerpt = lang === 'en' ? post.excerpt_en : post.excerpt_ja;
-      const category = lang === 'en' ? post.category_en : post.category_ja;
-      const date = lang === 'en' ? post.date_en : post.date_ja;
+    // If slug provided, fetch blog post
+    if (slug) {
+      const { data: post, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('slug', slug)
+        .maybeSingle();
 
-      const postUrl = `${baseUrl}/blog/${slug}`;
-      const imageUrl = post.image 
-        ? (post.image.startsWith('http') ? post.image : `${baseUrl}${post.image}`)
-        : `${baseUrl}/images/default-ogp.jpg`;
+      if (post && !error) {
+        const title = lang === 'en' ? post.title_en : post.title_ja;
+        const excerpt = lang === 'en' ? post.excerpt_en : post.excerpt_ja;
+        const category = lang === 'en' ? post.category_en : post.category_ja;
+        const date = lang === 'en' ? post.date_en : post.date_ja;
 
-      ogData = {
-        title: `${title} | Yuki Hamada`,
-        description: excerpt,
-        image: imageUrl,
-        url: postUrl,
-        type: 'article',
-        publishedTime: date,
-        section: category,
-        siteName: 'Yuki Hamada',
-        twitterCard: 'summary_large_image',
-        twitterSite: '@yukihamada',
-        twitterCreator: '@yukihamada',
-        locale: lang === 'en' ? 'en_US' : 'ja_JP',
-      };
+        const postUrl = `${baseUrl}/blog/${slug}`;
+        const imageUrl = post.image 
+          ? (post.image.startsWith('http') ? post.image : `${baseUrl}${post.image}`)
+          : `${baseUrl}/images/default-ogp.jpg`;
+
+        ogData = {
+          title: `${title} | Yuki Hamada`,
+          description: excerpt,
+          image: imageUrl,
+          url: postUrl,
+          type: 'article',
+          publishedTime: date,
+          section: category,
+          siteName: 'Yuki Hamada',
+          twitterCard: 'summary_large_image',
+          twitterSite: '@yukihamada',
+          twitterCreator: '@yukihamada',
+          locale: lang === 'en' ? 'en_US' : 'ja_JP',
+        };
+        
+        console.log(`[og-metadata] Found post: ${title}, image: ${imageUrl}`);
+      } else {
+        console.log(`[og-metadata] Post not found for slug: ${slug}`);
+      }
     }
 
-    console.log('OGP request for slug:', slug, 'User-Agent:', userAgent.substring(0, 50));
-
-    // If format=json or not a crawler, return JSON
+    // Return JSON if requested
     if (format === 'json') {
       return new Response(
         JSON.stringify(ogData),
@@ -129,9 +101,8 @@ serve(async (req) => {
       );
     }
 
-    // For crawlers or format=html, return full HTML with OGP tags
-    if (format === 'html' || isCrawler(userAgent)) {
-      const html = `<!DOCTYPE html>
+    // Return HTML with OGP tags
+    const html = `<!DOCTYPE html>
 <html lang="${lang === 'en' ? 'en' : 'ja'}">
 <head>
   <meta charset="UTF-8">
@@ -164,7 +135,7 @@ serve(async (req) => {
   <meta name="twitter:description" content="${escapeHtml(ogData.description)}">
   <meta name="twitter:image" content="${escapeHtml(ogData.image)}">
   
-  <!-- Redirect for browsers (delay for crawlers to parse OGP) -->
+  <!-- Redirect for browsers (3 second delay for crawlers to parse OGP) -->
   <meta http-equiv="refresh" content="3;url=${escapeHtml(ogData.url)}">
   <link rel="canonical" href="${escapeHtml(ogData.url)}">
 </head>
@@ -175,21 +146,15 @@ serve(async (req) => {
 </body>
 </html>`;
 
-      const headers = new Headers(corsHeaders);
-      headers.set('content-type', 'text/html; charset=utf-8');
-      headers.set('cache-control', 'public, max-age=3600');
-
-      const body = new TextEncoder().encode(html);
-      return new Response(body, { headers });
-    }
-
-    // Default: return JSON
-    return new Response(
-      JSON.stringify(ogData),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return new Response(html, { 
+      headers: { 
+        ...corsHeaders, 
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'public, max-age=3600'
+      } 
+    });
   } catch (error) {
-    console.error('Error:', error);
+    console.error('[og-metadata] Error:', error);
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

@@ -215,9 +215,9 @@ Transform the following into podcast narration. Output only the transformed scri
           text: processedText,
           model_id: "eleven_turbo_v2_5",
           voice_settings: {
-            stability: 0.5,
-            similarity_boost: 0.75,
-            style: 0.3,
+            stability: 0.70,
+            similarity_boost: 0.80,
+            style: 0.2,
             use_speaker_boost: true,
             speed: 1.1,
           },

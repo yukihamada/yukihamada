@@ -1,119 +1,162 @@
 
-# 新規ブログ記事作成計画：「科学的フライトハック」
 
-## 概要
-台湾遠征の帰路で執筆された「科学的フライトハック」をブログ記事としてデータベースに追加します。既存記事との相互リンクを設計し、サイト全体のコンテンツ回遊性を高めます。
+# Podcast-Style Blog Read Aloud Enhancement
 
-## 記事設計
+## Overview
 
-### 基本情報
-| 項目 | 内容 |
-|------|------|
-| slug | `scientific-flight-hack-2026` |
-| カテゴリー | ライフスタイル (Lifestyle) |
-| 画像 | `/images/blog-hawaii-2026-palm.jpg`（既存画像を流用、または新規作成） |
-| ステータス | published |
-
-### 相互リンク戦略
-ユーザー提供のドラフトに、以下の既存記事への自然なリンクを織り込みます。
-
-| リンク先記事 | リンク箇所 | 理由 |
-|--------------|------------|------|
-| `taiwan-bjj-result-2026` | 冒頭「台湾大会帰り」 | シリーズ接続（前回の試合結果記事） |
-| `taiwan-bjj-anger-human-rights` | 冒頭「大会への決意」 | 台湾遠征シリーズ第1弾 |
-| `biohacking-silicon-valley-cold-plunge-fasting` | 「Oura Ringで回復を見る」 | バイオハッキング記事群との連携 |
-| `hybrid-lifestyle-longevity-performance-2026` | 「ON/OFFモード」「オートファジー」 | ハイブリッドライフスタイルの食事法 |
-| `body-hardware-debug-bjj` | 「SpO2と酸素供給」 | 身体のハードウェア視点 |
-
-### コンテンツ拡張
-ユーザー提供のドラフトに以下を追加します。
-
-1. **Mermaidダイアグラム**: 低酸素症と対策の関係をビジュアル化
-2. **コールアウトボックス**: 前回記事への誘導
-3. **関連記事セクション**: 記事末尾に複数リンク
-4. **Oura Ringリンク**: 既存のバイオハッキング記事と同じスタイルで
+Transform the blog TTS feature from a simple "read aloud" into an immersive podcast listening experience with:
+1. **Podcast-style UI** - Modern player design with album art, waveform visualizer
+2. **Optional background music** - Lo-fi/ambient music that auto-plays (ducked) during narration
+3. **Enhanced narration prompts** - More engaging, host-like delivery
 
 ---
 
-## 技術的な実装
+## Implementation Plan
 
-### 1. データベースへの記事追加
-`blog_posts`テーブルに新規レコードをINSERT
+### Phase 1: Podcast-Style UI Redesign
 
-```text
-フィールド構成:
-- slug: scientific-flight-hack-2026
-- title_ja: 「ビジネスクラスなら疲れない」は大嘘。台湾遠征で確信した、脳と身体を最適化する「科学的フライトハック」
-- title_en: "Business Class Cures Fatigue" is a Lie. Scientific Flight Hacks for Peak Performance, Proven on My Taiwan Trip
-- category_ja: ライフスタイル
-- category_en: Lifestyle
-- excerpt_ja: 広いシートは疲労を解決しない。問題は「酸素濃度」と「光」だ。台湾柔術遠征の帰路で確信した、エビデンスに基づくフライト回復戦略を完全公開。
-- image: /images/blog-hawaii-2026-palm.jpg
+#### 1.1 BlogReadAloud Component Overhaul
+Transform the current button-based UI into a podcast player aesthetic:
+
+**Before (Current):**
+- Simple button with Volume2 icon
+- Basic progress slider when playing
+
+**After (Podcast Style):**
+- Album art/thumbnail display (using blog post OGP image)
+- Audio waveform visualizer (reuse existing MusicPlayer visualizer logic)
+- Episode-style layout with host avatar
+- "NOW PLAYING" indicator with animated bars
+- Larger, more prominent controls
+
+**Key Visual Elements:**
+- Post thumbnail/OGP image as "episode cover"
+- Yuki's profile image as host avatar
+- Animated equalizer bars during playback
+- Gradient background matching site theme
+
+#### 1.2 TTSFloatingPlayer Enhancement
+Update the floating player to match podcast aesthetic:
+- Add mini album art
+- Show "Yuki's Podcast" branding
+- More prominent minimize/expand states
+
+---
+
+### Phase 2: Background Music Integration
+
+#### 2.1 Context Enhancement (`TTSPlayerContext.tsx`)
+Add background music state management:
+```typescript
+// New state
+bgMusicEnabled: boolean;
+bgMusicTrack: string | null;
+setBgMusicEnabled: (enabled: boolean) => void;
 ```
 
-### 2. 記事本文の拡張ポイント
+#### 2.2 Background Music Logic
+- When TTS starts, optionally auto-start ambient music at 15-20% volume
+- Use existing ducking system (already reduces music to 20%)
+- Allow user toggle for "BGM on/off"
+- Default: OFF (respect user choice, opt-in)
 
-原文をベースに、以下を追加・整形:
+**Recommended ambient tracks from existing library:**
+- `musubinaosu-asa.mp3` - Morning ambient vibe
+- `shio-to-pixel.mp3` - Electronic/lo-fi suitable
 
+#### 2.3 UI Toggle
+Add a small toggle in the podcast player:
+- Music note icon with on/off state
+- Tooltip: "Background music" / "BGM"
+
+---
+
+### Phase 3: Enhanced Narration Prompts
+
+#### 3.1 Update `blog-tts/index.ts`
+Enhance the system prompts to be more podcast-host-like:
+
+**Japanese Additions:**
+- Add podcast intro/outro hooks: "それでは、はじめましょう"
+- More dramatic pauses for key points
+- Natural laugh/reaction cues like "これ、おもしろいですよね"
+
+**English Additions:**
+- Opening hook: "Alright, let's dive in..."
+- Engagement phrases: "Now here's where it gets really interesting..."
+- Sign-off style: "That's a wrap for this one..."
+
+#### 3.2 Voice Settings Optimization
+Adjust ElevenLabs parameters for more natural podcast delivery:
+- Increase `style` slightly for more expression
+- Add slight variance in pacing
+
+---
+
+### Phase 4: Visual Components
+
+#### 4.1 New Components Needed
+
+**PodcastPlayerCard.tsx** (New Component)
 ```text
-◆ 冒頭に前回記事リンクボックス追加
-  → taiwan-bjj-result-2026へのコールアウト
-
-◆ 「低酸素症」セクションにMermaidダイアグラム追加
-  → 機材選択による酸素分圧の違いを可視化
-
-◆ 「Oura Ring」への言及を追加（回復スコアへの影響）
-  → biohacking記事との相互参照
-
-◆ 「ケトン体回路」に言及
-  → hybrid-lifestyle記事へのリンク
-
-◆ 末尾に「関連記事」セクション追加
-  → 台湾シリーズ + バイオハッキングシリーズ
++--------------------------------------------------+
+|  [OGP Image]  |  NOW PLAYING                     |
+|   as cover    |  "Article Title"                 |
+|               |  ▶️ Yuki's Blog Podcast          |
+|               |  [▓▓▓▓▓▓░░░░░] 4:32 / 12:45     |
++--------------------------------------------------+
+| ⏮  ◀10s  ▶/⏸  ▶10s  ⏭  | 1.2x | 🎵 BGM |
++--------------------------------------------------+
 ```
 
-### 3. 英語版の作成
-日本語版の構造を維持しつつ、英語で自然な翻訳版を作成
+**AudioVisualizer.tsx** (Reuse from MusicPlayer)
+- Extract the visualizer logic from MusicPlayer
+- Create reusable component for both music and TTS
+
+#### 4.2 Animation Enhancements
+- Pulsing glow around player when active
+- Smooth transitions between states
+- "Breathing" animation on host avatar
 
 ---
 
-## 追加するMermaidダイアグラム例
+## Technical Details
 
-```text
-graph TD
-    A[機内環境] --> B{機材タイプ}
-    B -->|カーボン製<br>B787/A350| C[標高1,800m相当]
-    B -->|アルミ製<br>B777/767| D[標高2,400m相当]
-    C --> E[SpO2 96-98%]
-    D --> F[SpO2 90-93%]
-    E --> G[認知機能維持]
-    F --> H[前頭前野酸欠]
-    G --> I[到着後パフォーマンス◎]
-    H --> J[時差ボケ・疲労感]
-```
+### Files to Create
+1. `src/components/PodcastPlayer.tsx` - New podcast-style UI component
 
----
+### Files to Modify
+1. `src/components/BlogReadAloud.tsx` - Replace with podcast UI
+2. `src/components/TTSFloatingPlayer.tsx` - Update floating version
+3. `src/contexts/TTSPlayerContext.tsx` - Add BGM state
+4. `supabase/functions/blog-tts/index.ts` - Enhanced prompts
+5. `src/components/MusicPlayer.tsx` - Export visualizer logic
 
-## 既存記事への逆リンク（オプション）
-
-新記事の公開後、以下の既存記事の「関連記事」セクションにも新記事へのリンクを追加することを推奨:
-
-- `taiwan-bjj-result-2026`: 台湾遠征シリーズの一環として
-- `biohacking-silicon-valley-cold-plunge-fasting`: フライト回復という新テーマ追加
-- `hybrid-lifestyle-longevity-performance-2026`: 旅行時の応用編として
+### Existing Systems to Leverage
+- **Audio ducking**: Already implemented (music reduces to 20% during TTS)
+- **Framer Motion**: For smooth animations
+- **ElevenLabs TTS**: Already configured with Yuki's voice
+- **Gemini 3**: Already converting to conversational style
 
 ---
 
-## 作業ステップ
+## Summary of User-Facing Changes
 
-1. 日本語版の記事本文を作成（リンク・ダイアグラム込み）
-2. 英語版の記事本文を作成
-3. SQLでblog_postsテーブルにINSERT
-4. プレビューで表示確認
-5. （オプション）既存記事の関連記事セクションを更新
+| Feature | Before | After |
+|---------|--------|-------|
+| **UI Design** | Simple button + slider | Full podcast player with cover art |
+| **Visualizer** | 4 tiny pulse bars | Full waveform/equalizer |
+| **Host Identity** | "Read by Yuki" text | Avatar + "Yuki's Podcast" branding |
+| **Background Music** | None | Optional lo-fi BGM at low volume |
+| **Narration Style** | Article reading | Podcast host delivery |
+| **Floating Player** | Basic controls | Mini podcast card |
 
 ---
 
-## 完成イメージ
+## Notes
 
-記事は既存の「バイオハッキング」「ハイブリッドライフスタイル」シリーズの実践編として位置づけられ、「台湾柔術遠征」シリーズの補完コンテンツとしても機能します。読者は自然に関連記事へ回遊でき、サイト滞在時間の向上が期待できます。
+- Background music is **opt-in** to respect users who prefer narration only
+- All animations follow the existing design system (dark theme, glassmorphism)
+- The existing audio ducking system seamlessly handles BGM volume
+- Cache-busting not required since prompts haven't changed substantially
+

@@ -526,7 +526,7 @@ const BlogPost = () => {
               : 'The blog post you are looking for does not exist or may have been deleted.'}
           </p>
           <Button asChild>
-            <Link to="/#blog">{language === 'ja' ? 'ブログ一覧に戻る' : 'Back to Blog'}</Link>
+            <Link to="/blog">{language === 'ja' ? 'ブログ一覧に戻る' : 'Back to Blog'}</Link>
           </Button>
         </div>
       </div>
@@ -556,7 +556,7 @@ const BlogPost = () => {
             <article className="w-full">
               <div>
                 <Button variant="ghost" asChild className="mb-8 text-muted-foreground hover:text-foreground">
-                  <Link to="/#blog">
+                  <Link to="/blog">
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     {language === 'ja' ? 'ブログに戻る' : 'Back to Blog'}
                   </Link>

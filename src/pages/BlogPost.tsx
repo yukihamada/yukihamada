@@ -104,8 +104,14 @@ const processContent = (rawContent: string, lang: string): string => {
   let mermaidIndex = 0;
   
   let processed = rawContent
-    // Process mermaid code blocks first
+    // Process mermaid code blocks first (supports both ```mermaid and [mermaid] formats)
     .replace(/```mermaid\n([\s\S]*?)```/g, (_, code) => {
+      const placeholder = `__MERMAID_BLOCK_${mermaidIndex}__`;
+      mermaidBlocks.push(code.trim());
+      mermaidIndex++;
+      return placeholder;
+    })
+    .replace(/\[mermaid\]\n?([\s\S]*?)\[\/mermaid\]/g, (_, code) => {
       const placeholder = `__MERMAID_BLOCK_${mermaidIndex}__`;
       mermaidBlocks.push(code.trim());
       mermaidIndex++;

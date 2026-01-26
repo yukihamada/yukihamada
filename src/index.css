@@ -839,6 +839,30 @@ html {
   }
 }
 
+/* Blog Content Prose Styling */
+.blog-content p {
+  @apply my-6 leading-relaxed text-muted-foreground;
+}
+
+.blog-content p + p {
+  @apply mt-6;
+}
+
+.blog-content ul,
+.blog-content ol {
+  @apply my-6 space-y-3;
+}
+
+.blog-content h2 + p,
+.blog-content h3 + p {
+  @apply mt-4;
+}
+
+.blog-content blockquote + p,
+.blog-content .blog-quote + p {
+  @apply mt-6;
+}
+
 /* Blog Heading Anchor Links */
 .blog-heading {
   @apply relative flex items-center gap-3;

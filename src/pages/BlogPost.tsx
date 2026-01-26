@@ -219,10 +219,10 @@ const processContent = (rawContent: string, lang: string): string => {
   
   processed = processed
     .replace(/<blockquote>([^<]+)<\/blockquote>/g, '<div class="blog-quote"><p>$1</p></div>')
-    .replace(/^> (.+)$/gm, '<div class="blog-quote"><p>$1</p></div>')
+    .replace(/^> (.+)$/gm, '<div class="blog-quote my-6"><p>$1</p></div>')
     .replace(/^---$/gm, '<hr class="my-12 border-t border-border/30" />')
-    .replace(/^(\d+)\. (.+)$/gm, '<li class="flex items-start gap-3 mb-3"><span class="flex-shrink-0 w-7 h-7 rounded-full bg-primary/20 text-primary text-sm font-bold flex items-center justify-center mt-0.5">$1</span><span class="text-muted-foreground leading-relaxed">$2</span></li>')
-    .replace(/^- (.+)$/gm, '<li class="flex items-start gap-3 mb-3"><span class="flex-shrink-0 w-2 h-2 rounded-full bg-primary mt-2.5"></span><span class="text-muted-foreground leading-relaxed">$1</span></li>')
+    .replace(/^(\d+)\. (.+)$/gm, '<li class="flex items-start gap-4 mb-4"><span class="flex-shrink-0 w-7 h-7 rounded-full bg-primary/20 text-primary text-sm font-bold flex items-center justify-center mt-0.5">$1</span><span class="text-muted-foreground leading-relaxed">$2</span></li>')
+    .replace(/^- (.+)$/gm, '<li class="flex items-start gap-4 mb-4"><span class="flex-shrink-0 w-2 h-2 rounded-full bg-primary mt-2.5"></span><span class="text-muted-foreground leading-loose">$1</span></li>')
     .replace(/\*\*(.+?)\*\*/g, '<strong class="text-foreground font-semibold">$1</strong>')
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary hover:text-primary/80 underline underline-offset-4 decoration-primary/50 hover:decoration-primary transition-all font-medium">$1</a>')
     .replace(/^(⚠️|👉|🎉) (.+)$/gm, (_, emoji, text) => {

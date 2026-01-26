@@ -11,6 +11,7 @@ interface TTSPlayerState {
   postSlug: string | null;
   postTitle: string | null;
   bgMusicEnabled: boolean;
+  bgMusicTrackId: string;
 }
 
 interface TTSPlayerContextType extends TTSPlayerState {
@@ -23,14 +24,22 @@ interface TTSPlayerContextType extends TTSPlayerState {
   setPlaybackRate: (rate: number) => void;
   isOnSamePost: () => boolean;
   toggleBgMusic: () => void;
+  setBgMusicTrack: (trackId: string) => void;
 }
 
 const TTSPlayerContext = createContext<TTSPlayerContextType | undefined>(undefined);
 
-// BGM tracks available from existing library
+// BGM tracks available
 const BGM_TRACKS = [
-  '/audio/shio-to-pixel.mp3',
+  { id: 'shio-to-pixel', name: 'Shio to Pixel', src: '/audio/shio-to-pixel.mp3' },
+  { id: 'lofi-calm', name: 'Lo-Fi Calm', src: 'https://itryqwkqnexuawvpoetz.supabase.co/storage/v1/object/public/podcast-bgm/lofi-calm.mp3' },
+  { id: 'ambient-focus', name: 'Ambient Focus', src: 'https://itryqwkqnexuawvpoetz.supabase.co/storage/v1/object/public/podcast-bgm/ambient-focus.mp3' },
+  { id: 'musubinaosu', name: 'Musubinaosu Asa', src: '/audio/musubinaosu-asa.mp3' },
 ];
+
+export type BgmTrackId = typeof BGM_TRACKS[number]['id'];
+
+export const getBgmTracks = () => BGM_TRACKS;
 
 export const TTSPlayerProvider = ({ children }: { children: ReactNode }) => {
   const [state, setState] = useState<TTSPlayerState>({
@@ -43,15 +52,22 @@ export const TTSPlayerProvider = ({ children }: { children: ReactNode }) => {
     postSlug: null,
     postTitle: null,
     bgMusicEnabled: false,
+    bgMusicTrackId: BGM_TRACKS[0].id,
   });
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const bgMusicRef = useRef<HTMLAudioElement | null>(null);
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Get current BGM track src
+  const getCurrentBgmSrc = useCallback(() => {
+    const track = BGM_TRACKS.find(t => t.id === state.bgMusicTrackId);
+    return track?.src || BGM_TRACKS[0].src;
+  }, [state.bgMusicTrackId]);
+
   // Initialize BGM audio
   useEffect(() => {
-    const bgAudio = new Audio(BGM_TRACKS[0]);
+    const bgAudio = new Audio(getCurrentBgmSrc());
     bgAudio.loop = true;
     bgAudio.volume = 0.15; // Low volume for background
     bgMusicRef.current = bgAudio;
@@ -61,6 +77,17 @@ export const TTSPlayerProvider = ({ children }: { children: ReactNode }) => {
       bgAudio.src = '';
     };
   }, []);
+
+  // Update BGM track when changed
+  useEffect(() => {
+    if (bgMusicRef.current) {
+      const wasPlaying = !bgMusicRef.current.paused;
+      bgMusicRef.current.src = getCurrentBgmSrc();
+      if (wasPlaying && state.isPlaying && state.bgMusicEnabled) {
+        bgMusicRef.current.play().catch(console.error);
+      }
+    }
+  }, [state.bgMusicTrackId, getCurrentBgmSrc, state.isPlaying, state.bgMusicEnabled]);
 
   // Manage BGM playback based on TTS state
   useEffect(() => {
@@ -248,6 +275,10 @@ export const TTSPlayerProvider = ({ children }: { children: ReactNode }) => {
     setState(prev => ({ ...prev, bgMusicEnabled: !prev.bgMusicEnabled }));
   }, []);
 
+  const setBgMusicTrack = useCallback((trackId: string) => {
+    setState(prev => ({ ...prev, bgMusicTrackId: trackId }));
+  }, []);
+
   // Check if we're on the same blog post page
   const isOnSamePost = useCallback(() => {
     if (typeof window === 'undefined') return false;
@@ -274,6 +305,7 @@ export const TTSPlayerProvider = ({ children }: { children: ReactNode }) => {
       setPlaybackRate,
       isOnSamePost,
       toggleBgMusic,
+      setBgMusicTrack,
     }}>
       {children}
     </TTSPlayerContext.Provider>

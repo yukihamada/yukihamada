@@ -7,8 +7,9 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Switch } from '@/components/ui/switch';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useTTSPlayer } from '@/contexts/TTSPlayerContext';
+import { useTTSPlayer, getBgmTracks } from '@/contexts/TTSPlayerContext';
 import { useLocation } from 'react-router-dom';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import yukiProfile from '@/assets/yuki-profile.jpg';
 
 interface PodcastPlayerProps {
@@ -30,6 +31,7 @@ const PodcastPlayer = ({ content, title, postSlug, coverImage }: PodcastPlayerPr
     playbackRate,
     postSlug: activeSlug,
     bgMusicEnabled,
+    bgMusicTrackId,
     startTTS,
     play,
     pause,
@@ -38,7 +40,10 @@ const PodcastPlayer = ({ content, title, postSlug, coverImage }: PodcastPlayerPr
     seek,
     setPlaybackRate,
     toggleBgMusic,
+    setBgMusicTrack,
   } = useTTSPlayer();
+
+  const bgmTracks = getBgmTracks();
 
   const [analyzerData, setAnalyzerData] = useState<number[]>(new Array(16).fill(0));
   const animationRef = useRef<number | null>(null);
@@ -263,9 +268,9 @@ const PodcastPlayer = ({ content, title, postSlug, coverImage }: PodcastPlayerPr
                         <Music className={`h-4 w-4 ${bgMusicEnabled ? 'text-primary' : ''}`} />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-48 p-3" align="end">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">
+                    <PopoverContent className="w-56 p-3" align="end">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-sm font-medium">
                           {language === 'ja' ? 'BGM' : 'Background Music'}
                         </span>
                         <Switch 
@@ -273,7 +278,28 @@ const PodcastPlayer = ({ content, title, postSlug, coverImage }: PodcastPlayerPr
                           onCheckedChange={toggleBgMusic}
                         />
                       </div>
-                      <p className="text-xs text-muted-foreground mt-2">
+                      
+                      {bgMusicEnabled && (
+                        <div className="space-y-2">
+                          <span className="text-xs text-muted-foreground">
+                            {language === 'ja' ? 'トラック選択' : 'Select Track'}
+                          </span>
+                          <Select value={bgMusicTrackId} onValueChange={setBgMusicTrack}>
+                            <SelectTrigger className="w-full h-8 text-sm">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {bgmTracks.map((track) => (
+                                <SelectItem key={track.id} value={track.id}>
+                                  {track.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+                      
+                      <p className="text-xs text-muted-foreground mt-3">
                         {language === 'ja' 
                           ? 'ナレーション中に環境音楽を流します' 
                           : 'Play ambient music during narration'

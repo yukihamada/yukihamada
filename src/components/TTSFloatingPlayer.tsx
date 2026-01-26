@@ -5,7 +5,8 @@ import { Slider } from '@/components/ui/slider';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { useTTSPlayer } from '@/contexts/TTSPlayerContext';
+import { useTTSPlayer, getBgmTracks } from '@/contexts/TTSPlayerContext';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
@@ -24,6 +25,7 @@ const TTSFloatingPlayer = () => {
     postTitle,
     postSlug,
     bgMusicEnabled,
+    bgMusicTrackId,
     play,
     pause,
     stop,
@@ -31,7 +33,10 @@ const TTSFloatingPlayer = () => {
     seek,
     setPlaybackRate,
     toggleBgMusic,
+    setBgMusicTrack,
   } = useTTSPlayer();
+
+  const bgmTracks = getBgmTracks();
 
   const dragControls = useDragControls();
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -337,14 +342,28 @@ const TTSFloatingPlayer = () => {
                           <Music className={`h-3.5 w-3.5 ${bgMusicEnabled ? 'text-primary' : ''}`} />
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-40 p-2" align="end">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs">BGM</span>
+                      <PopoverContent className="w-48 p-2" align="end">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs font-medium">BGM</span>
                           <Switch 
                             checked={bgMusicEnabled} 
                             onCheckedChange={toggleBgMusic}
                           />
                         </div>
+                        {bgMusicEnabled && (
+                          <Select value={bgMusicTrackId} onValueChange={setBgMusicTrack}>
+                            <SelectTrigger className="w-full h-7 text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {bgmTracks.map((track) => (
+                                <SelectItem key={track.id} value={track.id} className="text-xs">
+                                  {track.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
                       </PopoverContent>
                     </Popover>
 

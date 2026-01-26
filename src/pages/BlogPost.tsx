@@ -638,6 +638,7 @@ const BlogPost = () => {
                   title={content.title}
                   category={content.category}
                   content={content.content}
+                  coverImage={post.image || undefined}
                 />
 
                 {/* Table of Contents - Mobile (inline) */}

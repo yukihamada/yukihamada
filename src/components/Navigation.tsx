@@ -134,12 +134,17 @@ const Navigation = () => {
         <motion.div 
           className="flex items-center justify-between transition-all duration-300"
           style={{
-            backgroundColor: `hsl(var(--background) / ${0.6 * scrollProgress})`,
-            backdropFilter: `blur(${scrollProgress * 24}px)`,
-            borderRadius: `${scrollProgress * 16}px`,
+            backgroundColor: `hsl(var(--background) / ${0.4 + scrollProgress * 0.3})`,
+            backdropFilter: `blur(${16 + scrollProgress * 24}px) saturate(${100 + scrollProgress * 80}%)`,
+            WebkitBackdropFilter: `blur(${16 + scrollProgress * 24}px) saturate(${100 + scrollProgress * 80}%)`,
+            borderRadius: `${scrollProgress * 20}px`,
             padding: `${12 + scrollProgress * 4}px ${scrollProgress * 24}px`,
-            boxShadow: scrollProgress > 0.5 ? `0 4px 20px -4px hsl(var(--primary) / ${scrollProgress * 0.1})` : 'none',
-            border: scrollProgress > 0.3 ? `1px solid hsl(var(--border) / ${scrollProgress * 0.5})` : '1px solid transparent',
+            boxShadow: scrollProgress > 0.3 
+              ? `0 8px 32px -8px hsl(var(--primary) / ${scrollProgress * 0.15}),
+                 inset 0 1px 0 hsl(0 0% 100% / ${scrollProgress * 0.1}),
+                 0 0 0 1px hsl(var(--border) / ${scrollProgress * 0.3})`
+              : 'none',
+            border: scrollProgress > 0.2 ? `1px solid hsl(var(--border) / ${scrollProgress * 0.4})` : '1px solid transparent',
           }}
         >
           {/* Logo - Animated */}

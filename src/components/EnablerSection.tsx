@@ -168,8 +168,9 @@ const EnablerSection = () => {
       <div className="container mx-auto px-6 mb-24">
         <AnimatedSection>
           <motion.div 
-            className="glass rounded-3xl p-8 md:p-12 max-w-4xl mx-auto text-center"
-            whileHover={{ scale: 1.01 }}
+            className="glass-premium rounded-3xl p-8 md:p-12 max-w-4xl mx-auto text-center ambient-glow"
+            whileHover={{ scale: 1.02, y: -5 }}
+            transition={{ type: "spring", stiffness: 300 }}
           >
             <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-6">
               {t.enabler.philosophy}
@@ -249,7 +250,7 @@ const EnablerSection = () => {
                   href={service.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group glass rounded-2xl p-6 transition-all hover:border-primary/50 block h-full"
+                  className="group glass-premium rounded-2xl p-6 transition-all hover:border-primary/50 block h-full hover-3d"
                 >
                   <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${service.color} flex items-center justify-center mb-4 shadow-lg`}>
                     <service.icon className="h-6 w-6 text-white" />
@@ -283,8 +284,9 @@ const EnablerSection = () => {
       <div className="container mx-auto px-6 mb-24">
         <AnimatedSection>
           <motion.div 
-            className="glass rounded-3xl p-8 md:p-12 text-center"
-            whileHover={{ scale: 1.01 }}
+            className="glass-premium rounded-3xl p-8 md:p-12 text-center ambient-glow"
+            whileHover={{ scale: 1.02, y: -5 }}
+            transition={{ type: "spring", stiffness: 300 }}
           >
             <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
               {t.enabler.visionTitle}
@@ -331,8 +333,9 @@ const EnablerSection = () => {
         <AnimatedSection delay={0.2}>
           <div className="max-w-3xl mx-auto">
             <motion.div 
-              className="glass rounded-3xl p-8"
-              whileHover={{ scale: 1.01 }}
+              className="glass-premium rounded-3xl p-8"
+              whileHover={{ scale: 1.02, y: -3 }}
+              transition={{ type: "spring", stiffness: 300 }}
             >
               <h3 className="text-xl font-semibold mb-6 text-foreground">
                 {t.enabler.otherProjects}

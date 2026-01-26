@@ -118,6 +118,49 @@
     @apply bg-card/80 backdrop-blur-xl border border-border/50;
   }
 
+  /* Glassmorphism 2.0 - Spatial Design */
+  .glass-premium {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--card) / 0.6) 0%,
+      hsl(var(--card) / 0.3) 100%
+    );
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    border: 1px solid hsl(var(--border) / 0.3);
+    box-shadow:
+      0 8px 32px hsl(var(--primary) / 0.1),
+      inset 0 1px 0 hsl(0 0% 100% / 0.1),
+      inset 0 -1px 0 hsl(0 0% 0% / 0.05);
+  }
+
+  .glass-card-3d {
+    transform-style: preserve-3d;
+    perspective: 1000px;
+  }
+
+  /* Frosted glass with depth layers */
+  .depth-layer-1 { transform: translateZ(10px); }
+  .depth-layer-2 { transform: translateZ(30px); }
+  .depth-layer-3 { transform: translateZ(60px); }
+
+  /* Ambient glow for spatial feel */
+  .ambient-glow {
+    position: relative;
+  }
+  .ambient-glow::before {
+    content: '';
+    position: absolute;
+    inset: -20%;
+    background: radial-gradient(
+      circle at 50% 50%,
+      hsl(var(--primary) / 0.15) 0%,
+      transparent 70%
+    );
+    filter: blur(60px);
+    z-index: -1;
+  }
+
   .hover-lift {
     @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-xl;
   }
@@ -293,6 +336,85 @@ html {
 
 .glow-pulse {
   animation: glow-pulse 2s ease-in-out infinite;
+}
+
+/* Spatial Float Animation - Apple Vision Pro style */
+@keyframes spatial-float {
+  0%, 100% {
+    transform: translateY(0) translateZ(0) rotateX(0);
+  }
+  50% {
+    transform: translateY(-15px) translateZ(20px) rotateX(2deg);
+  }
+}
+
+.animate-spatial-float {
+  animation: spatial-float 6s ease-in-out infinite;
+}
+
+/* Depth Pulse - 3D shadow animation */
+@keyframes depth-pulse {
+  0%, 100% {
+    box-shadow: 
+      0 4px 20px hsl(var(--primary) / 0.1),
+      0 0 0 1px hsl(var(--border) / 0.2);
+  }
+  50% {
+    box-shadow: 
+      0 8px 40px hsl(var(--primary) / 0.2),
+      0 0 0 2px hsl(var(--primary) / 0.1);
+  }
+}
+
+.animate-depth-pulse {
+  animation: depth-pulse 4s ease-in-out infinite;
+}
+
+/* Premium Shine Effect */
+.premium-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.premium-shine::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    hsl(0 0% 100% / 0.15),
+    transparent
+  );
+  transform: translateX(-100%);
+  animation: premium-shine 3s ease-in-out infinite;
+}
+
+@keyframes premium-shine {
+  0% { transform: translateX(-100%) rotate(15deg); }
+  100% { transform: translateX(200%) rotate(15deg); }
+}
+
+/* 3D hover transform */
+.hover-3d {
+  transition: transform 0.3s ease-out;
+  transform-style: preserve-3d;
+}
+
+.hover-3d:hover {
+  transform: perspective(1000px) rotateX(5deg) rotateY(-5deg) translateZ(10px);
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .animate-spatial-float,
+  .animate-depth-pulse,
+  .premium-shine::after {
+    animation: none;
+  }
+  .hover-3d:hover {
+    transform: none;
+  }
 }
 
 /* Timeline styles */

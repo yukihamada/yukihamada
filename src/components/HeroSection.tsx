@@ -158,40 +158,73 @@ const HeroSection = ({ onMusicPlay }: HeroSectionProps) => {
           initial="hidden"
           animate="visible"
         >
-          {/* Profile Image */}
+          {/* Profile Image with 3D Spatial Effect */}
           <motion.div variants={itemVariants} className="mb-8">
             <MagneticButton>
               <motion.div 
-                className="relative inline-block"
-                whileHover={{ scale: 1.05 }}
-                transition={{ type: "spring", stiffness: 300 }}
+                className="relative inline-block glass-card-3d"
+                whileHover={{ 
+                  scale: 1.08,
+                  rotateY: 10,
+                  rotateX: -5,
+                  z: 50,
+                }}
+                transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                style={{ transformStyle: 'preserve-3d' }}
               >
+                {/* Ambient glow behind profile */}
                 <motion.div 
-                  className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-primary/30 shadow-2xl mx-auto"
+                  className="absolute -inset-8 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 blur-3xl"
+                  animate={{
+                    scale: [1, 1.2, 1],
+                    opacity: [0.3, 0.5, 0.3],
+                  }}
+                  transition={{ duration: 4, repeat: Infinity }}
+                />
+                
+                <motion.div 
+                  className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-primary/30 mx-auto relative glass-premium"
                   animate={{
                     boxShadow: [
-                      "0 0 30px hsl(var(--primary) / 0.3)",
-                      "0 0 60px hsl(var(--primary) / 0.5)",
-                      "0 0 30px hsl(var(--primary) / 0.3)",
+                      "0 0 30px hsl(var(--primary) / 0.3), 0 20px 60px -20px hsl(var(--primary) / 0.4)",
+                      "0 0 60px hsl(var(--primary) / 0.5), 0 30px 80px -20px hsl(var(--primary) / 0.5)",
+                      "0 0 30px hsl(var(--primary) / 0.3), 0 20px 60px -20px hsl(var(--primary) / 0.4)",
                     ],
                   }}
                   transition={{ duration: 3, repeat: Infinity }}
+                  style={{ transform: 'translateZ(30px)' }}
                 >
                   <img 
                     src={profileImage} 
                     alt="濱田優貴" 
                     className="w-full h-full object-cover"
                   />
+                  {/* Premium shine overlay */}
+                  <motion.div 
+                    className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent"
+                    animate={{ x: ['-100%', '200%'] }}
+                    transition={{ duration: 3, repeat: Infinity, repeatDelay: 2 }}
+                  />
                 </motion.div>
+                
+                {/* Orbital rings with depth */}
                 <motion.div 
-                  className="absolute -inset-2 rounded-full border border-primary/20"
+                  className="absolute -inset-2 rounded-full border border-primary/30"
                   animate={{ rotate: 360 }}
                   transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                  style={{ transform: 'translateZ(10px)' }}
                 />
                 <motion.div 
-                  className="absolute -inset-4 rounded-full border border-accent/10"
+                  className="absolute -inset-4 rounded-full border border-accent/20"
                   animate={{ rotate: -360 }}
                   transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+                  style={{ transform: 'translateZ(5px)' }}
+                />
+                <motion.div 
+                  className="absolute -inset-6 rounded-full border border-primary/10"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
+                  style={{ transform: 'translateZ(0px)' }}
                 />
               </motion.div>
             </MagneticButton>

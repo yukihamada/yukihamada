@@ -134,17 +134,18 @@ const HobbiesSection = () => {
                 transition={{ delay: index * 0.15, duration: 0.6 }}
               >
                 <motion.div
-                  className={`glass rounded-3xl p-8 text-center cursor-pointer h-full relative overflow-hidden ${hobby.bgColor}`}
+                  className={`glass-premium rounded-3xl p-8 text-center cursor-pointer h-full relative overflow-hidden ${hobby.bgColor}`}
                   animate={{
-                    scale: isActive ? 1.05 : 1,
-                    rotateY: isActive ? 5 : 0,
-                    z: isActive ? 50 : 0,
+                    scale: isActive ? 1.08 : 1,
+                    rotateY: isActive ? 8 : 0,
+                    rotateX: isActive ? -3 : 0,
+                    z: isActive ? 60 : 0,
                   }}
-                  transition={{ type: "spring", stiffness: 300 }}
+                  transition={{ type: "spring", stiffness: 250, damping: 20 }}
                   style={{
                     boxShadow: isActive
-                      ? '0 30px 60px -15px rgba(139, 92, 246, 0.35)'
-                      : '0 4px 20px -5px rgba(0, 0, 0, 0.1)',
+                      ? '0 35px 70px -15px hsl(var(--primary) / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.15)'
+                      : '0 4px 20px -5px hsl(0 0% 0% / 0.1)',
                     transformStyle: 'preserve-3d',
                   }}
                 >

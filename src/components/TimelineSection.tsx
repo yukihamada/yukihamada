@@ -175,20 +175,23 @@ const TimelineSection = () => {
                   }`}
                 >
                   <motion.div
-                    className={`relative glass rounded-2xl p-6 overflow-hidden ${
+                    className={`relative glass-premium rounded-2xl p-6 overflow-hidden hover-3d ${
                       item.highlight ? 'border-primary/50' : ''
                     }`}
                     animate={{
-                      scale: isHovered ? 1.03 : 1,
-                      y: isHovered ? -8 : 0,
+                      scale: isHovered ? 1.05 : 1,
+                      y: isHovered ? -10 : 0,
+                      rotateY: isHovered ? 3 : 0,
+                      rotateX: isHovered ? -2 : 0,
                     }}
-                    transition={{ type: "spring", stiffness: 300 }}
+                    transition={{ type: "spring", stiffness: 250, damping: 20 }}
                     style={{
+                      transformStyle: 'preserve-3d',
                       boxShadow: isHovered 
                         ? item.highlight 
-                          ? "0 25px 50px -12px hsl(var(--primary) / 0.35)"
-                          : "0 25px 50px -12px hsl(0 0% 0% / 0.2)"
-                        : "none"
+                          ? "0 30px 60px -15px hsl(var(--primary) / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.1)"
+                          : "0 30px 60px -15px hsl(0 0% 0% / 0.25), inset 0 1px 0 hsl(0 0% 100% / 0.1)"
+                        : "0 4px 20px -5px hsl(0 0% 0% / 0.1)"
                     }}
                   >
                     {/* Shine effect on hover */}

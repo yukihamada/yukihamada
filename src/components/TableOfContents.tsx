@@ -22,14 +22,25 @@ const TableOfContents = ({ content, sticky = false }: TableOfContentsProps) => {
   const tocItems = useMemo(() => {
     const items: TocItem[] = [];
     
-    // Try parsing HTML headings first (h2, h3 with id attributes)
-    const htmlHeadingRegex = /<h([23])[^>]*id="([^"]+)"[^>]*>([^<]+)<\/h[23]>/gi;
+    // Exclusion list for headings that shouldn't appear in TOC
+    // These are typically table headers or special sections
+    const excludedHeadings = ['選手', '選手名', 'player', 'players', 'name', '名前'];
+    
+    // Try parsing HTML headings first (h2, h3 with id attributes and blog-heading class)
+    // Only match headings with blog-heading class to avoid table headers
+    const htmlHeadingRegex = /<h([23])[^>]*class="[^"]*blog-heading[^"]*"[^>]*id="([^"]+)"[^>]*>([^<]+)/gi;
     let htmlMatch;
     
     while ((htmlMatch = htmlHeadingRegex.exec(content)) !== null) {
       const level = parseInt(htmlMatch[1]);
       const id = htmlMatch[2];
       const text = htmlMatch[3].replace(/<[^>]*>/g, '').trim();
+      
+      // Skip excluded headings (case-insensitive)
+      if (excludedHeadings.some(ex => text.toLowerCase() === ex.toLowerCase())) {
+        continue;
+      }
+      
       items.push({ id, text, level });
     }
     
@@ -41,6 +52,12 @@ const TableOfContents = ({ content, sticky = false }: TableOfContentsProps) => {
       while ((mdMatch = markdownRegex.exec(content)) !== null) {
         const level = mdMatch[1].length;
         const text = mdMatch[2].replace(/\*\*/g, '').trim();
+        
+        // Skip excluded headings
+        if (excludedHeadings.some(ex => text.toLowerCase() === ex.toLowerCase())) {
+          continue;
+        }
+        
         const id = text
           .toLowerCase()
           .replace(/[^\w\s\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/g, '')

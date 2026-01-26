@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, useRef, useCallback, ReactNode, useEffect } from 'react';
 import { toast } from 'sonner';
-import { useLocation } from 'react-router-dom';
 
 interface TTSPlayerState {
   isLoading: boolean;
@@ -11,6 +10,7 @@ interface TTSPlayerState {
   playbackRate: number;
   postSlug: string | null;
   postTitle: string | null;
+  bgMusicEnabled: boolean;
 }
 
 interface TTSPlayerContextType extends TTSPlayerState {
@@ -22,9 +22,15 @@ interface TTSPlayerContextType extends TTSPlayerState {
   seek: (time: number) => void;
   setPlaybackRate: (rate: number) => void;
   isOnSamePost: () => boolean;
+  toggleBgMusic: () => void;
 }
 
 const TTSPlayerContext = createContext<TTSPlayerContextType | undefined>(undefined);
+
+// BGM tracks available from existing library
+const BGM_TRACKS = [
+  '/audio/shio-to-pixel.mp3',
+];
 
 export const TTSPlayerProvider = ({ children }: { children: ReactNode }) => {
   const [state, setState] = useState<TTSPlayerState>({
@@ -36,10 +42,36 @@ export const TTSPlayerProvider = ({ children }: { children: ReactNode }) => {
     playbackRate: 1.2,
     postSlug: null,
     postTitle: null,
+    bgMusicEnabled: false,
   });
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const bgMusicRef = useRef<HTMLAudioElement | null>(null);
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Initialize BGM audio
+  useEffect(() => {
+    const bgAudio = new Audio(BGM_TRACKS[0]);
+    bgAudio.loop = true;
+    bgAudio.volume = 0.15; // Low volume for background
+    bgMusicRef.current = bgAudio;
+    
+    return () => {
+      bgAudio.pause();
+      bgAudio.src = '';
+    };
+  }, []);
+
+  // Manage BGM playback based on TTS state
+  useEffect(() => {
+    if (bgMusicRef.current) {
+      if (state.isPlaying && state.bgMusicEnabled) {
+        bgMusicRef.current.play().catch(console.error);
+      } else {
+        bgMusicRef.current.pause();
+      }
+    }
+  }, [state.isPlaying, state.bgMusicEnabled]);
 
   // Progress tracking
   useEffect(() => {
@@ -212,6 +244,10 @@ export const TTSPlayerProvider = ({ children }: { children: ReactNode }) => {
     setState(prev => ({ ...prev, playbackRate: rate }));
   }, []);
 
+  const toggleBgMusic = useCallback(() => {
+    setState(prev => ({ ...prev, bgMusicEnabled: !prev.bgMusicEnabled }));
+  }, []);
+
   // Check if we're on the same blog post page
   const isOnSamePost = useCallback(() => {
     if (typeof window === 'undefined') return false;
@@ -237,6 +273,7 @@ export const TTSPlayerProvider = ({ children }: { children: ReactNode }) => {
       seek,
       setPlaybackRate,
       isOnSamePost,
+      toggleBgMusic,
     }}>
       {children}
     </TTSPlayerContext.Provider>

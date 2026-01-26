@@ -10,9 +10,10 @@ interface BlogSummaryProps {
   title: string;
   category: string;
   content: string;
+  coverImage?: string;
 }
 
-const BlogSummary = ({ postSlug, title, category, content }: BlogSummaryProps) => {
+const BlogSummary = ({ postSlug, title, category, content, coverImage }: BlogSummaryProps) => {
   const { language } = useLanguage();
   const [isExpanded, setIsExpanded] = useState(false);
   const [summary, setSummary] = useState<{ ja: string; en: string } | null>(null);
@@ -76,7 +77,7 @@ const BlogSummary = ({ postSlug, title, category, content }: BlogSummaryProps) =
     <div className="w-full my-8">
       <div className="flex flex-col gap-4">
         {/* Read Aloud - Primary (Large) */}
-        <BlogReadAloud content={content} title={title} postSlug={postSlug} />
+        <BlogReadAloud content={content} title={title} postSlug={postSlug} coverImage={coverImage} />
         
         {/* AI Summary - Secondary (Smaller) */}
         <Button

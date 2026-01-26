@@ -93,6 +93,7 @@ const TTSFloatingPlayer = () => {
     return (
       <motion.div
         drag
+        dragListener={false}
         dragControls={dragControls}
         dragMomentum={false}
         dragElastic={0.1}
@@ -107,7 +108,8 @@ const TTSFloatingPlayer = () => {
       >
         <motion.button
           onClick={() => setIsMinimized(false)}
-          className="relative"
+          onPointerDown={(e) => dragControls.start(e)}
+          className="relative cursor-grab active:cursor-grabbing"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
         >
@@ -177,6 +179,7 @@ const TTSFloatingPlayer = () => {
     <AnimatePresence>
       <motion.div
         drag
+        dragListener={false}
         dragControls={dragControls}
         dragMomentum={false}
         dragElastic={0.1}
@@ -288,7 +291,10 @@ const TTSFloatingPlayer = () => {
             ) : (
               <>
                 {/* Progress bar */}
-                <div className="flex items-center gap-2 w-full mb-3">
+                <div 
+                  className="flex items-center gap-2 w-full mb-3"
+                  onPointerDownCapture={(e) => e.stopPropagation()}
+                >
                   <span className="text-[10px] font-mono text-muted-foreground min-w-[32px]">
                     {formatTime(currentTime)}
                   </span>

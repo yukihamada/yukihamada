@@ -190,7 +190,7 @@ const TTSFloatingPlayer = () => {
         animate={{ y: 0, opacity: 1, x: position.x }}
         exit={{ y: 100, opacity: 0 }}
         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-        className="fixed bottom-32 left-4 right-4 md:left-auto md:right-4 md:w-96 z-40 touch-none"
+        className="fixed bottom-32 left-2 right-2 sm:left-4 sm:right-4 md:left-auto md:right-4 md:w-96 z-40 touch-none max-w-[calc(100vw-16px)]"
         style={{ y: position.y }}
       >
         <div className="relative overflow-hidden bg-background/95 backdrop-blur-lg border border-primary/30 rounded-2xl shadow-xl">
@@ -311,41 +311,45 @@ const TTSFloatingPlayer = () => {
                 </div>
 
                 {/* Controls */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1">
-                    <Button onClick={skipBack} variant="ghost" size="icon" className="h-8 w-8">
-                      <SkipBack className="h-3.5 w-3.5" />
+                <div className="flex items-center justify-between flex-wrap gap-1">
+                  <div className="flex items-center gap-0.5 sm:gap-1">
+                    <Button onClick={skipBack} variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8">
+                      <SkipBack className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                     </Button>
 
                     {isPlaying ? (
-                      <Button onClick={pause} variant="default" size="icon" className="h-10 w-10 rounded-full">
-                        <Pause className="h-4 w-4" />
+                      <Button onClick={pause} variant="default" size="icon" className="h-9 w-9 sm:h-10 sm:w-10 rounded-full">
+                        <Pause className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       </Button>
                     ) : (
-                      <Button onClick={play} variant="default" size="icon" className="h-10 w-10 rounded-full">
-                        <Play className="h-4 w-4 ml-0.5" />
+                      <Button onClick={play} variant="default" size="icon" className="h-9 w-9 sm:h-10 sm:w-10 rounded-full">
+                        <Play className="h-3.5 w-3.5 sm:h-4 sm:w-4 ml-0.5" />
                       </Button>
                     )}
 
-                    <Button onClick={skipForward} variant="ghost" size="icon" className="h-8 w-8">
-                      <SkipForward className="h-3.5 w-3.5" />
+                    <Button onClick={skipForward} variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8">
+                      <SkipForward className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                     </Button>
 
-                    <Button onClick={restart} variant="ghost" size="icon" className="h-7 w-7">
-                      <RotateCcw className="h-3 w-3" />
+                    <Button onClick={restart} variant="ghost" size="icon" className="h-6 w-6 sm:h-7 sm:w-7">
+                      <RotateCcw className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                    </Button>
+                    
+                    <Button onClick={stop} variant="ghost" size="icon" className="h-6 w-6 sm:h-7 sm:w-7">
+                      <Square className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                     </Button>
                   </div>
 
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-0.5 sm:gap-1">
                     {/* BGM Toggle */}
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button 
                           variant={bgMusicEnabled ? "secondary" : "ghost"} 
                           size="icon" 
-                          className="h-7 w-7"
+                          className="h-6 w-6 sm:h-7 sm:w-7"
                         >
-                          <Music className={`h-3.5 w-3.5 ${bgMusicEnabled ? 'text-primary' : ''}`} />
+                          <Music className={`h-3 w-3 sm:h-3.5 sm:w-3.5 ${bgMusicEnabled ? 'text-primary' : ''}`} />
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-48 p-2" align="end">
@@ -376,8 +380,8 @@ const TTSFloatingPlayer = () => {
                     {/* Speed control */}
                     <Popover>
                       <PopoverTrigger asChild>
-                        <Button variant="outline" size="sm" className="h-7 px-2 text-[10px] gap-1">
-                          <Gauge className="h-3 w-3" />
+                        <Button variant="outline" size="sm" className="h-6 sm:h-7 px-1.5 sm:px-2 text-[9px] sm:text-[10px] gap-0.5">
+                          <Gauge className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                           <span>{playbackRate}x</span>
                         </Button>
                       </PopoverTrigger>

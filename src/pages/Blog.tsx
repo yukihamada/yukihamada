@@ -256,12 +256,11 @@ const Blog = () => {
               return (
                 <Link key={post.slug} to={`/blog/${post.slug}`}>
                   <motion.article
-                    className="group glass rounded-2xl overflow-hidden h-full flex flex-col"
+                    className="group glass rounded-2xl overflow-hidden h-full flex flex-col transition-shadow hover:shadow-xl"
                     variants={cardVariants}
                     whileHover={{ 
                       scale: 1.02, 
-                      y: -5,
-                      boxShadow: "0 20px 40px -15px hsl(var(--primary) / 0.2)"
+                      y: -5
                     }}
                     transition={{ type: "spring", stiffness: 300 }}
                   >

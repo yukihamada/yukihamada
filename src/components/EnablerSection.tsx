@@ -358,12 +358,11 @@ const EnablerSection = () => {
                     href={item.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block p-4 rounded-xl border border-border hover:border-primary/50 transition-all"
+                    className="block p-4 rounded-xl border border-border hover:border-primary/50 transition-all transition-shadow hover:shadow-lg"
                     variants={cardVariants}
                     whileHover={{ 
                       scale: 1.02, 
-                      y: -5,
-                      boxShadow: "0 20px 40px -15px hsl(var(--primary) / 0.2)"
+                      y: -5
                     }}
                   >
                     <p className="font-semibold text-foreground">{item.title}</p>

@@ -175,8 +175,10 @@ const TimelineSection = () => {
                   }`}
                 >
                   <motion.div
-                    className={`relative glass-premium rounded-2xl p-6 overflow-hidden hover-3d ${
+                    className={`relative glass-premium rounded-2xl p-6 overflow-hidden hover-3d transition-shadow ${
                       item.highlight ? 'border-primary/50' : ''
+                    } ${isHovered ? 'shadow-2xl' : 'shadow-lg'} ${
+                      item.highlight ? 'ring-1 ring-primary/20' : 'ring-1 ring-border/40'
                     }`}
                     animate={{
                       scale: isHovered ? 1.05 : 1,
@@ -186,12 +188,7 @@ const TimelineSection = () => {
                     }}
                     transition={{ type: "spring", stiffness: 250, damping: 20 }}
                     style={{
-                      transformStyle: 'preserve-3d',
-                      boxShadow: isHovered 
-                        ? item.highlight 
-                          ? "0 30px 60px -15px hsl(var(--primary) / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.1)"
-                          : "0 30px 60px -15px hsl(0 0% 0% / 0.25), inset 0 1px 0 hsl(0 0% 100% / 0.1)"
-                        : "0 4px 20px -5px hsl(0 0% 0% / 0.1)"
+                      transformStyle: 'preserve-3d'
                     }}
                   >
                     {/* Shine effect on hover */}
@@ -236,11 +233,11 @@ const TimelineSection = () => {
 
                 {/* Icon */}
                 <motion.div
-                  className={`absolute left-8 md:left-1/2 -translate-x-1/2 w-16 h-16 rounded-full flex items-center justify-center ${
+                  className={`absolute left-8 md:left-1/2 -translate-x-1/2 w-16 h-16 rounded-full flex items-center justify-center transition-shadow ${
                     item.highlight
                       ? 'gradient-bg'
                       : 'bg-card border-2 border-primary'
-                  }`}
+                  } ${isHovered ? 'shadow-lg ring-2 ring-primary/30' : 'shadow-md ring-1 ring-border/40'}`}
                   initial={{ scale: 0, rotate: -180 }}
                   whileInView={{ scale: 1, rotate: 0 }}
                   viewport={{ once: true }}
@@ -251,10 +248,7 @@ const TimelineSection = () => {
                   }}
                   animate={{
                     scale: isHovered ? 1.3 : 1,
-                    rotate: isHovered ? 10 : 0,
-                    boxShadow: isHovered 
-                      ? "0 0 40px hsl(var(--primary) / 0.6)"
-                      : "0 0 0 hsl(var(--primary) / 0)"
+                    rotate: isHovered ? 10 : 0
                   }}
                 >
                   <Icon

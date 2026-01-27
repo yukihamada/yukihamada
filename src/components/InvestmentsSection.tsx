@@ -227,7 +227,11 @@ const InvestmentsSection = () => {
                 href={investment.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group relative glass-premium rounded-2xl p-6 cursor-pointer block overflow-hidden"
+                className={`group relative glass-premium rounded-2xl p-6 cursor-pointer block overflow-hidden transition-shadow duration-300 ${
+                  isHovered 
+                    ? 'shadow-[0_35px_70px_-15px_rgba(0,0,0,0.35)]' 
+                    : 'shadow-[0_4px_20px_-5px_rgba(0,0,0,0.1)]'
+                }`}
                 variants={cardVariants}
                 onMouseEnter={() => setHoveredIndex(index)}
                 onMouseLeave={() => setHoveredIndex(null)}
@@ -238,12 +242,7 @@ const InvestmentsSection = () => {
                   rotateX: -3,
                 }}
                 whileTap={{ scale: 0.98 }}
-                style={{
-                  transformStyle: 'preserve-3d',
-                  boxShadow: isHovered 
-                    ? "0 35px 70px -15px hsl(var(--primary) / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.15)"
-                    : "0 4px 20px -5px hsl(0 0% 0% / 0.1)"
-                }}
+                style={{ transformStyle: 'preserve-3d' }}
               >
                 {/* Gradient background on hover */}
                 <motion.div 

@@ -2,12 +2,23 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TrendingUp, ExternalLink, Sparkles } from 'lucide-react';
 
-const investments = [
+interface Investment {
+  name: string;
+  category: string;
+  description: string;
+  emoji: string;
+  logo?: string;
+  url: string;
+  gradient: string;
+}
+
+const investments: Investment[] = [
   {
     name: 'NOT A HOTEL',
     category: '不動産・ホスピタリティ',
     description: '会員制のホテル兼不動産モデルを提供',
-    logo: '🏨',
+    emoji: '🏨',
+    logo: '/images/investments/notahotel-logo.png',
     url: 'https://notahotel.com/',
     gradient: 'from-amber-500/20 to-orange-500/20',
   },
@@ -15,7 +26,8 @@ const investments = [
     name: '令和トラベル',
     category: 'トラベルテック',
     description: 'AIを活用したデジタルトラベルエージェンシー「NEWT」を運営',
-    logo: '✈️',
+    emoji: '✈️',
+    logo: '/images/investments/newt-logo.png',
     url: 'https://newt.net/',
     gradient: 'from-sky-500/20 to-blue-500/20',
   },
@@ -23,7 +35,8 @@ const investments = [
     name: 'エルソウルラボ',
     category: 'Web3・ブロックチェーン',
     description: 'SolanaチェーンのバリデーターやWeb3アプリ開発のOSS提供',
-    logo: '⛓️',
+    emoji: '⛓️',
+    logo: '/images/investments/elsoul-logo.png',
     url: 'https://labo.elsoul.nl/ja/',
     gradient: 'from-purple-500/20 to-violet-500/20',
   },
@@ -31,7 +44,8 @@ const investments = [
     name: 'フィナンシェ',
     category: 'ブロックチェーン・クラウドファンディング',
     description: 'トークン発行型クラウドファンディングプラットフォーム',
-    logo: '🪙',
+    emoji: '🪙',
+    logo: '/images/investments/financie-logo.png',
     url: 'https://www.corp.financie.jp/',
     gradient: 'from-yellow-500/20 to-amber-500/20',
   },
@@ -39,11 +53,51 @@ const investments = [
     name: 'VUILD',
     category: 'デジタルファブリケーション',
     description: '誰でも家や家具を設計・製作できるプラットフォーム「Nesting」',
-    logo: '🏠',
+    emoji: '🏠',
+    logo: '/images/investments/vuild-logo.png',
     url: 'https://vuild.co.jp/',
     gradient: 'from-green-500/20 to-emerald-500/20',
   },
 ];
+
+// Logo component with fallback to emoji
+const InvestmentLogo = ({ investment, isHovered }: { investment: Investment; isHovered: boolean }) => {
+  const [imageError, setImageError] = useState(false);
+
+  if (!investment.logo || imageError) {
+    return (
+      <motion.span 
+        className="text-4xl"
+        animate={{ 
+          scale: isHovered ? 1.3 : 1,
+          rotate: isHovered ? [0, -10, 10, 0] : 0,
+          y: isHovered ? -5 : 0,
+        }}
+        transition={{ duration: 0.4 }}
+      >
+        {investment.emoji}
+      </motion.span>
+    );
+  }
+
+  return (
+    <motion.div
+      className="w-12 h-12 relative"
+      animate={{ 
+        scale: isHovered ? 1.2 : 1,
+        y: isHovered ? -5 : 0,
+      }}
+      transition={{ duration: 0.4 }}
+    >
+      <img
+        src={investment.logo}
+        alt={`${investment.name} logo`}
+        className="w-full h-full object-contain dark:brightness-0 dark:invert"
+        onError={() => setImageError(true)}
+      />
+    </motion.div>
+  );
+};
 
 const InvestmentsSection = () => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -209,17 +263,7 @@ const InvestmentsSection = () => {
                 
                 <div className="relative z-10">
                   <div className="flex items-start justify-between mb-4">
-                    <motion.span 
-                      className="text-4xl"
-                      animate={{ 
-                        scale: isHovered ? 1.3 : 1,
-                        rotate: isHovered ? [0, -10, 10, 0] : 0,
-                        y: isHovered ? -5 : 0,
-                      }}
-                      transition={{ duration: 0.4 }}
-                    >
-                      {investment.logo}
-                    </motion.span>
+                    <InvestmentLogo investment={investment} isHovered={isHovered} />
                     <motion.div
                       animate={{ 
                         opacity: isHovered ? 1 : 0,

@@ -1,9 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, useMotionValue, useSpring, useScroll, useTransform } from 'framer-motion';
+import { useTheme } from 'next-themes';
 
 const OrganicBackground = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
+  // Theme-aware colors
+  const primaryColor = isDark ? 'hsl(var(--primary) / 0.10)' : 'hsl(var(--primary) / 0.08)';
+  const accentColor = isDark ? 'hsl(var(--accent) / 0.08)' : 'hsl(var(--accent) / 0.06)';
+  const orbPrimary = isDark ? 'hsl(var(--primary) / 0.15)' : 'hsl(var(--primary) / 0.10)';
+  const orbAccent = isDark ? 'hsl(var(--accent) / 0.12)' : 'hsl(var(--accent) / 0.08)';
 
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
@@ -40,10 +49,11 @@ const OrganicBackground = () => {
         style={{ y: parallaxY1, z: -200 }}
       >
         <motion.div
-          className="absolute w-[1000px] h-[1000px] rounded-full bg-primary/10 blur-[150px]"
+          className="absolute w-[1000px] h-[1000px] rounded-full blur-[150px]"
           style={{
             left: '-20%',
             top: '-10%',
+            background: primaryColor,
           }}
           animate={{
             scale: [1, 1.3, 1],
@@ -55,10 +65,11 @@ const OrganicBackground = () => {
           }}
         />
         <motion.div
-          className="absolute w-[800px] h-[800px] rounded-full bg-accent/8 blur-[120px]"
+          className="absolute w-[800px] h-[800px] rounded-full blur-[120px]"
           style={{
             right: '-15%',
             bottom: '10%',
+            background: accentColor,
           }}
           animate={{
             scale: [1.2, 1, 1.2],
@@ -78,12 +89,13 @@ const OrganicBackground = () => {
         style={{ y: parallaxY2, z: -100 }}
       >
         <motion.div
-          className="absolute w-[600px] h-[600px] rounded-full bg-primary/15 blur-[100px]"
+          className="absolute w-[600px] h-[600px] rounded-full blur-[100px]"
           style={{
             x: smoothMouseX,
             y: smoothMouseY,
             left: '10%',
             top: '20%',
+            background: orbPrimary,
           }}
           animate={{
             scale: [1, 1.2, 1],
@@ -94,7 +106,8 @@ const OrganicBackground = () => {
         />
         
         <motion.div
-          className="absolute right-0 top-1/4 w-[500px] h-[500px] rounded-full bg-accent/12 blur-[80px]"
+          className="absolute right-0 top-1/4 w-[500px] h-[500px] rounded-full blur-[80px]"
+          style={{ background: orbAccent }}
           animate={{
             scale: [1.2, 1, 1.2],
             x: [0, 50, 0],
@@ -114,7 +127,8 @@ const OrganicBackground = () => {
         style={{ y: parallaxY3, z: 0 }}
       >
         <motion.div
-          className="absolute left-1/4 bottom-0 w-[400px] h-[400px] rounded-full bg-primary/8 blur-[60px]"
+          className="absolute left-1/4 bottom-0 w-[400px] h-[400px] rounded-full blur-[60px]"
+          style={{ background: isDark ? 'hsl(var(--primary) / 0.08)' : 'hsl(var(--primary) / 0.05)' }}
           animate={{
             scale: [1, 1.3, 1],
             x: [0, -40, 0],
@@ -139,15 +153,15 @@ const OrganicBackground = () => {
               width: `${8 + (i % 3) * 4}px`,
               height: `${8 + (i % 3) * 4}px`,
               background: i % 2 === 0 
-                ? 'hsl(var(--primary) / 0.4)' 
-                : 'hsl(var(--accent) / 0.3)',
-              boxShadow: '0 0 20px hsl(var(--primary) / 0.3)',
+                ? (isDark ? 'hsl(var(--primary) / 0.4)' : 'hsl(var(--primary) / 0.25)')
+                : (isDark ? 'hsl(var(--accent) / 0.3)' : 'hsl(var(--accent) / 0.2)'),
+              boxShadow: isDark ? '0 0 20px hsl(var(--primary) / 0.3)' : '0 0 15px hsl(var(--primary) / 0.15)',
             }}
             animate={{
               y: [0, -40, 0],
               x: [0, 20, 0],
               scale: [1, 1.5, 1],
-              opacity: [0.3, 0.7, 0.3],
+              opacity: isDark ? [0.3, 0.7, 0.3] : [0.2, 0.5, 0.2],
               z: [0, 30, 0],
             }}
             transition={{

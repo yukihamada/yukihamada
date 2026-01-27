@@ -1,8 +1,9 @@
 import { motion } from 'framer-motion';
-import { Github, Linkedin, Mail, ExternalLink, MessageCircle, Settings } from 'lucide-react';
+import { Github, Linkedin, Mail, ExternalLink, MessageCircle, Settings, Send } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import MagneticButton from '@/components/MagneticButton';
+import NewsletterSignupForm from '@/components/NewsletterSignupForm';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useChat } from '@/contexts/ChatContext';
 import { useAuth } from '@/hooks/useAuth';
@@ -146,26 +147,29 @@ const Footer = () => {
             </ul>
           </motion.div>
 
-          {/* Contact */}
+          {/* Newsletter Signup */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.3 }}
+            transition={{ delay: 0.25 }}
+            className="lg:col-span-2"
           >
-            <h4 className="font-semibold text-foreground mb-4">{t.footer.contact}</h4>
-            <p className="text-muted-foreground mb-4">
-              {t.footer.contactDesc}
+            <h4 className="font-semibold text-foreground mb-4">
+              {language === 'ja' ? 'ニュースレター' : 'Newsletter'}
+            </h4>
+            <p className="text-muted-foreground mb-4 text-sm">
+              {language === 'ja' 
+                ? 'AI・テック・投資の最新情報をお届けします' 
+                : 'Get the latest on AI, tech, and investments'}
             </p>
-            <MagneticButton>
-              <Button
-                className="gradient-bg text-primary-foreground hover:opacity-90 glow-primary"
-                onClick={openChat}
-              >
-                <MessageCircle className="mr-2 h-4 w-4" />
-                {t.footer.contactBtn}
-              </Button>
-            </MagneticButton>
+            <NewsletterSignupForm variant="compact" showInterests={false} />
+            <Link 
+              to="/newsletter" 
+              className="text-xs text-muted-foreground hover:text-primary mt-2 inline-block transition-colors"
+            >
+              {language === 'ja' ? '詳細を見る →' : 'Learn more →'}
+            </Link>
           </motion.div>
         </div>
 

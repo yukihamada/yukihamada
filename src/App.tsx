@@ -22,6 +22,7 @@ import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import Community from "./pages/Community";
 import AdminDashboard from "./pages/AdminDashboard";
+import Newsletter from "./pages/Newsletter";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -49,6 +50,7 @@ const App = () => (
                       <Route path="/profile" element={<Profile />} />
                       <Route path="/community" element={<Community />} />
                       <Route path="/community/:topicId" element={<Community />} />
+                      <Route path="/newsletter" element={<Newsletter />} />
                       {/* Admin routes */}
                       <Route path="/admin" element={<AdminDashboard />} />
                       <Route path="/admin/blog" element={<AdminDashboard />} />

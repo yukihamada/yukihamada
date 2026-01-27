@@ -18,7 +18,7 @@ const investments: Investment[] = [
     category: '不動産・ホスピタリティ',
     description: '会員制のホテル兼不動産モデルを提供',
     emoji: '🏨',
-    logo: '/images/investments/notahotel-logo.png',
+    logo: '/images/investments/notahotel-logo.svg',
     url: 'https://notahotel.com/',
     gradient: 'from-amber-500/20 to-orange-500/20',
   },
@@ -27,7 +27,7 @@ const investments: Investment[] = [
     category: 'トラベルテック',
     description: 'AIを活用したデジタルトラベルエージェンシー「NEWT」を運営',
     emoji: '✈️',
-    logo: '/images/investments/newt-logo.png',
+    logo: '/images/investments/newt-logo.svg',
     url: 'https://newt.net/',
     gradient: 'from-sky-500/20 to-blue-500/20',
   },
@@ -45,7 +45,7 @@ const investments: Investment[] = [
     category: 'ブロックチェーン・クラウドファンディング',
     description: 'トークン発行型クラウドファンディングプラットフォーム',
     emoji: '🪙',
-    logo: '/images/investments/financie-logo.png',
+    logo: '/images/investments/financie-logo.svg',
     url: 'https://www.corp.financie.jp/',
     gradient: 'from-yellow-500/20 to-amber-500/20',
   },
@@ -54,7 +54,7 @@ const investments: Investment[] = [
     category: 'デジタルファブリケーション',
     description: '誰でも家や家具を設計・製作できるプラットフォーム「Nesting」',
     emoji: '🏠',
-    logo: '/images/investments/vuild-logo.jpg',
+    logo: '/images/investments/vuild-logo.svg',
     url: 'https://vuild.co.jp/',
     gradient: 'from-green-500/20 to-emerald-500/20',
   },
@@ -82,9 +82,9 @@ const InvestmentLogo = ({ investment, isHovered }: { investment: Investment; isH
 
   return (
     <motion.div
-      className="w-12 h-12 relative"
+      className="h-10 w-auto max-w-[140px] relative"
       animate={{ 
-        scale: isHovered ? 1.2 : 1,
+        scale: isHovered ? 1.1 : 1,
         y: isHovered ? -5 : 0,
       }}
       transition={{ duration: 0.4 }}
@@ -92,7 +92,7 @@ const InvestmentLogo = ({ investment, isHovered }: { investment: Investment; isH
       <img
         src={investment.logo}
         alt={`${investment.name} logo`}
-        className="w-full h-full object-contain dark:brightness-0 dark:invert"
+        className="h-full w-auto object-contain dark:brightness-0 dark:invert"
         onError={() => setImageError(true)}
       />
     </motion.div>

@@ -142,15 +142,15 @@ const ShareButtons = ({ title, url }: ShareButtonsProps) => {
   ];
 
   return (
-    <div className="flex items-center gap-3 flex-wrap">
-      <span className="text-sm text-muted-foreground">シェア:</span>
+    <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+      <span className="text-sm text-muted-foreground hidden sm:block">シェア:</span>
       {primaryLinks.map((link) => (
         <a
           key={link.name}
           href={link.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-center w-10 h-10 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors text-foreground"
+          className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors text-foreground [&>svg]:w-4 [&>svg]:h-4 sm:[&>svg]:w-5 sm:[&>svg]:h-5"
           aria-label={`${link.name}でシェア`}
         >
           {link.icon}
@@ -160,10 +160,10 @@ const ShareButtons = ({ title, url }: ShareButtonsProps) => {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
-            className="flex items-center justify-center w-10 h-10 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors text-foreground"
+            className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors text-foreground"
             aria-label="その他の共有オプション"
           >
-            <MoreHorizontal className="w-5 h-5" />
+            <MoreHorizontal className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="bg-background border border-border z-50">
@@ -186,10 +186,10 @@ const ShareButtons = ({ title, url }: ShareButtonsProps) => {
       <button
         onClick={handleCopyLink}
         disabled={isShortening}
-        className="flex items-center justify-center w-10 h-10 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors text-foreground disabled:opacity-50"
+        className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors text-foreground disabled:opacity-50"
         aria-label="リンクをコピー"
       >
-        {isShortening ? <Loader2 className="w-5 h-5 animate-spin" /> : copied ? <Check className="w-5 h-5" /> : <Link2 className="w-5 h-5" />}
+        {isShortening ? <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" /> : copied ? <Check className="w-4 h-4 sm:w-5 sm:h-5" /> : <Link2 className="w-4 h-4 sm:w-5 sm:h-5" />}
       </button>
     </div>
   );

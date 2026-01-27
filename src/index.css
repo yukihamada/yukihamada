@@ -422,16 +422,50 @@ html {
   transform: perspective(1000px) rotateX(5deg) rotateY(-5deg) translateZ(10px);
 }
 
-/* Reduced motion support */
+/* Reduced motion support - system preference */
 @media (prefers-reduced-motion: reduce) {
   .animate-spatial-float,
   .animate-depth-pulse,
-  .premium-shine::after {
-    animation: none;
+  .premium-shine::after,
+  .organic-blob,
+  .float,
+  .animate-float,
+  .scroll-indicator,
+  .animated-border,
+  .glow-pulse,
+  .typewriter-cursor {
+    animation: none !important;
   }
   .hover-3d:hover {
-    transform: none;
+    transform: none !important;
   }
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* Reduced motion support - user preference via toggle */
+.reduce-motion .animate-spatial-float,
+.reduce-motion .animate-depth-pulse,
+.reduce-motion .premium-shine::after,
+.reduce-motion .organic-blob,
+.reduce-motion .float,
+.reduce-motion .animate-float,
+.reduce-motion .scroll-indicator,
+.reduce-motion .animated-border,
+.reduce-motion .glow-pulse,
+.reduce-motion .typewriter-cursor {
+  animation: none !important;
+}
+
+.reduce-motion .hover-3d:hover {
+  transform: none !important;
+}
+
+.reduce-motion * {
+  transition-duration: 0.15s !important;
+  animation-duration: 0.01ms !important;
 }
 
 /* Timeline styles */

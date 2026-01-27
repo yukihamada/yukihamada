@@ -9,6 +9,7 @@ import { useUIVisibility } from '@/contexts/UIVisibilityContext';
 import { useAuth } from '@/hooks/useAuth';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import ReducedMotionToggle from '@/components/ReducedMotionToggle';
 
 const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -344,6 +345,7 @@ const Navigation = () => {
                 <span className="ml-1.5 hidden lg:inline">{language === 'ja' ? 'コミュニティ' : 'Community'}</span>
               </Button>
 
+              <ReducedMotionToggle />
               <ThemeToggle />
               <LanguageSwitcher />
               

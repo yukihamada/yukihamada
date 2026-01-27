@@ -27,6 +27,7 @@ import jiuflowHero from '@/assets/jiuflow-hero.png';
 import jiuflowLesson from '@/assets/jiuflow-lesson.png';
 import yukiProfile from '@/assets/yuki-profile.jpg';
 import ElioSignupForm from '@/components/ElioSignupForm';
+import BlogPostCTA from '@/components/BlogPostCTA';
 import { AnimatePresence } from 'framer-motion';
 import mermaid from 'mermaid';
 
@@ -701,6 +702,9 @@ const BlogPost = () => {
                 blogCategory={content.category}
                 content={content.content}
               />
+
+              {/* CTA Section */}
+              <BlogPostCTA />
 
               {/* Comments Section */}
               <BlogComments blogSlug={post.slug} />

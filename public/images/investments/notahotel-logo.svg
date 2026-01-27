@@ -1,3 +1,4 @@
-<svg width="200" height="40" viewBox="0 0 200 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <text x="0" y="28" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="18" font-weight="500" letter-spacing="0.5" fill="currentColor">NOT A HOTEL</text>
+<svg width="180" height="40" viewBox="0 0 180 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- NOT A HOTEL - Official wordmark style: elegant serif, all caps, letter-spaced -->
+  <text x="0" y="26" font-family="'Times New Roman', Georgia, serif" font-size="16" font-weight="400" letter-spacing="2" fill="currentColor">NOT A HOTEL</text>
 </svg>

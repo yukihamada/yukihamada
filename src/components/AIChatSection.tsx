@@ -917,19 +917,14 @@ export const AIChatSection = () => {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ 
               opacity: 1, 
-              scale: 1,
-              boxShadow: [
-                '0 0 15px hsl(var(--primary) / 0.3)',
-                '0 0 25px hsl(var(--primary) / 0.5)',
-                '0 0 15px hsl(var(--primary) / 0.3)',
-              ],
+              scale: 1
             }}
             exit={{ opacity: 0, scale: 0.8 }}
             className="fixed bottom-6 left-6 z-50 w-12 h-12 rounded-full bg-gradient-to-r from-primary to-accent shadow-lg flex items-center justify-center text-primary-foreground"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
             onClick={toggleChat}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            transition={{ type: "spring", stiffness: 260, damping: 20 }}
           >
             <MessageCircle className="w-5 h-5" />
           </motion.button>

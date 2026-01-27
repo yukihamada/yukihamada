@@ -183,15 +183,7 @@ const HeroSection = ({ onMusicPlay }: HeroSectionProps) => {
                 />
                 
                 <motion.div 
-                  className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-primary/30 mx-auto relative glass-premium"
-                  animate={{
-                    boxShadow: [
-                      "0 0 30px hsl(var(--primary) / 0.3), 0 20px 60px -20px hsl(var(--primary) / 0.4)",
-                      "0 0 60px hsl(var(--primary) / 0.5), 0 30px 80px -20px hsl(var(--primary) / 0.5)",
-                      "0 0 30px hsl(var(--primary) / 0.3), 0 20px 60px -20px hsl(var(--primary) / 0.4)",
-                    ],
-                  }}
-                  transition={{ duration: 3, repeat: Infinity }}
+                  className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-primary/30 mx-auto relative glass-premium shadow-xl"
                   style={{ transform: 'translateZ(30px)' }}
                 >
                   <img 
@@ -300,11 +292,7 @@ const HeroSection = ({ onMusicPlay }: HeroSectionProps) => {
           >
             <span className="text-2xl md:text-4xl text-muted-foreground font-medium">
               {displayText}
-              <motion.span 
-                className="inline-block w-1 h-8 md:h-10 bg-primary ml-1 rounded-full"
-                animate={{ opacity: [1, 0] }}
-                transition={{ duration: 0.6, repeat: Infinity }}
-              />
+              <span className="inline-block w-1 h-8 md:h-10 bg-primary/60 ml-1 rounded-full" />
             </span>
           </motion.div>
 

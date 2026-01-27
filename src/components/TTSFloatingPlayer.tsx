@@ -44,28 +44,28 @@ const TTSFloatingPlayer = () => {
   const [analyzerData, setAnalyzerData] = useState<number[]>(new Array(8).fill(0.1));
   const animationRef = useRef<number | null>(null);
 
-  // Simulated visualizer animation when playing
+  // Simulated visualizer animation when playing (throttled to avoid flicker / high CPU)
   useEffect(() => {
-    if (isPlaying) {
-      const updateVisualizer = () => {
-        const newData = Array.from({ length: 8 }, () => 
-          0.2 + Math.random() * 0.8
-        );
-        setAnalyzerData(newData);
-        animationRef.current = requestAnimationFrame(updateVisualizer);
-      };
-      animationRef.current = requestAnimationFrame(updateVisualizer);
-    } else {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
+    if (!isPlaying) {
+      if (animationRef.current) window.clearInterval(animationRef.current);
       setAnalyzerData(new Array(8).fill(0.1));
+      return;
     }
 
+    const tick = () => {
+      setAnalyzerData((prev) =>
+        prev.map((v) => {
+          const target = 0.25 + Math.random() * 0.55;
+          return v + (target - v) * 0.35; // smooth
+        })
+      );
+    };
+
+    tick();
+    animationRef.current = window.setInterval(tick, 140);
+
     return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
+      if (animationRef.current) window.clearInterval(animationRef.current);
     };
   }, [isPlaying]);
 
@@ -196,15 +196,12 @@ const TTSFloatingPlayer = () => {
         <div className="relative overflow-hidden bg-background/95 backdrop-blur-lg border border-primary/30 rounded-2xl shadow-xl">
           {/* Animated background */}
           {isPlaying && (
-            <motion.div
-              className="absolute inset-0 opacity-20"
-              animate={{
-                background: [
-                  'radial-gradient(circle at 20% 50%, hsl(var(--primary) / 0.3) 0%, transparent 50%)',
-                  'radial-gradient(circle at 80% 50%, hsl(var(--primary) / 0.3) 0%, transparent 50%)',
-                ],
+            <div
+              className="absolute inset-0 opacity-15"
+              style={{
+                background:
+                  'radial-gradient(circle at 20% 50%, hsl(var(--primary) / 0.28) 0%, transparent 55%), radial-gradient(circle at 80% 50%, hsl(var(--primary) / 0.22) 0%, transparent 55%)',
               }}
-              transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
             />
           )}
 

@@ -1,9 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { motion, useMotionValue, useSpring, useScroll, useTransform } from 'framer-motion';
 import { useTheme } from 'next-themes';
 
 const OrganicBackground = () => {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
   const isDark = theme === 'dark';
@@ -33,7 +32,6 @@ const OrganicBackground = () => {
       const { innerWidth, innerHeight } = window;
       mouseX.set((clientX / innerWidth) * 100);
       mouseY.set((clientY / innerHeight) * 100);
-      setMousePosition({ x: clientX, y: clientY });
     };
 
     window.addEventListener('mousemove', handleMouseMove);

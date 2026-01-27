@@ -143,9 +143,6 @@ const HobbiesSection = () => {
                   }}
                   transition={{ type: "spring", stiffness: 250, damping: 20 }}
                   style={{
-                    boxShadow: isActive
-                      ? '0 35px 70px -15px hsl(var(--primary) / 0.4), inset 0 1px 0 hsl(0 0% 100% / 0.15)'
-                      : '0 4px 20px -5px hsl(0 0% 0% / 0.1)',
                     transformStyle: 'preserve-3d',
                   }}
                 >
@@ -244,8 +241,8 @@ const HobbiesSection = () => {
                             href={link.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-xs text-primary hover:underline bg-primary/10 px-3 py-1 rounded-full"
-                            whileHover={{ scale: 1.05, backgroundColor: "hsl(var(--primary) / 0.2)" }}
+                            className="inline-flex items-center gap-1 text-xs text-primary hover:underline bg-primary/10 hover:bg-primary/20 transition-colors px-3 py-1 rounded-full"
+                            whileHover={{ scale: 1.05 }}
                             onClick={(e) => e.stopPropagation()}
                           >
                             {link.name}

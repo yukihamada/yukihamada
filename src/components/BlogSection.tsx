@@ -114,28 +114,18 @@ const BlogSection = () => {
             {featuredPost && (
               <Link to={`/blog/${featuredPost.slug}`}>
                 <motion.div
-                  className="group glass rounded-3xl p-8 lg:row-span-2 block h-full"
+                  className="group glass rounded-3xl p-8 lg:row-span-2 block h-full transition-shadow hover:shadow-xl"
                   variants={cardVariants}
                   whileHover={{ 
                     scale: 1.02, 
-                    y: -5,
-                    boxShadow: "0 30px 60px -15px hsl(262 83% 58% / 0.2)"
+                    y: -5
                   }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
                   <div className="flex items-center gap-2 mb-4">
-                    <motion.span 
-                      className="px-3 py-1 rounded-full bg-primary/20 text-primary text-sm font-medium"
-                      animate={{ 
-                        boxShadow: [
-                          "0 0 0 0 hsl(262 83% 58% / 0.4)",
-                          "0 0 0 10px hsl(262 83% 58% / 0)",
-                        ]
-                      }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                    >
+                    <span className="px-3 py-1 rounded-full bg-primary/20 text-primary text-sm font-medium">
                       Featured
-                    </motion.span>
+                    </span>
                     <span className="flex items-center gap-1 text-muted-foreground text-sm">
                       <Tag className="h-3 w-3" />
                       {featuredPost[language].category}
@@ -171,12 +161,11 @@ const BlogSection = () => {
               {otherPosts.map((post) => (
                 <Link key={post.slug} to={`/blog/${post.slug}`}>
                   <motion.div
-                    className="group glass rounded-2xl p-6 cursor-pointer block"
+                    className="group glass rounded-2xl p-6 cursor-pointer block transition-shadow hover:shadow-lg"
                     variants={cardVariants}
                     whileHover={{ 
                       scale: 1.02, 
-                      x: 10,
-                      boxShadow: "0 20px 40px -15px hsl(262 83% 58% / 0.15)"
+                      x: 10
                     }}
                     transition={{ type: "spring", stiffness: 300 }}
                   >

@@ -1211,3 +1211,93 @@ html {
 .screenshot-caption {
   @apply py-4 px-5 text-center text-sm text-muted-foreground bg-muted/30 border-t border-border/30;
 }
+
+/* Blog Card Premium Styles */
+.blog-card-premium {
+  background: linear-gradient(145deg, 
+    hsl(var(--card)) 0%, 
+    hsl(var(--card) / 0.85) 100%);
+  box-shadow: 
+    0 8px 32px -8px hsl(var(--primary) / 0.1),
+    inset 0 1px 0 hsl(var(--border) / 0.3);
+  transition: all 0.4s cubic-bezier(0.25, 0.4, 0.25, 1);
+}
+
+.blog-card-premium:hover {
+  box-shadow: 
+    0 16px 48px -12px hsl(var(--primary) / 0.2),
+    inset 0 1px 0 hsl(var(--primary) / 0.2);
+}
+
+.dark .blog-card-premium {
+  background: linear-gradient(145deg, 
+    hsl(var(--card) / 0.9) 0%, 
+    hsl(var(--card) / 0.6) 100%);
+}
+
+/* Blog Hero Card */
+.blog-hero-card {
+  @apply relative overflow-hidden;
+  background: linear-gradient(145deg, 
+    hsl(var(--card)) 0%, 
+    hsl(var(--card) / 0.9) 100%);
+  box-shadow: 
+    0 12px 40px -10px hsl(var(--primary) / 0.15),
+    inset 0 1px 0 hsl(var(--border) / 0.4);
+}
+
+.blog-hero-card::before {
+  content: '';
+  @apply absolute inset-0 pointer-events-none;
+  background: linear-gradient(
+    135deg,
+    hsl(var(--primary) / 0.05) 0%,
+    transparent 50%
+  );
+}
+
+.dark .blog-hero-card {
+  background: linear-gradient(145deg, 
+    hsl(var(--card) / 0.8) 0%, 
+    hsl(var(--card) / 0.4) 100%);
+}
+
+/* Blog Image Overlay */
+.blog-image-overlay {
+  @apply absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-300;
+  background: linear-gradient(
+    to top,
+    hsl(var(--background) / 0.8) 0%,
+    hsl(var(--primary) / 0.1) 50%,
+    transparent 100%
+  );
+}
+
+/* Featured Badge Gradient */
+.featured-badge {
+  @apply px-3 py-1 rounded-full text-xs font-semibold;
+  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+  color: hsl(var(--primary-foreground));
+}
+
+/* Category Badge */
+.category-badge {
+  @apply px-2.5 py-1 rounded-full text-xs font-medium;
+  background: hsl(var(--primary) / 0.15);
+  color: hsl(var(--primary));
+}
+
+/* Embla Carousel for Lightbox */
+.embla {
+  overflow: hidden;
+}
+
+.embla__container {
+  display: flex;
+  touch-action: pan-y pinch-zoom;
+}
+
+.embla__slide {
+  flex: 0 0 100%;
+  min-width: 0;
+}

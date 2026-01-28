@@ -244,87 +244,159 @@ const Blog = () => {
               </p>
             </div>
           ) : (
-          <motion.div
-            className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            key={selectedCategory || 'all'} // Re-animate when filter changes
-          >
-            {filteredPosts.map((post) => {
-              const content = post[language];
-              return (
-                <Link key={post.slug} to={`/blog/${post.slug}`}>
-                  <motion.article
-                    className="group glass rounded-2xl overflow-hidden h-full flex flex-col transition-shadow hover:shadow-xl"
-                    variants={cardVariants}
-                    whileHover={{ 
-                      scale: 1.02, 
-                      y: -5
-                    }}
-                    transition={{ type: "spring", stiffness: 300 }}
-                  >
-                    <div className="aspect-video overflow-hidden bg-muted">
-                      <OptimizedImage
-                        src={post.image || '/placeholder.svg'}
-                        alt={content.title}
-                        width={400}
-                        height={225}
-                        loading="lazy"
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    </div>
-                    
-                    <div className="p-6 flex flex-col flex-grow">
-                      <div className="flex items-center gap-2 mb-3 flex-wrap">
-                        {post.featured && (
-                          <span className="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-xs font-medium">
-                            Featured
-                          </span>
-                        )}
-                        <span className="flex items-center gap-1 text-primary text-xs font-medium">
-                          <Tag className="h-3 w-3" />
-                          {content.category}
-                        </span>
-                      </div>
-                      
-                      <h2 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors mb-3">
-                        {content.title}
-                      </h2>
-                      
-                      <p className="text-muted-foreground text-sm line-clamp-3 mb-4 flex-grow">
-                        {content.excerpt}
-                      </p>
-                      
-                      <div className="flex items-center justify-between pt-4 border-t border-border mt-auto">
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
-                          <span className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            {content.date}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {formatReadingTime(calculateReadingTime(content.content, language), language)}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Eye className="h-3 w-3" />
-                            {viewCounts[post.slug] || 0}
-                          </span>
+            <>
+              {/* Featured Hero Card */}
+              {filteredPosts.length > 0 && !selectedCategory && sortBy === 'date' && (
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                  className="mb-8"
+                >
+                  <Link to={`/blog/${filteredPosts[0].slug}`}>
+                    <article className="group blog-hero-card rounded-3xl overflow-hidden">
+                      <div className="grid lg:grid-cols-2 gap-0">
+                        <div className="aspect-video lg:aspect-auto overflow-hidden">
+                          <OptimizedImage
+                            src={filteredPosts[0].image || '/placeholder.svg'}
+                            alt={filteredPosts[0][language].title}
+                            width={800}
+                            height={450}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                          />
                         </div>
-                        <motion.span 
-                          className="text-primary flex items-center gap-1 text-sm"
-                          whileHover={{ x: 5 }}
-                        >
-                          {language === 'ja' ? '読む' : 'Read'}
-                          <ArrowRight className="h-3 w-3" />
-                        </motion.span>
+                        <div className="p-8 lg:p-10 flex flex-col justify-center">
+                          <div className="flex items-center gap-3 mb-4 flex-wrap">
+                            {filteredPosts[0].featured && (
+                              <span className="featured-badge">
+                                ⭐ Featured
+                              </span>
+                            )}
+                            <span className="category-badge flex items-center gap-1.5">
+                              <Tag className="h-3 w-3" />
+                              {filteredPosts[0][language].category}
+                            </span>
+                          </div>
+                          
+                          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground group-hover:text-primary transition-colors mb-4 leading-tight">
+                            {filteredPosts[0][language].title}
+                          </h2>
+                          
+                          <p className="text-muted-foreground text-base md:text-lg leading-relaxed mb-6 line-clamp-3">
+                            {filteredPosts[0][language].excerpt}
+                          </p>
+                          
+                          <div className="flex items-center justify-between pt-4 border-t border-border/30">
+                            <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
+                              <span className="flex items-center gap-1.5">
+                                <Calendar className="h-4 w-4" />
+                                {filteredPosts[0][language].date}
+                              </span>
+                              <span className="flex items-center gap-1.5">
+                                <Clock className="h-4 w-4" />
+                                {formatReadingTime(calculateReadingTime(filteredPosts[0][language].content, language), language)}
+                              </span>
+                              <span className="flex items-center gap-1.5">
+                                <Eye className="h-4 w-4" />
+                                {viewCounts[filteredPosts[0].slug] || 0}
+                              </span>
+                            </div>
+                            <motion.span 
+                              className="text-primary font-medium flex items-center gap-2"
+                              whileHover={{ x: 5 }}
+                            >
+                              {language === 'ja' ? '記事を読む' : 'Read Article'}
+                              <ArrowRight className="h-4 w-4" />
+                            </motion.span>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </motion.article>
-                </Link>
-              );
-            })}
-          </motion.div>
+                    </article>
+                  </Link>
+                </motion.div>
+              )}
+
+              {/* Regular Cards Grid */}
+              <motion.div
+                className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                key={selectedCategory || 'all'}
+              >
+                {(selectedCategory || sortBy !== 'date' ? filteredPosts : filteredPosts.slice(1)).map((post) => {
+                  const content = post[language];
+                  return (
+                    <Link key={post.slug} to={`/blog/${post.slug}`}>
+                      <motion.article
+                        className="group blog-card-premium rounded-2xl overflow-hidden h-full flex flex-col border border-border/30"
+                        variants={cardVariants}
+                        whileHover={{ 
+                          scale: 1.02, 
+                          y: -5
+                        }}
+                        transition={{ type: "spring", stiffness: 300 }}
+                      >
+                        <div className="relative aspect-video overflow-hidden bg-muted">
+                          <OptimizedImage
+                            src={post.image || '/placeholder.svg'}
+                            alt={content.title}
+                            width={400}
+                            height={225}
+                            loading="lazy"
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          />
+                          <div className="blog-image-overlay flex items-end justify-end p-4">
+                            <span className="p-2 rounded-full bg-primary/90 text-primary-foreground shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                              <ArrowRight className="h-4 w-4" />
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div className="p-6 flex flex-col flex-grow">
+                          <div className="flex items-center gap-2 mb-3 flex-wrap">
+                            {post.featured && (
+                              <span className="featured-badge text-[10px]">
+                                Featured
+                              </span>
+                            )}
+                            <span className="category-badge flex items-center gap-1">
+                              <Tag className="h-3 w-3" />
+                              {content.category}
+                            </span>
+                          </div>
+                          
+                          <h2 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors mb-3 leading-snug line-clamp-2">
+                            {content.title}
+                          </h2>
+                          
+                          <p className="text-muted-foreground text-sm line-clamp-2 mb-4 flex-grow">
+                            {content.excerpt}
+                          </p>
+                          
+                          <div className="flex items-center justify-between pt-4 border-t border-border/30 mt-auto">
+                            <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
+                              <span className="flex items-center gap-1">
+                                <Calendar className="h-3 w-3" />
+                                {content.date}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Clock className="h-3 w-3" />
+                                {formatReadingTime(calculateReadingTime(content.content, language), language)}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Eye className="h-3 w-3" />
+                                {viewCounts[post.slug] || 0}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.article>
+                    </Link>
+                  );
+                })}
+              </motion.div>
+            </>
           )}
         </div>
       </main>

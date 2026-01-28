@@ -30,7 +30,7 @@ import ElioSignupForm from '@/components/ElioSignupForm';
 import BlogPostCTA from '@/components/BlogPostCTA';
 import { AnimatePresence } from 'framer-motion';
 import mermaid from 'mermaid';
-import ImageLightbox from '@/components/ImageLightbox';
+import ImageGalleryLightbox, { GalleryImage } from '@/components/ImageGalleryLightbox';
 
 // Initialize mermaid with dark theme support
 mermaid.initialize({
@@ -441,7 +441,11 @@ const BlogPost = () => {
 
   const [signupFormContainer, setSignupFormContainer] = useState<HTMLElement | null>(null);
   const [youtubeVideoId, setYoutubeVideoId] = useState<string | null>(null);
-  const [lightboxImage, setLightboxImage] = useState<{ src: string; alt: string } | null>(null);
+  const [galleryState, setGalleryState] = useState<{ images: GalleryImage[]; currentIndex: number; isOpen: boolean }>({
+    images: [],
+    currentIndex: 0,
+    isOpen: false,
+  });
 
   useEffect(() => {
     if (!contentRef.current) return;
@@ -502,14 +506,21 @@ const BlogPost = () => {
       setSignupFormContainer(signupPlaceholder as HTMLElement);
     }
 
-    // Add lightbox image click handlers
-    const lightboxImages = contentRef.current.querySelectorAll('[data-lightbox-image]');
-    lightboxImages.forEach((container) => {
-      const imageSrc = container.getAttribute('data-lightbox-image') || '';
-      const imageAlt = container.getAttribute('data-lightbox-alt') || '';
+    // Add lightbox image click handlers - collect all images for gallery
+    const lightboxImageElements = contentRef.current.querySelectorAll('[data-lightbox-image]');
+    const allGalleryImages: GalleryImage[] = Array.from(lightboxImageElements).map((el) => ({
+      src: el.getAttribute('data-lightbox-image') || '',
+      alt: el.getAttribute('data-lightbox-alt') || '',
+    }));
+
+    lightboxImageElements.forEach((container, index) => {
       const handleImageClick = (e: Event) => {
         e.preventDefault();
-        setLightboxImage({ src: imageSrc, alt: imageAlt });
+        setGalleryState({
+          images: allGalleryImages,
+          currentIndex: index,
+          isOpen: true,
+        });
       };
       container.addEventListener('click', handleImageClick);
       handlers.push({ button: container, handler: handleImageClick });
@@ -803,11 +814,13 @@ const BlogPost = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Image Lightbox */}
-      <ImageLightbox
-        src={lightboxImage?.src || null}
-        alt={lightboxImage?.alt || ''}
-        onClose={() => setLightboxImage(null)}
+      {/* Image Gallery Lightbox */}
+      <ImageGalleryLightbox
+        images={galleryState.images}
+        currentIndex={galleryState.currentIndex}
+        isOpen={galleryState.isOpen}
+        onClose={() => setGalleryState(prev => ({ ...prev, isOpen: false }))}
+        onIndexChange={(index) => setGalleryState(prev => ({ ...prev, currentIndex: index }))}
       />
     </div>
   );

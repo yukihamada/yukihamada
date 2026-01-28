@@ -1,121 +1,131 @@
 
 
-# 新規ブログ記事作成計画：「サウナで火事になった日」
+# ブログ記事修正計画：サウナ火事記事の更新
 
 ## 概要
 
-サウナでの火事体験を、ユーモアと教訓を交えて綴ったエッセイをブログ記事として作成します。日常の中の非日常、仲間との絆、そして「生きているだけでハッピー」というメッセージを伝える記事です。
+以下の2点を修正します：
+1. 「タワーマンション」への言及を削除
+2. 粟田選手の試合での足関節による怪我エピソードを追加
 
 ---
 
-## 記事のメタデータ
+## 修正箇所
 
-| 項目 | 内容 |
-|------|------|
-| slug | `sauna-fire-incident-2025` |
-| カテゴリ | ライフスタイル / Lifestyle |
-| 画像 | `/images/blog-totonos-hero.jpg`（既存のサウナ関連画像を使用） |
-| featured | false |
-| 日付 | 2025年1月27日 |
+### 修正1: タワーマンション削除
+
+**日本語版（現在）**
+```
+僕らが死んでた可能性もあるし、
+下手したら、同じ建物や近くのタワーマンションの人たちにも
+被害が出てたかもしれない。
+```
+
+**日本語版（修正後）**
+```
+僕らが死んでた可能性もあるし、
+下手したら、同じ建物の人たちにも
+被害が出てたかもしれない。
+```
+
+**英語版（現在）**
+```
+Worse, people in the same building or nearby towers could have been affected.
+```
+
+**英語版（修正後）**
+```
+Worse, people in the same building could have been affected.
+```
 
 ---
 
-## 記事構成
+### 修正2: 粟田の足関節怪我を追加
 
-### タイトル（日本語）
-サウナで火事になった日 〜整うはずが、燻製と反省で仕上がった話〜
+「翌日、試合」セクションに以下を追加：
 
-### タイトル（英語）
-The Day the Sauna Caught Fire: When "Relaxation" Turned Into Smoke and Life Lessons
+**日本語版（追加）**
+```markdown
+しかも粟田に関しては、大惨事がさらに大惨事に。
 
-### 概要（日本語）
-サウナで整うはずが、まさかの火事発生。パンを止めたことが建物を救い、試合後のポーカーで即飛び。人生の情報量が多すぎた一日の記録。
+試合で足関節を極められて、足を故障。
 
-### 概要（英語）
-What was supposed to be a relaxing sauna session turned into an unexpected fire incident. How stopping someone from eating bread may have saved a building, and why being alive is already a win.
+火事で煙を吸って、翌日の試合で足を壊す。
+なんというか、粟田の2日間の情報量、明らかにキャパオーバーだった。
 
----
+パンを我慢して火事を発見した功績は認める。
+でもその代償がこれって、人生のバランス調整どうなってるの。
+```
 
-## コンテンツ構成
+**英語版（追加）**
+```markdown
+And for Awata specifically, disaster piled on disaster.
 
-### 日本語版
-提供されたテキストをそのまま使用し、以下の調整を加えます：
+He got caught in a leg lock during the match and injured his leg.
 
-1. **導入部** - 「人生って、たまに〜」で始まるフック
-2. **パンのバタフライエフェクト** - 粟田選手のパン事件
-3. **サウナで見る炎** - 火事発見とチームワーク
-4. **煙の恐怖** - 火災報知機が鳴らなかった話
-5. **良蔵先生の見張り** - 師匠の警戒心
-6. **翌日の試合とポーカー** - 燻製状態での挑戦
-7. **生きているだけでハッピー** - 哲学的な結論
-8. **まとめ** - 「あの日のパン、食べてなくて良かったな」
+Inhaled smoke from a fire one day, destroyed his leg in competition the next.
+The amount of information Awata's life crammed into 48 hours was clearly over capacity.
 
-### 英語版
-日本語版を翻訳し、以下のポイントを維持：
-- ユーモアのトーン
-- 「パンのバタフライエフェクト」のストーリー
-- 柔術・ポーカーの文脈
-- 「生きているだけでハッピー」というメッセージ
+I'll give him credit for resisting the bread and discovering the fire.
+But this is the payback? Life's balancing algorithm is completely broken.
+```
 
 ---
 
 ## 技術的な実装
 
-### Step 1: 新規記事をデータベースに挿入
+SQLのUPDATE文で `content_ja` と `content_en` を更新：
 
 ```sql
-INSERT INTO blog_posts (
-  slug,
-  featured,
-  image,
-  title_ja, excerpt_ja, content_ja, date_ja, category_ja,
-  title_en, excerpt_en, content_en, date_en, category_en,
-  status,
-  published_at
-) VALUES (
-  'sauna-fire-incident-2025',
-  false,
-  '/images/blog-totonos-hero.jpg',
-  'サウナで火事になった日 〜整うはずが、燻製と反省で仕上がった話〜',
-  'サウナで整うはずが、まさかの火事発生。パンを止めたことが建物を救い、試合後のポーカーで即飛び。人生の情報量が多すぎた一日の記録。',
-  '（日本語コンテンツ）',
-  '2025年1月27日',
-  'ライフスタイル',
-  'The Day the Sauna Caught Fire: When "Relaxation" Turned Into Smoke and Life Lessons',
-  'What was supposed to be a relaxing sauna session turned into an unexpected fire incident. How stopping someone from eating bread may have saved a building, and why being alive is already a win.',
-  '（英語コンテンツ）',
-  'January 27, 2025',
-  'Lifestyle',
-  'published',
-  NOW()
-);
+UPDATE blog_posts 
+SET 
+  content_ja = REPLACE(
+    REPLACE(
+      content_ja, 
+      '同じ建物や近くのタワーマンションの人たちにも',
+      '同じ建物の人たちにも'
+    ),
+    'それでも試合はやる。',
+    'しかも粟田に関しては、大惨事がさらに大惨事に。
+
+試合で足関節を極められて、足を故障。
+
+火事で煙を吸って、翌日の試合で足を壊す。
+なんというか、粟田の2日間の情報量、明らかにキャパオーバーだった。
+
+パンを我慢して火事を発見した功績は認める。
+でもその代償がこれって、人生のバランス調整どうなってるの。
+
+それでも試合はやる。'
+  ),
+  content_en = REPLACE(
+    REPLACE(
+      content_en, 
+      'or nearby towers ',
+      ''
+    ),
+    'But we competed anyway.',
+    'And for Awata specifically, disaster piled on disaster.
+
+He got caught in a leg lock during the match and injured his leg.
+
+Inhaled smoke from a fire one day, destroyed his leg in competition the next.
+The amount of information Awata''s life crammed into 48 hours was clearly over capacity.
+
+I''ll give him credit for resisting the bread and discovering the fire.
+But this is the payback? Life''s balancing algorithm is completely broken.
+
+But we competed anyway.'
+  ),
+  updated_at = NOW()
+WHERE slug = 'sauna-fire-incident-2025';
 ```
-
----
-
-## 記事の特徴
-
-- **ユーモア×教訓**: 深刻な状況を笑いに変えつつ、本質的なメッセージを伝える
-- **柔術コミュニティの絆**: 粟田選手、良蔵先生との関係性が伝わる
-- **「生きているだけでハッピー」**: ハイブリッド・ライフスタイル記事群との哲学的な一貫性
-- **バタフライエフェクト**: パンを止めたことが建物を救ったかもしれない、という視点
-
----
-
-## 関連記事へのリンク
-
-記事末尾に以下の関連記事を追加：
-
-- [人類最強の生存戦略「ハイブリッド・エネルギー」](/blog/hybrid-energy-mitochondria-awakening) - サウナとオートファジーの科学
-- [柔術×ポーカー：物理的なチェスの話](/blog/bjj-poker-mental-game) - 試合とポーカーの共通点
-- [怒りの戦略的活用](/blog/taiwan-bjj-anger-human-rights) - 柔術と感情のコントロール
 
 ---
 
 ## 期待される効果
 
-1. **親近感の向上**: 日常のハプニングを共有することで読者との距離が縮まる
-2. **柔術コミュニティへの訴求**: 粟田選手、良蔵先生の名前が出ることでコミュニティ内での話題性
-3. **既存記事への回遊**: サウナ・ライフスタイル関連記事へのリンク
-4. **「生きているだけでハッピー」のブランディング**: ポジティブな人生観の発信
+1. **正確性向上**: 不要な「タワーマンション」への言及を削除
+2. **ストーリーの深み**: 粟田選手の災難が続くエピソードで、記事のドラマ性と人間味が増加
+3. **ユーモアの強化**: 「パンを我慢した代償がこれ」という皮肉なオチ
 

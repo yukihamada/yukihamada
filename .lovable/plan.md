@@ -1,131 +1,118 @@
 
 
-# ブログ記事修正計画：サウナ火事記事の更新
+# ブログ記事の画像表示修正計画
 
-## 概要
+## 問題の特定
 
-以下の2点を修正します：
-1. 「タワーマンション」への言及を削除
-2. 粟田選手の試合での足関節による怪我エピソードを追加
+現在、記事内の画像が正しく表示されていない原因：
 
----
-
-## 修正箇所
-
-### 修正1: タワーマンション削除
-
-**日本語版（現在）**
-```
-僕らが死んでた可能性もあるし、
-下手したら、同じ建物や近くのタワーマンションの人たちにも
-被害が出てたかもしれない。
-```
-
-**日本語版（修正後）**
-```
-僕らが死んでた可能性もあるし、
-下手したら、同じ建物の人たちにも
-被害が出てたかもしれない。
-```
-
-**英語版（現在）**
-```
-Worse, people in the same building or nearby towers could have been affected.
-```
-
-**英語版（修正後）**
-```
-Worse, people in the same building could have been affected.
-```
+1. **Markdown画像構文の未対応**: 記事内で標準的なMarkdown画像構文 `![alt](/images/path.jpg)` を使用しているが、`processContent`関数がこの構文を画像として処理していない
+2. **リンクとして誤認識**: `[text](url)` のリンク変換ロジックが画像構文にも適用され、画像がクリック可能なリンクとして表示されている
 
 ---
 
-### 修正2: 粟田の足関節怪我を追加
+## 修正内容
 
-「翌日、試合」セクションに以下を追加：
+### Step 1: Markdownイメージ構文のサポート追加
+
+`src/pages/BlogPost.tsx` の `processContent` 関数に、標準Markdown画像構文 `![alt](src)` を処理するロジックを追加
+
+```typescript
+// Markdownリンク処理の前に、Markdown画像構文を処理する
+.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, src) => {
+  return `<figure class="my-8"><img src="${src}" alt="${alt || ''}" loading="lazy" decoding="async" class="w-full rounded-xl shadow-lg ring-1 ring-border/20" />${alt ? `<figcaption class="text-center text-sm text-muted-foreground mt-3">${alt}</figcaption>` : ''}</figure>`;
+})
+```
+
+この処理は、既存のリンク処理 `[text](url)` の**前**に配置する必要がある（そうしないと画像構文がリンクとして誤処理される）
+
+---
+
+### Step 2: 新しい写真の追加（おんぶ写真）
+
+1. **画像ファイルをプロジェクトにコピー**
+   - `user-uploads://IMG_0782.JPG` → `public/images/blog-sauna-fire-awata-piggyback.jpg`
+
+2. **記事コンテンツの更新**
+   - 粟田選手の足関節怪我エピソードの後に、おんぶ写真を追加
+   - ユーモラスなキャプション付き
 
 **日本語版（追加）**
 ```markdown
-しかも粟田に関しては、大惨事がさらに大惨事に。
+![足関節を極められた粟田を良蔵先生がおんぶ](/images/blog-sauna-fire-awata-piggyback.jpg)
 
-試合で足関節を極められて、足を故障。
+これが、その証拠写真。
+良蔵先生が粟田をおんぶしている。
 
-火事で煙を吸って、翌日の試合で足を壊す。
-なんというか、粟田の2日間の情報量、明らかにキャパオーバーだった。
+試合後、歩けなくなった粟田を師匠がおんぶする図。
+なんかもう、絵面が強すぎる。
 
-パンを我慢して火事を発見した功績は認める。
-でもその代償がこれって、人生のバランス調整どうなってるの。
+パンを我慢して建物を救ったヒーローが、
+翌日には師匠におんぶされてる。
+
+人生って、バランスの取り方が雑すぎない？
 ```
 
 **英語版（追加）**
 ```markdown
-And for Awata specifically, disaster piled on disaster.
+![Ryozo-sensei giving Awata a piggyback ride after his leg injury](/images/blog-sauna-fire-awata-piggyback.jpg)
 
-He got caught in a leg lock during the match and injured his leg.
+Here's the photographic evidence.
+Ryozo-sensei carrying Awata on his back.
 
-Inhaled smoke from a fire one day, destroyed his leg in competition the next.
-The amount of information Awata's life crammed into 48 hours was clearly over capacity.
+After the match, when Awata couldn't walk, his master had to piggyback him.
+The visual is just too powerful.
 
-I'll give him credit for resisting the bread and discovering the fire.
-But this is the payback? Life's balancing algorithm is completely broken.
+The hero who resisted bread and saved a building
+is now being carried by his master the very next day.
+
+Life really doesn't know how to balance things, does it?
 ```
 
 ---
 
 ## 技術的な実装
 
-SQLのUPDATE文で `content_ja` と `content_en` を更新：
+### 1. BlogPost.tsx の修正
 
-```sql
-UPDATE blog_posts 
-SET 
-  content_ja = REPLACE(
-    REPLACE(
-      content_ja, 
-      '同じ建物や近くのタワーマンションの人たちにも',
-      '同じ建物の人たちにも'
-    ),
-    'それでも試合はやる。',
-    'しかも粟田に関しては、大惨事がさらに大惨事に。
+`processContent` 関数内で、リンク処理の前に画像処理を追加：
 
-試合で足関節を極められて、足を故障。
+```typescript
+// 現在のリンク処理（228行目付近）:
+.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2"...>$1</a>')
 
-火事で煙を吸って、翌日の試合で足を壊す。
-なんというか、粟田の2日間の情報量、明らかにキャパオーバーだった。
-
-パンを我慢して火事を発見した功績は認める。
-でもその代償がこれって、人生のバランス調整どうなってるの。
-
-それでも試合はやる。'
-  ),
-  content_en = REPLACE(
-    REPLACE(
-      content_en, 
-      'or nearby towers ',
-      ''
-    ),
-    'But we competed anyway.',
-    'And for Awata specifically, disaster piled on disaster.
-
-He got caught in a leg lock during the match and injured his leg.
-
-Inhaled smoke from a fire one day, destroyed his leg in competition the next.
-The amount of information Awata''s life crammed into 48 hours was clearly over capacity.
-
-I''ll give him credit for resisting the bread and discovering the fire.
-But this is the payback? Life''s balancing algorithm is completely broken.
-
-But we competed anyway.'
-  ),
-  updated_at = NOW()
-WHERE slug = 'sauna-fire-incident-2025';
+// この前に画像処理を追加:
+.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, src) => {
+  return `<figure class="my-8">...</figure>`;
+})
+.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2"...>$1</a>')
 ```
+
+### 2. 画像ファイルのコピー
+
+```
+lov-copy user-uploads://IMG_0782.JPG public/images/blog-sauna-fire-awata-piggyback.jpg
+```
+
+### 3. データベース更新
+
+SQL UPDATE文で `content_ja` と `content_en` を更新し、おんぶ写真とキャプションを追加
 
 ---
 
-## 期待される効果
+## 変更サマリー
 
-1. **正確性向上**: 不要な「タワーマンション」への言及を削除
-2. **ストーリーの深み**: 粟田選手の災難が続くエピソードで、記事のドラマ性と人間味が増加
-3. **ユーモアの強化**: 「パンを我慢した代償がこれ」という皮肉なオチ
+| 変更種別 | ファイル/対象 | 内容 |
+|---------|-------------|------|
+| コード修正 | `src/pages/BlogPost.tsx` | Markdown画像構文 `![]()`のサポート追加 |
+| 画像追加 | `public/images/` | おんぶ写真を追加 |
+| DB更新 | `blog_posts` | おんぶ写真とユーモラスなキャプションを記事に追加 |
+
+---
+
+## 期待される結果
+
+1. **既存の3枚の写真**（焦げ跡、外観、内部煙跡）が記事内で正しく画像として表示される
+2. **新しいおんぶ写真**が粟田選手の怪我エピソードの直後に表示される
+3. ユーモラスなキャプションで記事の締めくくりが強化される
 

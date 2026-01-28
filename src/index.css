@@ -188,24 +188,73 @@
 
   /* Blog quote styles */
   .blog-quote {
-    @apply relative border-l-4 border-primary pl-6 py-6 my-10 rounded-r-2xl italic;
-    background: linear-gradient(135deg, hsl(var(--primary) / 0.08) 0%, hsl(var(--accent) / 0.05) 100%);
+    @apply relative border-l-4 border-primary pl-5 py-4 my-6 rounded-r-xl italic;
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.06) 0%, hsl(var(--accent) / 0.03) 100%);
   }
 
   .blog-quote::before {
     content: '"';
-    @apply absolute -top-2 left-3 text-6xl text-primary/30 font-serif leading-none;
+    @apply absolute -top-1 left-2 text-5xl text-primary/20 font-serif leading-none;
   }
 
   .blog-quote p {
-    @apply text-lg md:text-xl text-foreground/90 leading-relaxed m-0;
+    @apply text-base md:text-lg text-foreground/85 leading-relaxed m-0;
+  }
+
+  /* Author Comment Box (YUKI'S TAKE) */
+  .author-comment-box {
+    @apply relative my-6 p-5 rounded-xl;
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.08) 0%, hsl(var(--accent) / 0.04) 100%);
+    border: 1px solid hsl(var(--primary) / 0.15);
+  }
+
+  .author-comment-label {
+    @apply text-xs font-bold tracking-widest uppercase mb-3;
+    color: hsl(var(--primary));
+    letter-spacing: 0.1em;
+  }
+
+  .author-comment-box p {
+    @apply text-sm md:text-base leading-relaxed;
+  }
+
+  /* Player Card Styles */
+  .player-card {
+    @apply my-5 p-4 rounded-xl border-l-4 border-primary;
+    background: linear-gradient(135deg, hsl(var(--muted) / 0.4) 0%, hsl(var(--muted) / 0.2) 100%);
+    border-top: 1px solid hsl(var(--border) / 0.5);
+    border-right: 1px solid hsl(var(--border) / 0.5);
+    border-bottom: 1px solid hsl(var(--border) / 0.5);
+    border-top-right-radius: 0.75rem;
+    border-bottom-right-radius: 0.75rem;
+  }
+
+  .player-header {
+    @apply flex items-center gap-4;
+  }
+
+  .player-avatar {
+    @apply w-14 h-14 md:w-16 md:h-16 rounded-full overflow-hidden flex-shrink-0;
+    box-shadow: 0 0 0 3px hsl(var(--primary) / 0.2);
+  }
+
+  .player-info {
+    @apply flex flex-col;
+  }
+
+  .player-name {
+    @apply text-lg md:text-xl font-bold text-foreground leading-tight;
+  }
+
+  .player-role {
+    @apply text-xs md:text-sm text-muted-foreground mt-0.5 leading-snug;
   }
 
   /* Highlighted text box */
   .blog-highlight {
-    @apply relative p-6 my-8 rounded-2xl border overflow-hidden;
-    background: linear-gradient(135deg, hsl(var(--primary) / 0.1) 0%, hsl(var(--accent) / 0.08) 100%);
-    border-color: hsl(var(--primary) / 0.3);
+    @apply relative p-5 my-6 rounded-xl border overflow-hidden;
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.08) 0%, hsl(var(--accent) / 0.05) 100%);
+    border-color: hsl(var(--primary) / 0.2);
   }
 
   .blog-highlight::before {
@@ -216,8 +265,8 @@
 
   /* Key point marker */
   .blog-keypoint {
-    @apply flex items-start gap-4 p-5 my-6 rounded-xl border border-primary/20;
-    background: hsl(var(--primary) / 0.05);
+    @apply flex items-start gap-4 p-4 my-5 rounded-xl border border-primary/15;
+    background: hsl(var(--primary) / 0.04);
   }
 
   .blog-keypoint-icon {
@@ -1014,26 +1063,32 @@ html {
 
 /* Blog Content Prose Styling */
 .blog-content p {
-  @apply my-6 leading-relaxed text-muted-foreground;
+  @apply my-5 leading-relaxed text-muted-foreground;
 }
 
 .blog-content p + p {
-  @apply mt-6;
+  @apply mt-5;
 }
 
 .blog-content ul,
 .blog-content ol {
-  @apply my-6 space-y-3;
+  @apply my-5 space-y-2;
 }
 
 .blog-content h2 + p,
 .blog-content h3 + p {
-  @apply mt-4;
+  @apply mt-3;
 }
 
 .blog-content blockquote + p,
 .blog-content .blog-quote + p {
-  @apply mt-6;
+  @apply mt-5;
+}
+
+/* Player card following content spacing */
+.blog-content .player-card + ul,
+.blog-content .player-card + ol {
+  @apply mt-3;
 }
 
 /* Blog Heading Anchor Links */
@@ -1042,11 +1097,11 @@ html {
 }
 
 .blog-heading-h2 {
-  @apply text-2xl md:text-3xl font-bold mt-12 mb-6 text-foreground border-l-4 border-primary pl-4;
+  @apply text-2xl md:text-3xl font-bold mt-10 mb-5 text-foreground border-l-4 border-primary pl-4;
 }
 
 .blog-heading-h3 {
-  @apply text-xl md:text-2xl font-semibold mt-8 mb-4 text-foreground;
+  @apply text-lg md:text-xl font-semibold mt-8 mb-3 text-foreground pl-4 border-l-4 border-primary/60;
 }
 
 .blog-heading-anchor {

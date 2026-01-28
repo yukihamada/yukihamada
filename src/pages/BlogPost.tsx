@@ -220,11 +220,24 @@ const processContent = (rawContent: string, lang: string): string => {
   });
   
   processed = processed
+    // Author comment box (YUKI'S TAKE) - must come before regular blockquote processing
+    .replace(/^> \*\*著者コメント[：:]\*\*\s*(.+)$/gm, (_, text) => {
+      return `<div class="author-comment-box">
+        <div class="author-comment-label">YUKI'S TAKE</div>
+        <p class="text-muted-foreground leading-relaxed m-0">${text}</p>
+      </div>`;
+    })
+    .replace(/^> \*\*Author's comment[：:]\*\*\s*(.+)$/gim, (_, text) => {
+      return `<div class="author-comment-box">
+        <div class="author-comment-label">YUKI'S TAKE</div>
+        <p class="text-muted-foreground leading-relaxed m-0">${text}</p>
+      </div>`;
+    })
     .replace(/<blockquote>([^<]+)<\/blockquote>/g, '<div class="blog-quote"><p>$1</p></div>')
     .replace(/^> (.+)$/gm, '<div class="blog-quote my-4"><p>$1</p></div>')
-    .replace(/^---$/gm, '<hr class="my-10 border-t border-border/30" />')
-    .replace(/^(\d+)\. (.+)$/gm, '<li class="flex items-start gap-3 mb-3"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 text-primary text-sm font-bold flex items-center justify-center mt-0.5">$1</span><span class="text-muted-foreground leading-relaxed">$2</span></li>')
-    .replace(/^- (.+)$/gm, '<li class="flex items-start gap-3 mb-3"><span class="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-primary mt-2.5"></span><span class="text-muted-foreground leading-relaxed">$1</span></li>')
+    .replace(/^---$/gm, '<hr class="my-8 border-t border-border/20" />')
+    .replace(/^(\d+)\. (.+)$/gm, '<li class="flex items-start gap-3 mb-2"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 text-primary text-sm font-bold flex items-center justify-center mt-0.5">$1</span><span class="text-muted-foreground leading-relaxed">$2</span></li>')
+    .replace(/^- (.+)$/gm, '<li class="flex items-start gap-3 mb-2"><span class="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-primary mt-2.5"></span><span class="text-muted-foreground leading-relaxed">$1</span></li>')
     .replace(/\*\*(.+?)\*\*/g, '<strong class="text-foreground font-semibold">$1</strong>')
     // Markdown image syntax - MUST come before link processing to prevent ![alt](src) from being treated as a link
     .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, src) => {
@@ -251,13 +264,15 @@ const processContent = (rawContent: string, lang: string): string => {
       const imagePath = parts[0];
       const name = parts[1] || '';
       const role = parts.slice(2).join(':') || '';
-      return `<div class="flex items-center gap-3 my-3 p-3 rounded-xl bg-muted/30 border border-border/50 w-fit">
-        <div class="w-12 h-12 rounded-full overflow-hidden ring-2 ring-primary/20 flex-shrink-0">
-          <img src="${imagePath}" alt="${name}" loading="lazy" decoding="async" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full bg-muted flex items-center justify-center text-muted-foreground text-lg font-bold\\'>${name.charAt(0)}</div>'" />
-        </div>
-        <div>
-          <div class="text-sm font-semibold text-foreground">${name}</div>
-          ${role ? `<div class="text-xs text-muted-foreground">${role}</div>` : ''}
+      return `<div class="player-card">
+        <div class="player-header">
+          <div class="player-avatar">
+            <img src="${imagePath}" alt="${name}" loading="lazy" decoding="async" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full bg-muted flex items-center justify-center text-muted-foreground text-2xl font-bold\\'>${name.charAt(0)}</div>'" />
+          </div>
+          <div class="player-info">
+            <div class="player-name">${name}</div>
+            ${role ? `<div class="player-role">${role}</div>` : ''}
+          </div>
         </div>
       </div>`;
     })

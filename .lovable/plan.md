@@ -1,175 +1,160 @@
 
 
-# ライトボックスギャラリー機能 & ブログ一覧ページデザイン改善計画
+# ダボス2026ブログ記事作成計画
 
 ## 概要
 
-2つの機能強化を実装します：
-1. **ライトボックスのスワイプギャラリー機能**: 記事内の画像間をスワイプ/矢印キーで移動可能に
-2. **ブログ一覧ページのデザイン改善**: より視覚的に魅力的なカードデザインとレイアウトへ
+AI・エネルギー・未来予測をテーマにした新規ブログ記事「ダボス2026：AIで「貧困ゼロ」か、社会が「ブルースクリーン」か」を作成します。
 
 ---
 
-## 機能1: ライトボックスギャラリー機能
+## クロスリンク戦略
 
-### 現状の課題
-- 現在のライトボックス (`ImageLightbox.tsx`) は単一画像のみ表示
-- 記事内に複数画像がある場合、一旦閉じて別の画像を開く必要がある
-- スワイプやキーボードナビゲーションが未対応
+調査の結果、以下の既存記事と強い関連性があります：
 
-### 改善内容
-
-#### 1.1 新しい `ImageGalleryLightbox.tsx` コンポーネント
-
-```text
-┌─────────────────────────────────────────────────────────────┐
-│  [X]                                              1 / 4     │
-│                                                             │
-│  [<]                 [  画像  ]                     [>]     │
-│                                                             │
-│                     キャプション                            │
-│                                                             │
-│           ● ○ ○ ○  (ドットインジケーター)                  │
-└─────────────────────────────────────────────────────────────┘
-```
-
-**機能**:
-- **スワイプ対応**: Embla Carousel (`useEmblaCarousel`) を使用したタッチ/マウスドラッグ操作
-- **矢印ボタン**: 左右ナビゲーションボタン（画面端に配置）
-- **キーボードナビゲーション**: 
-  - `←` / `→`: 前後の画像へ移動
-  - `Escape`: ライトボックスを閉じる
-- **画像カウンター**: 現在位置表示 (例: "2 / 5")
-- **ドットインジケーター**: 画像の総数と現在位置を視覚的に表示
-- **アニメーション**: Framer Motion でフェードイン/アウト
-
-#### 1.2 BlogPost.tsx の更新
-
-| 変更箇所 | 内容 |
-|---------|------|
-| State変更 | `lightboxImage` → `{ images: Array, currentIndex: number }` |
-| 画像クリック時 | 記事内全画像を収集し、クリックした画像のインデックスで開く |
-| Import | `ImageLightbox` → `ImageGalleryLightbox` に置き換え |
-
-#### 1.3 技術詳細
-
-**画像収集ロジック**:
-```typescript
-// contentRef内の全ライトボックス対応画像を収集
-const allImages = Array.from(
-  contentRef.current.querySelectorAll('[data-lightbox-image]')
-).map(el => ({
-  src: el.getAttribute('data-lightbox-image'),
-  alt: el.getAttribute('data-lightbox-alt')
-}));
-```
-
-**Embla Carousel統合**:
-- 既存の `embla-carousel-react` パッケージを活用（インストール済み）
-- `loop: true` オプションで無限ループ可能
-- `draggable: true` でスワイプ対応
+| 関連記事 | slug | 関連性 |
+|---------|------|--------|
+| **サイニック理論** | `2025-12-20-sinic` | 55年周期の技術進化論、「自律社会」への移行 |
+| **SaaS地獄からの脱出（Totonos）** | `totonos-saas-hell-os-for-ai` | AIのためのOS、効率化の議論 |
+| **iPhoneローカルLLM（Elio）** | `iphone-local-llm-elio` | プライバシー重視のAI、「安全性」テーマ |
+| **ハイブリッド・エネルギー戦略** | `hybrid-energy-mitochondria-awakening` | 人間の「生存戦略」テーマ |
+| **バイオハッキング** | `biohacking-silicon-valley-cold-plunge-fasting` | シリコンバレー文化、最適化思考 |
 
 ---
 
-## 機能2: ブログ一覧ページデザイン改善
+## 記事構成
 
-### 現状の課題
-- カードデザインがシンプルすぎる
-- フィーチャー記事の差別化が弱い
-- 視覚的な深み・プレミアム感が不足
+### メタ情報
+- **slug**: `davos-2026-ai-abundance-bluescreen`
+- **カテゴリー**: `AI / 未来予測` / `AI / Future Prediction`
+- **画像**: OGP自動生成（AI/未来カテゴリー）
+- **公開日**: 2026年1月28日
 
-### 改善内容
+### 日本語版コンテンツ
 
-#### 2.1 フィーチャー記事（Hero Card）
+ユーザー提供のコンテンツをベースに：
 
-最新または featured フラグ付き記事を大きく目立たせるヒーローカードを追加：
+1. **導入**: 2026年ダボス会議の変化
+2. **AI 2027の悪夢**: 太陽光パネルで地球が覆われるシナリオ
+3. **イーロン・マスクの3つの条件**: Abundance、Safety、Aesthetics
+4. **ハラリとトランプの警告**: AIは道具か支配者か
+5. **生存戦略**: Human Centricであること
+6. **結論**: 「美的感覚」を手放さない生き方
 
-```text
-┌─────────────────────────────────────────────────────────────┐
-│                                                             │
-│  [Featured]  カテゴリー                                     │
-│                                                             │
-│  記事タイトル（大きく）                                      │
-│                                                             │
-│  概要文...                                                  │
-│                                                             │
-│  📅 日付   ⏱ 読了時間   👁 閲覧数                          │
-│                                                     [→]     │
-└─────────────────────────────────────────────────────────────┘
-```
+### 追加する関連記事セクション
 
-#### 2.2 通常カードのデザイン強化
+```markdown
+## 関連記事
 
-| 要素 | 改善内容 |
-|------|---------|
-| **画像オーバーレイ** | ホバー時にグラデーションオーバーレイ + 矢印アイコン |
-| **Glassmorphismの強化** | `.glass-premium` クラスを活用した深みのあるカード |
-| **カテゴリーバッジ** | より目立つグラデーション背景バッジ |
-| **メタ情報の整理** | アイコン + テキストのアライメント改善 |
-| **ホバーエフェクト** | カード全体のグロー + 画像ズーム効果の強化 |
+この記事のテーマに関連する過去の記事：
 
-#### 2.3 レイアウト構成
+### AIと未来社会
+- [サイニック理論が示すAIの未来](/blog/2025-12-20-sinic) - 55年周期の技術進化と「自律社会」
+- [iPhoneだけで動くローカルLLM「Elio」](/blog/iphone-local-llm-elio) - プライバシー重視のAI開発
 
-**デスクトップ**:
-```text
-┌────────────────────────────┬─────────────────┬─────────────────┐
-│                            │   カード 2      │   カード 3      │
-│   フィーチャー記事         ├─────────────────┼─────────────────┤
-│   （2列分の大きさ）        │   カード 4      │   カード 5      │
-│                            │                 │                 │
-└────────────────────────────┴─────────────────┴─────────────────┘
-         2 columns                  1 col            1 col
-```
+### 効率化と人間らしさ
+- [「SaaS地獄」から抜け出す方法](/blog/totonos-saas-hell-os-for-ai) - AIのためのOS設計
+- [バイオハッキングで人生が変わった](/blog/biohacking-silicon-valley-cold-plunge-fasting) - シリコンバレー流の最適化思考
 
-**モバイル**: 全て1列の縦並び（フィーチャー記事のみ大きく表示）
-
-#### 2.4 追加CSSスタイル
-
-```css
-/* ブログカード強化 */
-.blog-card-premium {
-  background: linear-gradient(145deg, 
-    hsl(var(--card)) 0%, 
-    hsl(var(--card) / 0.7) 100%);
-  box-shadow: 
-    0 10px 40px -10px hsl(var(--primary) / 0.15),
-    inset 0 1px 0 hsl(var(--border) / 0.3);
-}
-
-.blog-card-premium:hover {
-  box-shadow: 
-    0 20px 60px -15px hsl(var(--primary) / 0.25),
-    inset 0 1px 0 hsl(var(--primary) / 0.3);
-}
-
-/* 画像オーバーレイ */
-.blog-image-overlay {
-  background: linear-gradient(
-    to bottom,
-    transparent 40%,
-    hsl(var(--background) / 0.9) 100%
-  );
-}
+### 生存戦略シリーズ
+- [ハイブリッド・エネルギー戦略](/blog/hybrid-energy-mitochondria-awakening) - ミトコンドリアを覚醒させる方法
 ```
 
 ---
 
-## 実装ファイル
+## 英語版コンテンツ
 
-| ファイル | 変更内容 |
-|---------|---------|
-| `src/components/ImageGalleryLightbox.tsx` | 新規作成 - ギャラリー対応ライトボックス |
-| `src/components/ImageLightbox.tsx` | 削除（新コンポーネントに統合） |
-| `src/pages/BlogPost.tsx` | ライトボックスロジック更新、新コンポーネントimport |
-| `src/pages/Blog.tsx` | レイアウト改善、フィーチャーカード追加、カードデザイン強化 |
-| `src/index.css` | ブログカード用の新CSSクラス追加 |
+日本語版の完全翻訳版を作成：
+
+**タイトル**: Davos 2026: AI-Powered "Zero Poverty" or Society's "Blue Screen of Death"?
+
+**サブタイトル**: Between a Calculated Future and Human Pride — My Survival Strategy
+
+---
+
+## 技術的な実装
+
+### Step 1: 画像の準備
+
+ダボス会議・AI・未来をテーマにしたOGP画像が必要です。
+
+オプション:
+1. 既存の `blog-sinic-theory.jpg` を一時使用
+2. `generate-ogp` Edge Functionで自動生成（カテゴリーが「AI/未来」の場合、自動的に適切なビジュアルを生成）
+
+→ カテゴリーを「AI / 未来予測」に設定することで、OGP自動生成が適用されます。
+
+### Step 2: データベースへの挿入
+
+```sql
+INSERT INTO blog_posts (
+  slug, featured, image, status, published_at,
+  title_ja, excerpt_ja, content_ja, date_ja, category_ja,
+  title_en, excerpt_en, content_en, date_en, category_en
+) VALUES (
+  'davos-2026-ai-abundance-bluescreen',
+  true,
+  '/images/blog-davos-2026-ai.jpg',
+  'published',
+  NOW(),
+  'ダボス2026：AIで「貧困ゼロ」か、社会が「ブルースクリーン」か',
+  '「計算された未来」と「人間としての意地」の間で、僕が決めた生存戦略。イーロン・マスクの「美的感覚」とハラリの警告を読み解く。',
+  '[本文...]',
+  '2026年1月28日',
+  'AI / 未来予測',
+  'Davos 2026: AI-Powered "Zero Poverty" or Society''s "Blue Screen of Death"?',
+  'My survival strategy between a "calculated future" and "human pride." Decoding Elon Musk''s "aesthetics" and Harari''s warnings.',
+  '[English content...]',
+  'January 28, 2026',
+  'AI / Future Prediction'
+);
+```
+
+---
+
+## コンテンツ詳細
+
+### 本文に含める要素
+
+1. **AI 2027レポートへの言及**
+   - 太陽光パネルで地球が覆われるシミュレーション
+   - 「効率の極限＝人間の住みにくさ」というパラドックス
+
+2. **イーロン・マスクのビジョン**
+   - 3つの条件: Abundance, Safety, **Aesthetics**
+   - 宇宙太陽光発電構想
+   - 「電力がボトルネック」という現実
+
+3. **ハラリの警告**
+   - 「AIは道具ではなく行為者」
+   - 言語を支配する＝社会のルールを書き換える
+
+4. **トランプの現実路線**
+   - AIは「国家の筋肉」
+   - データセンターのための原発
+   - グリーンランド発言の文脈
+
+5. **結論: Human Centric**
+   - 効率はAIに任せる
+   - 意味（美しさ、楽しさ、幸せ）は人間が決める
+   - 「空が見えない世界なら NO と言う」
 
 ---
 
 ## 期待される効果
 
-1. **UX向上**: 記事内の複数画像を閉じずにスワイプで閲覧可能
-2. **モバイル最適化**: タッチスワイプでの直感的な操作
-3. **視覚的魅力**: プレミアム感のあるブログカードで読者の興味を引く
-4. **一貫したデザイン言語**: サイト全体の「Glassmorphism 2.0」に沿った統一感
+1. **テーマの網羅性**: ダボス会議の最新議論を日本語で解説
+2. **独自視点**: 「美的感覚」を軸にした生存戦略
+3. **回遊性向上**: 5つ以上の関連記事への明確なリンク
+4. **SEO**: 「ダボス 2026」「AI 未来」「イーロン・マスク」などのキーワード
+
+---
+
+## 変更ファイル
+
+| 対象 | 内容 |
+|------|------|
+| `blog_posts` テーブル | 新規記事INSERT |
+| `public/images/` | OGP画像追加（オプション） |
+| `public/sitemap.xml` | 新記事URL追加（自動反映） |
 

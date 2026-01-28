@@ -1072,11 +1072,11 @@ html {
 
 .blog-content ul,
 .blog-content ol {
-  @apply my-6 space-y-3;
+  @apply my-6 space-y-4;
 }
 
 .blog-content li {
-  @apply leading-loose;
+  @apply leading-loose py-1;
 }
 
 .blog-content h2 + p,

@@ -30,6 +30,7 @@ import ElioSignupForm from '@/components/ElioSignupForm';
 import BlogPostCTA from '@/components/BlogPostCTA';
 import { AnimatePresence } from 'framer-motion';
 import mermaid from 'mermaid';
+import ImageLightbox from '@/components/ImageLightbox';
 
 // Initialize mermaid with dark theme support
 mermaid.initialize({
@@ -227,7 +228,17 @@ const processContent = (rawContent: string, lang: string): string => {
     .replace(/\*\*(.+?)\*\*/g, '<strong class="text-foreground font-semibold">$1</strong>')
     // Markdown image syntax - MUST come before link processing to prevent ![alt](src) from being treated as a link
     .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, src) => {
-      return `<figure class="my-8"><img src="${src}" alt="${alt || ''}" loading="lazy" decoding="async" class="w-full rounded-xl shadow-lg ring-1 ring-border/20" />${alt ? `<figcaption class="text-center text-sm text-muted-foreground mt-3">${alt}</figcaption>` : ''}</figure>`;
+      return `<figure class="blog-image-figure my-8 flex flex-col items-center">
+        <div class="relative group cursor-pointer max-w-2xl w-full" data-lightbox-image="${src}" data-lightbox-alt="${alt || ''}">
+          <img src="${src}" alt="${alt || ''}" loading="lazy" decoding="async" class="w-full rounded-xl shadow-lg ring-1 ring-border/20 transition-all duration-300 group-hover:shadow-xl group-hover:ring-primary/40" />
+          <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/20 rounded-xl">
+            <span class="p-3 rounded-full bg-white/90 dark:bg-black/70 shadow-lg backdrop-blur-sm">
+              <svg class="w-6 h-6 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+            </span>
+          </div>
+        </div>
+        ${alt ? `<figcaption class="mt-3 px-4 py-2 rounded-lg bg-muted/50 text-center text-sm font-medium text-muted-foreground max-w-2xl">${alt}</figcaption>` : ''}
+      </figure>`;
     })
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary hover:text-primary/80 underline underline-offset-4 decoration-primary/50 hover:decoration-primary transition-all font-medium">$1</a>')
     .replace(/^(⚠️|👉|🎉) (.+)$/gm, (_, emoji, text) => {
@@ -244,10 +255,29 @@ const processContent = (rawContent: string, lang: string): string => {
         const parts = imageInfo.split(':');
         const imagePath = parts[0];
         const caption = parts.slice(1).join(':') || '';
-        return `<figure class="my-8"><img src="${imagePath}" alt="${caption}" loading="lazy" decoding="async" class="w-full rounded-xl shadow-lg ring-1 ring-border/20" />${caption ? `<figcaption class="text-center text-sm text-muted-foreground mt-3">${caption}</figcaption>` : ''}</figure>`;
+        return `<figure class="blog-image-figure my-8 flex flex-col items-center">
+          <div class="relative group cursor-pointer max-w-2xl w-full" data-lightbox-image="${imagePath}" data-lightbox-alt="${caption}">
+            <img src="${imagePath}" alt="${caption}" loading="lazy" decoding="async" class="w-full rounded-xl shadow-lg ring-1 ring-border/20 transition-all duration-300 group-hover:shadow-xl group-hover:ring-primary/40" />
+            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/20 rounded-xl">
+              <span class="p-3 rounded-full bg-white/90 dark:bg-black/70 shadow-lg backdrop-blur-sm">
+                <svg class="w-6 h-6 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+              </span>
+            </div>
+          </div>
+          ${caption ? `<figcaption class="mt-3 px-4 py-2 rounded-lg bg-muted/50 text-center text-sm font-medium text-muted-foreground max-w-2xl">${caption}</figcaption>` : ''}
+        </figure>`;
       } else {
         const imageSrc = blogImages[imageInfo];
-        return imageSrc ? `<div class="my-8 flex justify-center"><img src="${imageSrc}" alt="${imageInfo}" loading="lazy" decoding="async" class="w-full md:w-1/2 lg:w-2/5 rounded-xl shadow-lg ring-1 ring-border/20" /></div>` : '';
+        return imageSrc ? `<figure class="blog-image-figure my-8 flex flex-col items-center">
+          <div class="relative group cursor-pointer max-w-md w-full" data-lightbox-image="${imageSrc}" data-lightbox-alt="${imageInfo}">
+            <img src="${imageSrc}" alt="${imageInfo}" loading="lazy" decoding="async" class="w-full rounded-xl shadow-lg ring-1 ring-border/20 transition-all duration-300 group-hover:shadow-xl group-hover:ring-primary/40" />
+            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/20 rounded-xl">
+              <span class="p-3 rounded-full bg-white/90 dark:bg-black/70 shadow-lg backdrop-blur-sm">
+                <svg class="w-6 h-6 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+              </span>
+            </div>
+          </div>
+        </figure>` : '';
       }
     })
     // Transform Amazon affiliate links into product cards
@@ -411,6 +441,7 @@ const BlogPost = () => {
 
   const [signupFormContainer, setSignupFormContainer] = useState<HTMLElement | null>(null);
   const [youtubeVideoId, setYoutubeVideoId] = useState<string | null>(null);
+  const [lightboxImage, setLightboxImage] = useState<{ src: string; alt: string } | null>(null);
 
   useEffect(() => {
     if (!contentRef.current) return;
@@ -470,6 +501,19 @@ const BlogPost = () => {
     if (signupPlaceholder) {
       setSignupFormContainer(signupPlaceholder as HTMLElement);
     }
+
+    // Add lightbox image click handlers
+    const lightboxImages = contentRef.current.querySelectorAll('[data-lightbox-image]');
+    lightboxImages.forEach((container) => {
+      const imageSrc = container.getAttribute('data-lightbox-image') || '';
+      const imageAlt = container.getAttribute('data-lightbox-alt') || '';
+      const handleImageClick = (e: Event) => {
+        e.preventDefault();
+        setLightboxImage({ src: imageSrc, alt: imageAlt });
+      };
+      container.addEventListener('click', handleImageClick);
+      handlers.push({ button: container, handler: handleImageClick });
+    });
 
     // Render mermaid diagrams
     const mermaidDiagrams = contentRef.current.querySelectorAll('[data-mermaid-code]');
@@ -758,6 +802,13 @@ const BlogPost = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Image Lightbox */}
+      <ImageLightbox
+        src={lightboxImage?.src || null}
+        alt={lightboxImage?.alt || ''}
+        onClose={() => setLightboxImage(null)}
+      />
     </div>
   );
 };

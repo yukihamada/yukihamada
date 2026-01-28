@@ -1,181 +1,103 @@
 
 
-# ダボス2026ブログ記事のデザイン改善計画
+# ブログ記事のタイポグラフィ改善計画
 
-参考画像のデザインを分析した結果、以下の改善を実施します。
-
----
-
-## 現状の問題点
-
-1. **アバターカード**: 現在は小さな横並びカードで、参考画像のような「人物セクション全体をカード化」するデザインではない
-2. **著者コメント（YUKI'S TAKE）**: 現在は通常の引用スタイル。参考画像では紫のラベル付きの専用ボックス
-3. **見出し（h3）**: 現在は左にプライマリカラーのボーダー。参考画像ではより洗練されたスタイル
-4. **スペーシング**: 引用や箇条書きの間隔が詰まりすぎている箇所がある
-5. **プレイヤーカード**: 人物ごとの情報が個別のカード内に収まっていない
+スクリーンショットを分析した結果、冒頭の引用ボックスと本文の間隔・行間が詰まりすぎて読みにくい状態です。以下の改善を実施します。
 
 ---
 
-## 実装内容
+## 問題点
 
-### 1. 人物（キープレイヤー）カードの再設計
-
-現在の `[avatar:...]` 構文を拡張し、人物ごとのセクション全体をカードで囲む新しい構文を追加：
-
-```markdown
-[player-card]
-[avatar:/images/davos-elon-musk.jpg:Elon Musk:Tesla / SpaceX / X CEO]
-
-**ダボス初登場 / BlackRock ラリー・フィンクとの対談**
-
-- AIとロボットの普及で「前例のない経済爆発」が起きる
-- ロボットの数はいずれ人間を超える
-[/player-card]
-```
-
-**レンダリング結果:**
-- ダークなカード背景（`bg-muted/30`）
-- 左側に縦のプライマリカラーライン
-- アバターが名前・役職と横並び（大きめサイズ）
-- 箇条書きがカード内に収まる
-
-### 2. 著者コメント（YUKI'S TAKE）ボックスの新設
-
-現在の `> **著者コメント：**` を専用のスタイルに変換：
-
-```css
-.author-comment-box {
-  background: linear-gradient(135deg, hsl(var(--primary)/0.08), hsl(var(--accent)/0.05));
-  border-radius: 1rem;
-  padding: 1.5rem;
-  border-left: none; /* 通常の引用スタイルとは異なる */
-}
-
-.author-comment-label {
-  color: hsl(var(--primary));
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin-bottom: 0.75rem;
-}
-```
-
-### 3. テーブルスタイルの改善
-
-参考画像のテーブルは非常にミニマルで、ボーダーが薄い：
-
-```css
-.blog-table {
-  border-collapse: separate;
-  border-spacing: 0;
-  width: 100%;
-}
-
-.blog-table-th {
-  padding: 0.75rem 1rem;
-  text-align: left;
-  font-weight: 600;
-  border-bottom: 2px solid hsl(var(--border));
-}
-
-.blog-table-td {
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid hsl(var(--border)/0.5);
-}
-```
-
-### 4. 見出し（h3）のスタイル改善
-
-参考画像では左側に太いプライマリカラーのバーがあり、背景なし：
-
-```css
-.blog-heading-h3 {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding-left: 1rem;
-  border-left: 4px solid hsl(var(--primary));
-  margin-top: 2.5rem;
-  margin-bottom: 1.5rem;
-  font-size: 1.5rem;
-  font-weight: 700;
-}
-```
-
-### 5. スペーシングの最適化
-
-- 箇条書き間のマージンを調整（`mb-3` → `mb-2`）
-- 引用ブロックの上下マージンを削減
-- 段落間の間隔を統一
+1. **引用ボックス**: 4行のテキストが詰まりすぎ。行間(`leading`)と内側パディングが不足
+2. **箇条書き**: 太字キーワードと説明テキストが連続して視認性が悪い
+3. **本文段落**: 行間(`line-height`)が狭く、段落間のマージンも不十分
+4. **全体的な余白**: 引用後の本文との間隔が狭い
 
 ---
 
-## 技術的な変更ファイル
+## 改善内容
 
-### `src/pages/BlogPost.tsx`
+### 1. 引用ボックス（.blog-quote）のスタイル改善
 
-1. **著者コメント変換の追加**:
-```javascript
-.replace(/^> \*\*著者コメント[：:]\*\* (.+)$/gm, (_, text) => {
-  return `<div class="author-comment-box">
-    <div class="author-comment-label">YUKI'S TAKE</div>
-    <p class="text-muted-foreground leading-relaxed">${text}</p>
-  </div>`;
-})
+**変更前:**
+- `py-4`（上下パディング1rem）
+- `leading-relaxed`（行間1.625）
+
+**変更後:**
+- `py-5`（上下パディング1.25rem）
+- `leading-loose`（行間2）
+- テキストサイズを少し調整
+
+### 2. 箇条書きの構造変更
+
+現在の構造:
+```html
+<li>
+  <span>●</span>
+  <span><strong>AI</strong>（＝計算資源と電力の争奪戦）</span>
+</li>
 ```
 
-2. **アバター構文の改善**:
-```javascript
-// より大きなアバター + 横並びレイアウト
-return `<div class="player-header flex items-center gap-4 mb-4">
-  <div class="w-16 h-16 rounded-full overflow-hidden ring-2 ring-primary/30 flex-shrink-0">
-    <img src="${imagePath}" alt="${name}" ... />
+改善後（キーワードと説明を分離）:
+```html
+<li class="flex flex-col gap-1">
+  <div class="flex items-center gap-2">
+    <span>●</span>
+    <strong>AI</strong>
   </div>
-  <div>
-    <div class="text-xl font-bold text-foreground">${name}</div>
-    <div class="text-sm text-muted-foreground">${role}</div>
-  </div>
-</div>`;
+  <span class="pl-5">（＝計算資源と電力の争奪戦）</span>
+</li>
 ```
 
-3. **プレイヤーカード構文の追加（オプション）**:
-```javascript
-.replace(/\[player-card\]([\s\S]*?)\[\/player-card\]/g, (_, content) => {
-  return `<div class="player-card">
-    ${processPlayerCardContent(content)}
-  </div>`;
-})
+→ ただし、これはマークダウン構文の変更が必要なため、まずはスペーシングの改善で対応
+
+### 3. 本文段落の行間・間隔調整
+
+**index.cssの変更:**
+```css
+.blog-content p {
+  @apply my-6 leading-loose text-muted-foreground;
+  /* my-5 → my-6, leading-relaxed → leading-loose */
+}
+
+.blog-quote p {
+  @apply text-base md:text-lg text-foreground/85 leading-loose m-0;
+  /* leading-relaxed → leading-loose */
+}
 ```
+
+### 4. 引用ボックス後のスペース拡大
+
+```css
+.blog-content .blog-quote + p,
+.blog-content blockquote + p {
+  @apply mt-8;
+  /* mt-5 → mt-8 */
+}
+```
+
+---
+
+## 変更ファイル
 
 ### `src/index.css`
 
-1. **著者コメントボックスのスタイル追加**
-2. **プレイヤーカードのスタイル追加**
-3. **テーブルスタイルの微調整**
-4. **h3見出しのスタイル調整**
+1. `.blog-quote`クラスのパディング・行間を拡大
+2. `.blog-content p`の行間を`leading-loose`に変更
+3. 引用後のスペースを拡大
+4. 箇条書きの間隔を`mb-3`に拡大
+
+### `src/pages/BlogPost.tsx`
+
+1. 箇条書きのマージンを`mb-2`から`mb-3`に変更
+2. 引用ボックスのインラインスタイルにleading-looseを追加
 
 ---
 
-## データベース更新
+## 期待される結果
 
-`blog_posts` テーブルの `content_ja` を更新し、著者コメントのフォーマットを調整：
-
-```markdown
-<!-- Before -->
-> **著者コメント：** 僕がイネブラでプロダクトを作るとき...
-
-<!-- After (マークダウン構文は同じ、CSSで処理) -->
-> **著者コメント：** 僕がイネブラでプロダクトを作るとき...
-```
-
----
-
-## 実装の優先順位
-
-1. **著者コメントボックス（YUKI'S TAKE）**: 最も視覚的なインパクトが大きい
-2. **アバターサイズと配置の改善**: 現在のデザインを洗練
-3. **スペーシング調整**: 全体的な読みやすさ向上
-4. **h3見出しスタイル**: より洗練された外観
-5. **プレイヤーカード（オプション）**: 人物セクションの囲み
+- 引用ボックス内のテキストが呼吸できる余白を持つ
+- 箇条書きが縦に並んで視認性向上
+- 本文が読みやすい行間・段落間隔になる
+- 全体的に「詰まった感じ」が解消される
 

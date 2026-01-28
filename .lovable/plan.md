@@ -1,103 +1,45 @@
 
+# ダボス2026記事のOGP・ポッドキャスト画像変更計画
 
-# ブログ記事のタイポグラフィ改善計画
+## 概要
 
-スクリーンショットを分析した結果、冒頭の引用ボックスと本文の間隔・行間が詰まりすぎて読みにくい状態です。以下の改善を実施します。
+アップロードされたダボスの雪景色画像（World Economic Forumロゴ入り）を、ブログ記事のOGP画像およびポッドキャストカバー画像として設定します。
 
----
+## 変更内容
 
-## 問題点
+### 1. 画像ファイルのコピー
 
-1. **引用ボックス**: 4行のテキストが詰まりすぎ。行間(`leading`)と内側パディングが不足
-2. **箇条書き**: 太字キーワードと説明テキストが連続して視認性が悪い
-3. **本文段落**: 行間(`line-height`)が狭く、段落間のマージンも不十分
-4. **全体的な余白**: 引用後の本文との間隔が狭い
-
----
-
-## 改善内容
-
-### 1. 引用ボックス（.blog-quote）のスタイル改善
-
-**変更前:**
-- `py-4`（上下パディング1rem）
-- `leading-relaxed`（行間1.625）
-
-**変更後:**
-- `py-5`（上下パディング1.25rem）
-- `leading-loose`（行間2）
-- テキストサイズを少し調整
-
-### 2. 箇条書きの構造変更
-
-現在の構造:
-```html
-<li>
-  <span>●</span>
-  <span><strong>AI</strong>（＝計算資源と電力の争奪戦）</span>
-</li>
+アップロードされた画像を以下の場所にコピー：
+```
+user-uploads://スクリーンショット_2026-01-28_20.44.38.png
+  ↓
+public/images/blog-davos-2026-wef.jpg
 ```
 
-改善後（キーワードと説明を分離）:
-```html
-<li class="flex flex-col gap-1">
-  <div class="flex items-center gap-2">
-    <span>●</span>
-    <strong>AI</strong>
-  </div>
-  <span class="pl-5">（＝計算資源と電力の争奪戦）</span>
-</li>
-```
+既存の `/images/blog-davos-2026-wef.jpg` を新しい画像で上書きします。
 
-→ ただし、これはマークダウン構文の変更が必要なため、まずはスペーシングの改善で対応
+### 2. 変更される箇所
 
-### 3. 本文段落の行間・間隔調整
+| 箇所 | 現在 | 変更後 |
+|------|------|--------|
+| OGP画像（SNS共有時） | 既存のblog-davos-2026-wef.jpg | 新しいダボス雪景色画像 |
+| ポッドキャストカバー | 同上（coverImageとして使用） | 同上 |
+| ブログ記事ヘッダー | 同上 | 同上 |
 
-**index.cssの変更:**
-```css
-.blog-content p {
-  @apply my-6 leading-loose text-muted-foreground;
-  /* my-5 → my-6, leading-relaxed → leading-loose */
-}
+### 3. 技術的詳細
 
-.blog-quote p {
-  @apply text-base md:text-lg text-foreground/85 leading-loose m-0;
-  /* leading-relaxed → leading-loose */
-}
-```
+**ファイル操作:**
+- `lov-copy` で画像を `public/images/blog-davos-2026-wef.jpg` に上書きコピー
 
-### 4. 引用ボックス後のスペース拡大
+**データベース変更:**
+- 不要（既に `image: /images/blog-davos-2026-wef.jpg` が設定済み）
 
-```css
-.blog-content .blog-quote + p,
-.blog-content blockquote + p {
-  @apply mt-8;
-  /* mt-5 → mt-8 */
-}
-```
+**コード変更:**
+- 不要（既存のパスをそのまま使用）
 
----
+### 4. 影響範囲
 
-## 変更ファイル
-
-### `src/index.css`
-
-1. `.blog-quote`クラスのパディング・行間を拡大
-2. `.blog-content p`の行間を`leading-loose`に変更
-3. 引用後のスペースを拡大
-4. 箇条書きの間隔を`mb-3`に拡大
-
-### `src/pages/BlogPost.tsx`
-
-1. 箇条書きのマージンを`mb-2`から`mb-3`に変更
-2. 引用ボックスのインラインスタイルにleading-looseを追加
-
----
-
-## 期待される結果
-
-- 引用ボックス内のテキストが呼吸できる余白を持つ
-- 箇条書きが縦に並んで視認性向上
-- 本文が読みやすい行間・段落間隔になる
-- 全体的に「詰まった感じ」が解消される
-
+- Twitter/X、Facebook、LINE等でのシェア時に表示されるOGP画像
+- ポッドキャストプレーヤーの背景カバー画像
+- ブログ記事一覧のサムネイル
+- ブログ記事詳細ページのヘッダー画像

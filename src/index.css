@@ -250,6 +250,10 @@
     @apply text-xs md:text-sm text-muted-foreground mt-0.5 leading-snug;
   }
 
+  .player-combined {
+    @apply text-sm md:text-base text-muted-foreground leading-snug;
+  }
+
   /* Highlighted text box */
   .blog-highlight {
     @apply relative p-5 my-6 rounded-xl border overflow-hidden;

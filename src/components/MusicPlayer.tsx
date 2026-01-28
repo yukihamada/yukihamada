@@ -4,6 +4,7 @@ import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Music, X, Chevron
 import { supabase } from '@/integrations/supabase/client';
 import { useMusicPlayer } from '@/contexts/MusicPlayerContext';
 import { useUIVisibility } from '@/contexts/UIVisibilityContext';
+import { useVideoPlayer } from '@/contexts/VideoPlayerContext';
 import { Slider } from '@/components/ui/slider';
 
 // Artwork mapping for dynamic imports
@@ -120,6 +121,7 @@ const savePlayCountToDb = async (trackId: string) => {
 const MusicPlayer = () => {
   const { setIsPlaying: setGlobalIsPlaying, setAnalyzerData: setGlobalAnalyzerData, setCurrentColor } = useMusicPlayer();
   const { isUIVisible } = useUIVisibility();
+  const { activeVideoId } = useVideoPlayer();
   
   // Track data from database
   const [tracks, setTracks] = useState<Track[]>([]);
@@ -678,6 +680,11 @@ const MusicPlayer = () => {
       ))}
     </div>
   );
+
+  // Hide music player when video is playing
+  if (activeVideoId) {
+    return null;
+  }
 
   if (!isVisible) {
     return (

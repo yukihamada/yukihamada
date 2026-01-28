@@ -15,9 +15,9 @@ import BlogSuggestedQuestions from '@/components/BlogSuggestedQuestions';
 import BlogSummary from '@/components/BlogSummary';
 import OptimizedImage from '@/components/OptimizedImage';
 import DOMPurify from 'dompurify';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useChat } from '@/contexts/ChatContext';
+import { useVideoPlayer } from '@/contexts/VideoPlayerContext';
 import { calculateReadingTime, formatReadingTime } from '@/lib/readingTime';
 import ShareCounts from '@/components/ShareCounts';
 import TableOfContents from '@/components/TableOfContents';
@@ -458,6 +458,7 @@ const BlogPost = () => {
   const { language } = useLanguage();
   const { setPageContext, setCurrentBlogTitle } = useChat();
   const { isAuthenticated } = useAuth();
+  const { playVideo } = useVideoPlayer();
 
   useEffect(() => {
     setPageContext('blog-post');
@@ -471,7 +472,6 @@ const BlogPost = () => {
   }, [post, language, setPageContext, setCurrentBlogTitle]);
 
   const [signupFormContainer, setSignupFormContainer] = useState<HTMLElement | null>(null);
-  const [youtubeVideoId, setYoutubeVideoId] = useState<string | null>(null);
   const [galleryState, setGalleryState] = useState<{ images: GalleryImage[]; currentIndex: number; isOpen: boolean }>({
     images: [],
     currentIndex: 0,
@@ -491,13 +491,13 @@ const BlogPost = () => {
       handlers.push({ button, handler: handleClick });
     });
 
-    // Add YouTube video button handlers
+    // Add YouTube video button handlers - use floating player
     const youtubeButtons = contentRef.current.querySelectorAll('[data-youtube-video-id]');
     youtubeButtons.forEach((button) => {
       const videoId = button.getAttribute('data-youtube-video-id') || '';
       const handleClick = (e: Event) => {
         e.preventDefault();
-        setYoutubeVideoId(videoId);
+        playVideo(videoId);
       };
       button.addEventListener('click', handleClick);
       handlers.push({ button, handler: handleClick });
@@ -819,31 +819,6 @@ const BlogPost = () => {
       </main>
 
       <Footer />
-
-      {/* YouTube Video Modal */}
-      <Dialog 
-        open={!!youtubeVideoId} 
-        onOpenChange={(open) => {
-          if (!open) {
-            setYoutubeVideoId(null);
-          }
-        }}
-      >
-        <DialogContent className="max-w-4xl w-[95vw] p-0 bg-black border-none overflow-hidden">
-          <div className="relative aspect-video w-full">
-            {youtubeVideoId && (
-              <iframe
-                key={youtubeVideoId}
-                src={`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&enablejsapi=1`}
-                title="YouTube video"
-                className="absolute inset-0 w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Image Gallery Lightbox */}
       <ImageGalleryLightbox

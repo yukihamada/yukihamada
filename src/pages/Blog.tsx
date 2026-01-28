@@ -226,13 +226,20 @@ const Blog = () => {
           {isLoading ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="glass rounded-2xl overflow-hidden">
+                <div key={i} className="blog-card-premium rounded-2xl overflow-hidden h-full flex flex-col border border-border/30">
                   <Skeleton className="aspect-video" />
-                  <div className="p-6 space-y-3">
-                    <Skeleton className="h-4 w-24" />
+                  <div className="p-6 flex flex-col flex-grow space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="h-5 w-20 rounded-full" />
+                    </div>
                     <Skeleton className="h-6 w-full" />
                     <Skeleton className="h-4 w-full" />
                     <Skeleton className="h-4 w-3/4" />
+                    <div className="flex items-center gap-3 pt-4 border-t border-border/30 mt-auto">
+                      <Skeleton className="h-3 w-20" />
+                      <Skeleton className="h-3 w-16" />
+                      <Skeleton className="h-3 w-12" />
+                    </div>
                   </div>
                 </div>
               ))}

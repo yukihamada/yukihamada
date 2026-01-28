@@ -236,8 +236,8 @@ const processContent = (rawContent: string, lang: string): string => {
     .replace(/<blockquote>([^<]+)<\/blockquote>/g, '<div class="blog-quote"><p>$1</p></div>')
     .replace(/^> (.+)$/gm, '<div class="blog-quote my-4"><p>$1</p></div>')
     .replace(/^---$/gm, '<hr class="my-8 border-t border-border/20" />')
-    .replace(/^(\d+)\. (.+)$/gm, '<li class="flex items-start gap-3 mb-2"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 text-primary text-sm font-bold flex items-center justify-center mt-0.5">$1</span><span class="text-muted-foreground leading-relaxed">$2</span></li>')
-    .replace(/^- (.+)$/gm, '<li class="flex items-start gap-3 mb-2"><span class="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-primary mt-2.5"></span><span class="text-muted-foreground leading-relaxed">$1</span></li>')
+    .replace(/^(\d+)\. (.+)$/gm, '<li class="flex items-start gap-3 mb-3"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 text-primary text-sm font-bold flex items-center justify-center mt-1">$1</span><span class="text-muted-foreground leading-loose">$2</span></li>')
+    .replace(/^- (.+)$/gm, '<li class="flex items-start gap-3 mb-3"><span class="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-primary mt-3"></span><span class="text-muted-foreground leading-loose">$1</span></li>')
     .replace(/\*\*(.+?)\*\*/g, '<strong class="text-foreground font-semibold">$1</strong>')
     // Markdown image syntax - MUST come before link processing to prevent ![alt](src) from being treated as a link
     .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, src) => {

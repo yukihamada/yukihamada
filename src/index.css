@@ -188,7 +188,7 @@
 
   /* Blog quote styles */
   .blog-quote {
-    @apply relative border-l-4 border-primary pl-5 py-4 my-6 rounded-r-xl italic;
+    @apply relative border-l-4 border-primary pl-6 py-5 my-8 rounded-r-xl italic;
     background: linear-gradient(135deg, hsl(var(--primary) / 0.06) 0%, hsl(var(--accent) / 0.03) 100%);
   }
 
@@ -198,24 +198,24 @@
   }
 
   .blog-quote p {
-    @apply text-base md:text-lg text-foreground/85 leading-relaxed m-0;
+    @apply text-base md:text-lg text-foreground/85 leading-loose m-0;
   }
 
   /* Author Comment Box (YUKI'S TAKE) */
   .author-comment-box {
-    @apply relative my-6 p-5 rounded-xl;
+    @apply relative my-8 p-6 rounded-xl;
     background: linear-gradient(135deg, hsl(var(--primary) / 0.08) 0%, hsl(var(--accent) / 0.04) 100%);
     border: 1px solid hsl(var(--primary) / 0.15);
   }
 
   .author-comment-label {
-    @apply text-xs font-bold tracking-widest uppercase mb-3;
+    @apply text-xs font-bold tracking-widest uppercase mb-4;
     color: hsl(var(--primary));
     letter-spacing: 0.1em;
   }
 
   .author-comment-box p {
-    @apply text-sm md:text-base leading-relaxed;
+    @apply text-sm md:text-base leading-loose;
   }
 
   /* Player Card Styles */
@@ -1063,32 +1063,40 @@ html {
 
 /* Blog Content Prose Styling */
 .blog-content p {
-  @apply my-5 leading-relaxed text-muted-foreground;
+  @apply my-6 leading-loose text-muted-foreground;
 }
 
 .blog-content p + p {
-  @apply mt-5;
+  @apply mt-6;
 }
 
 .blog-content ul,
 .blog-content ol {
-  @apply my-5 space-y-2;
+  @apply my-6 space-y-3;
+}
+
+.blog-content li {
+  @apply leading-loose;
 }
 
 .blog-content h2 + p,
 .blog-content h3 + p {
-  @apply mt-3;
+  @apply mt-4;
 }
 
 .blog-content blockquote + p,
 .blog-content .blog-quote + p {
-  @apply mt-5;
+  @apply mt-8;
+}
+
+.blog-content .author-comment-box + p {
+  @apply mt-8;
 }
 
 /* Player card following content spacing */
 .blog-content .player-card + ul,
 .blog-content .player-card + ol {
-  @apply mt-3;
+  @apply mt-4;
 }
 
 /* Blog Heading Anchor Links */
@@ -1097,11 +1105,11 @@ html {
 }
 
 .blog-heading-h2 {
-  @apply text-2xl md:text-3xl font-bold mt-10 mb-5 text-foreground border-l-4 border-primary pl-4;
+  @apply text-2xl md:text-3xl font-bold mt-12 mb-6 text-foreground border-l-4 border-primary pl-4;
 }
 
 .blog-heading-h3 {
-  @apply text-lg md:text-xl font-semibold mt-8 mb-3 text-foreground pl-4 border-l-4 border-primary/60;
+  @apply text-lg md:text-xl font-semibold mt-10 mb-4 text-foreground pl-4 border-l-4 border-primary/60;
 }
 
 .blog-heading-anchor {

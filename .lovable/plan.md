@@ -1,45 +1,147 @@
 
-# ダボス2026記事のOGP・ポッドキャスト画像変更計画
+
+# ブログ記事レイアウト調整計画
 
 ## 概要
 
-アップロードされたダボスの雪景色画像（World Economic Forumロゴ入り）を、ブログ記事のOGP画像およびポッドキャストカバー画像として設定します。
+スクリーンショットに基づき、以下の4つのレイアウト問題を修正します。
 
 ## 変更内容
 
-### 1. 画像ファイルのコピー
+### 1. アバターカードから名前を削除し、サブタイトルを名前の横に表示
 
-アップロードされた画像を以下の場所にコピー：
+**現状の問題:**
 ```
-user-uploads://スクリーンショット_2026-01-28_20.44.38.png
-  ↓
-public/images/blog-davos-2026-wef.jpg
+### Yuval Noah Harari — 地獄の解像度  ← 見出しに名前あり
+[avatar:/images/davos-yuval-harari.jpg:Yuval Noah Harari:歴史学者・作家]
+                                      ↑ ここにも名前が重複
 ```
 
-既存の `/images/blog-davos-2026-wef.jpg` を新しい画像で上書きします。
+**解決策:**
+- `[avatar]` 構文の処理を変更
+- 名前の代わりに「サブタイトル」（地獄の解像度）を表示
+- 役職は名前の横に表示
 
-### 2. 変更される箇所
+**修正後のイメージ:**
+```
+### Yuval Noah Harari — 地獄の解像度
+[avatar画像] 歴史学者・作家   ← 名前なし、役職のみ
+```
 
-| 箇所 | 現在 | 変更後 |
-|------|------|--------|
-| OGP画像（SNS共有時） | 既存のblog-davos-2026-wef.jpg | 新しいダボス雪景色画像 |
-| ポッドキャストカバー | 同上（coverImageとして使用） | 同上 |
-| ブログ記事ヘッダー | 同上 | 同上 |
+**または、新しい構文を導入:**
+```markdown
+[avatar:/images/davos-yuval-harari.jpg::歴史学者・作家]
+```
+（名前を空にすると非表示）
 
-### 3. 技術的詳細
+### 2. 箇条書き間のスペースを詰める
 
-**ファイル操作:**
-- `lov-copy` で画像を `public/images/blog-davos-2026-wef.jpg` に上書きコピー
+**現状:** `src/index.css` の `.blog-content ul, ol` に `space-y-4` が設定されている
 
-**データベース変更:**
-- 不要（既に `image: /images/blog-davos-2026-wef.jpg` が設定済み）
+**修正:**
+```css
+/* Before */
+.blog-content ul,
+.blog-content ol {
+  @apply my-6 space-y-4;  /* space-y-4 = 16px間隔 */
+}
 
-**コード変更:**
-- 不要（既存のパスをそのまま使用）
+/* After */
+.blog-content ul,
+.blog-content ol {
+  @apply my-6 space-y-2;  /* space-y-2 = 8px間隔 */
+}
+```
 
-### 4. 影響範囲
+### 3. セッション見出しと箇条書きの間隔を広げる
 
-- Twitter/X、Facebook、LINE等でのシェア時に表示されるOGP画像
-- ポッドキャストプレーヤーの背景カバー画像
-- ブログ記事一覧のサムネイル
-- ブログ記事詳細ページのヘッダー画像
+**現状:** `.player-card + ul` に `mt-4` が設定されているが、通常の段落/見出し後のリストは十分なマージンがない
+
+**修正:**
+```css
+/* 見出しやセッション名の後のリストに余白追加 */
+.blog-content p + ul,
+.blog-content p + ol,
+.blog-content strong + ul {
+  @apply mt-6;
+}
+```
+
+### 4. 箇条書きを右にずらす（インデント追加）
+
+**現状:** `src/pages/BlogPost.tsx` でリストアイテムに `gap-3` が設定されているが、左マージンがない
+
+**修正:** リストアイテムに左パディングを追加
+```css
+.blog-content ul,
+.blog-content ol {
+  @apply my-6 space-y-2 pl-4;  /* pl-4 = 16px左インデント追加 */
+}
+```
+
+## 技術的変更
+
+### ファイル: `src/index.css`
+
+| 行 | 変更内容 |
+|-----|---------|
+| 1073-1076 | `space-y-4` → `space-y-2` に変更、`pl-4` 追加 |
+| 新規追加 | 見出し/段落後のリスト用マージンルール |
+
+### ファイル: `src/pages/BlogPost.tsx`（オプション）
+
+アバター構文の処理を変更し、名前が空の場合は非表示にする
+
+```typescript
+// 名前が空の場合は表示しない
+.replace(/\[avatar:([^\]]+)\]/g, (_, avatarInfo) => {
+  const parts = avatarInfo.split(':');
+  const imagePath = parts[0];
+  const name = parts[1] || '';
+  const role = parts.slice(2).join(':') || '';
+  return `<div class="player-card">
+    <div class="player-header">
+      <div class="player-avatar">
+        <img src="${imagePath}" alt="${name || role}" ... />
+      </div>
+      <div class="player-info">
+        ${name ? `<div class="player-name">${name}</div>` : ''}
+        ${role ? `<div class="player-role">${role}</div>` : ''}
+      </div>
+    </div>
+  </div>`;
+})
+```
+
+### データベース変更
+
+Yuval Noah Harariのセクションの `[avatar]` 構文を更新：
+
+**Before:**
+```markdown
+[avatar:/images/davos-yuval-harari.jpg:Yuval Noah Harari:歴史学者・作家]
+```
+
+**After:**
+```markdown
+[avatar:/images/davos-yuval-harari.jpg::歴史学者・作家 | 地獄の解像度]
+```
+
+## 変更後のイメージ
+
+```
+### Yuval Noah Harari — 地獄の解像度
+
+[アバター画像] 歴史学者・作家 | 地獄の解像度
+                     ↑ 名前なし、役職+サブタイトル
+
+セッション「An Honest Conversation on AI and Humanity」
+
+                     ↑ ここに余白（mt-6）
+
+    • AIは「ツール」ではない...
+                     ↑ 少し右にインデント（pl-4）
+    • 「AI移民」が到来する...
+         ↑ 間隔を詰める（space-y-2）
+```
+

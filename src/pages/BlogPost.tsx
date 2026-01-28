@@ -225,6 +225,10 @@ const processContent = (rawContent: string, lang: string): string => {
     .replace(/^(\d+)\. (.+)$/gm, '<li class="flex items-start gap-4 mb-4"><span class="flex-shrink-0 w-7 h-7 rounded-full bg-primary/20 text-primary text-sm font-bold flex items-center justify-center mt-0.5">$1</span><span class="text-muted-foreground leading-relaxed">$2</span></li>')
     .replace(/^- (.+)$/gm, '<li class="flex items-start gap-4 mb-4"><span class="flex-shrink-0 w-2 h-2 rounded-full bg-primary mt-2.5"></span><span class="text-muted-foreground leading-loose">$1</span></li>')
     .replace(/\*\*(.+?)\*\*/g, '<strong class="text-foreground font-semibold">$1</strong>')
+    // Markdown image syntax - MUST come before link processing to prevent ![alt](src) from being treated as a link
+    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, src) => {
+      return `<figure class="my-8"><img src="${src}" alt="${alt || ''}" loading="lazy" decoding="async" class="w-full rounded-xl shadow-lg ring-1 ring-border/20" />${alt ? `<figcaption class="text-center text-sm text-muted-foreground mt-3">${alt}</figcaption>` : ''}</figure>`;
+    })
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary hover:text-primary/80 underline underline-offset-4 decoration-primary/50 hover:decoration-primary transition-all font-medium">$1</a>')
     .replace(/^(⚠️|👉|🎉) (.+)$/gm, (_, emoji, text) => {
       const bgColor = emoji === '⚠️' ? 'bg-amber-500/10 border-amber-500/30' : emoji === '🎉' ? 'bg-green-500/10 border-green-500/30' : 'bg-primary/10 border-primary/30';

@@ -1,118 +1,175 @@
 
 
-# ブログ記事の画像表示修正計画
+# ライトボックスギャラリー機能 & ブログ一覧ページデザイン改善計画
 
-## 問題の特定
+## 概要
 
-現在、記事内の画像が正しく表示されていない原因：
-
-1. **Markdown画像構文の未対応**: 記事内で標準的なMarkdown画像構文 `![alt](/images/path.jpg)` を使用しているが、`processContent`関数がこの構文を画像として処理していない
-2. **リンクとして誤認識**: `[text](url)` のリンク変換ロジックが画像構文にも適用され、画像がクリック可能なリンクとして表示されている
+2つの機能強化を実装します：
+1. **ライトボックスのスワイプギャラリー機能**: 記事内の画像間をスワイプ/矢印キーで移動可能に
+2. **ブログ一覧ページのデザイン改善**: より視覚的に魅力的なカードデザインとレイアウトへ
 
 ---
 
-## 修正内容
+## 機能1: ライトボックスギャラリー機能
 
-### Step 1: Markdownイメージ構文のサポート追加
+### 現状の課題
+- 現在のライトボックス (`ImageLightbox.tsx`) は単一画像のみ表示
+- 記事内に複数画像がある場合、一旦閉じて別の画像を開く必要がある
+- スワイプやキーボードナビゲーションが未対応
 
-`src/pages/BlogPost.tsx` の `processContent` 関数に、標準Markdown画像構文 `![alt](src)` を処理するロジックを追加
+### 改善内容
 
+#### 1.1 新しい `ImageGalleryLightbox.tsx` コンポーネント
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│  [X]                                              1 / 4     │
+│                                                             │
+│  [<]                 [  画像  ]                     [>]     │
+│                                                             │
+│                     キャプション                            │
+│                                                             │
+│           ● ○ ○ ○  (ドットインジケーター)                  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**機能**:
+- **スワイプ対応**: Embla Carousel (`useEmblaCarousel`) を使用したタッチ/マウスドラッグ操作
+- **矢印ボタン**: 左右ナビゲーションボタン（画面端に配置）
+- **キーボードナビゲーション**: 
+  - `←` / `→`: 前後の画像へ移動
+  - `Escape`: ライトボックスを閉じる
+- **画像カウンター**: 現在位置表示 (例: "2 / 5")
+- **ドットインジケーター**: 画像の総数と現在位置を視覚的に表示
+- **アニメーション**: Framer Motion でフェードイン/アウト
+
+#### 1.2 BlogPost.tsx の更新
+
+| 変更箇所 | 内容 |
+|---------|------|
+| State変更 | `lightboxImage` → `{ images: Array, currentIndex: number }` |
+| 画像クリック時 | 記事内全画像を収集し、クリックした画像のインデックスで開く |
+| Import | `ImageLightbox` → `ImageGalleryLightbox` に置き換え |
+
+#### 1.3 技術詳細
+
+**画像収集ロジック**:
 ```typescript
-// Markdownリンク処理の前に、Markdown画像構文を処理する
-.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, src) => {
-  return `<figure class="my-8"><img src="${src}" alt="${alt || ''}" loading="lazy" decoding="async" class="w-full rounded-xl shadow-lg ring-1 ring-border/20" />${alt ? `<figcaption class="text-center text-sm text-muted-foreground mt-3">${alt}</figcaption>` : ''}</figure>`;
-})
+// contentRef内の全ライトボックス対応画像を収集
+const allImages = Array.from(
+  contentRef.current.querySelectorAll('[data-lightbox-image]')
+).map(el => ({
+  src: el.getAttribute('data-lightbox-image'),
+  alt: el.getAttribute('data-lightbox-alt')
+}));
 ```
 
-この処理は、既存のリンク処理 `[text](url)` の**前**に配置する必要がある（そうしないと画像構文がリンクとして誤処理される）
+**Embla Carousel統合**:
+- 既存の `embla-carousel-react` パッケージを活用（インストール済み）
+- `loop: true` オプションで無限ループ可能
+- `draggable: true` でスワイプ対応
 
 ---
 
-### Step 2: 新しい写真の追加（おんぶ写真）
+## 機能2: ブログ一覧ページデザイン改善
 
-1. **画像ファイルをプロジェクトにコピー**
-   - `user-uploads://IMG_0782.JPG` → `public/images/blog-sauna-fire-awata-piggyback.jpg`
+### 現状の課題
+- カードデザインがシンプルすぎる
+- フィーチャー記事の差別化が弱い
+- 視覚的な深み・プレミアム感が不足
 
-2. **記事コンテンツの更新**
-   - 粟田選手の足関節怪我エピソードの後に、おんぶ写真を追加
-   - ユーモラスなキャプション付き
+### 改善内容
 
-**日本語版（追加）**
-```markdown
-![足関節を極められた粟田を良蔵先生がおんぶ](/images/blog-sauna-fire-awata-piggyback.jpg)
+#### 2.1 フィーチャー記事（Hero Card）
 
-これが、その証拠写真。
-良蔵先生が粟田をおんぶしている。
+最新または featured フラグ付き記事を大きく目立たせるヒーローカードを追加：
 
-試合後、歩けなくなった粟田を師匠がおんぶする図。
-なんかもう、絵面が強すぎる。
-
-パンを我慢して建物を救ったヒーローが、
-翌日には師匠におんぶされてる。
-
-人生って、バランスの取り方が雑すぎない？
+```text
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│  [Featured]  カテゴリー                                     │
+│                                                             │
+│  記事タイトル（大きく）                                      │
+│                                                             │
+│  概要文...                                                  │
+│                                                             │
+│  📅 日付   ⏱ 読了時間   👁 閲覧数                          │
+│                                                     [→]     │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-**英語版（追加）**
-```markdown
-![Ryozo-sensei giving Awata a piggyback ride after his leg injury](/images/blog-sauna-fire-awata-piggyback.jpg)
+#### 2.2 通常カードのデザイン強化
 
-Here's the photographic evidence.
-Ryozo-sensei carrying Awata on his back.
+| 要素 | 改善内容 |
+|------|---------|
+| **画像オーバーレイ** | ホバー時にグラデーションオーバーレイ + 矢印アイコン |
+| **Glassmorphismの強化** | `.glass-premium` クラスを活用した深みのあるカード |
+| **カテゴリーバッジ** | より目立つグラデーション背景バッジ |
+| **メタ情報の整理** | アイコン + テキストのアライメント改善 |
+| **ホバーエフェクト** | カード全体のグロー + 画像ズーム効果の強化 |
 
-After the match, when Awata couldn't walk, his master had to piggyback him.
-The visual is just too powerful.
+#### 2.3 レイアウト構成
 
-The hero who resisted bread and saved a building
-is now being carried by his master the very next day.
+**デスクトップ**:
+```text
+┌────────────────────────────┬─────────────────┬─────────────────┐
+│                            │   カード 2      │   カード 3      │
+│   フィーチャー記事         ├─────────────────┼─────────────────┤
+│   （2列分の大きさ）        │   カード 4      │   カード 5      │
+│                            │                 │                 │
+└────────────────────────────┴─────────────────┴─────────────────┘
+         2 columns                  1 col            1 col
+```
 
-Life really doesn't know how to balance things, does it?
+**モバイル**: 全て1列の縦並び（フィーチャー記事のみ大きく表示）
+
+#### 2.4 追加CSSスタイル
+
+```css
+/* ブログカード強化 */
+.blog-card-premium {
+  background: linear-gradient(145deg, 
+    hsl(var(--card)) 0%, 
+    hsl(var(--card) / 0.7) 100%);
+  box-shadow: 
+    0 10px 40px -10px hsl(var(--primary) / 0.15),
+    inset 0 1px 0 hsl(var(--border) / 0.3);
+}
+
+.blog-card-premium:hover {
+  box-shadow: 
+    0 20px 60px -15px hsl(var(--primary) / 0.25),
+    inset 0 1px 0 hsl(var(--primary) / 0.3);
+}
+
+/* 画像オーバーレイ */
+.blog-image-overlay {
+  background: linear-gradient(
+    to bottom,
+    transparent 40%,
+    hsl(var(--background) / 0.9) 100%
+  );
+}
 ```
 
 ---
 
-## 技術的な実装
+## 実装ファイル
 
-### 1. BlogPost.tsx の修正
-
-`processContent` 関数内で、リンク処理の前に画像処理を追加：
-
-```typescript
-// 現在のリンク処理（228行目付近）:
-.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2"...>$1</a>')
-
-// この前に画像処理を追加:
-.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, src) => {
-  return `<figure class="my-8">...</figure>`;
-})
-.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2"...>$1</a>')
-```
-
-### 2. 画像ファイルのコピー
-
-```
-lov-copy user-uploads://IMG_0782.JPG public/images/blog-sauna-fire-awata-piggyback.jpg
-```
-
-### 3. データベース更新
-
-SQL UPDATE文で `content_ja` と `content_en` を更新し、おんぶ写真とキャプションを追加
+| ファイル | 変更内容 |
+|---------|---------|
+| `src/components/ImageGalleryLightbox.tsx` | 新規作成 - ギャラリー対応ライトボックス |
+| `src/components/ImageLightbox.tsx` | 削除（新コンポーネントに統合） |
+| `src/pages/BlogPost.tsx` | ライトボックスロジック更新、新コンポーネントimport |
+| `src/pages/Blog.tsx` | レイアウト改善、フィーチャーカード追加、カードデザイン強化 |
+| `src/index.css` | ブログカード用の新CSSクラス追加 |
 
 ---
 
-## 変更サマリー
+## 期待される効果
 
-| 変更種別 | ファイル/対象 | 内容 |
-|---------|-------------|------|
-| コード修正 | `src/pages/BlogPost.tsx` | Markdown画像構文 `![]()`のサポート追加 |
-| 画像追加 | `public/images/` | おんぶ写真を追加 |
-| DB更新 | `blog_posts` | おんぶ写真とユーモラスなキャプションを記事に追加 |
-
----
-
-## 期待される結果
-
-1. **既存の3枚の写真**（焦げ跡、外観、内部煙跡）が記事内で正しく画像として表示される
-2. **新しいおんぶ写真**が粟田選手の怪我エピソードの直後に表示される
-3. ユーモラスなキャプションで記事の締めくくりが強化される
+1. **UX向上**: 記事内の複数画像を閉じずにスワイプで閲覧可能
+2. **モバイル最適化**: タッチスワイプでの直感的な操作
+3. **視覚的魅力**: プレミアム感のあるブログカードで読者の興味を引く
+4. **一貫したデザイン言語**: サイト全体の「Glassmorphism 2.0」に沿った統一感
 

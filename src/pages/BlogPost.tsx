@@ -245,6 +245,22 @@ const processContent = (rawContent: string, lang: string): string => {
       const bgColor = emoji === '⚠️' ? 'bg-amber-500/10 border-amber-500/30' : emoji === '🎉' ? 'bg-green-500/10 border-green-500/30' : 'bg-primary/10 border-primary/30';
       return `<div class="flex items-start gap-3 p-4 my-4 rounded-xl ${bgColor} border"><span class="text-2xl">${emoji}</span><span class="text-foreground leading-relaxed">${text}</span></div>`;
     })
+    // Avatar syntax for profile photos - [avatar:/path:Name:Role]
+    .replace(/\[avatar:([^\]]+)\]/g, (_, avatarInfo) => {
+      const parts = avatarInfo.split(':');
+      const imagePath = parts[0];
+      const name = parts[1] || '';
+      const role = parts.slice(2).join(':') || '';
+      return `<div class="inline-flex flex-col items-center gap-2 my-4 mr-4 float-left">
+        <div class="w-16 h-16 rounded-full overflow-hidden ring-2 ring-primary/30 shadow-lg">
+          <img src="${imagePath}" alt="${name}" loading="lazy" decoding="async" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full bg-muted flex items-center justify-center text-muted-foreground text-xl font-bold\\'>${name.charAt(0)}</div>'" />
+        </div>
+        <div class="text-center">
+          <div class="text-sm font-semibold text-foreground">${name}</div>
+          ${role ? `<div class="text-xs text-muted-foreground">${role}</div>` : ''}
+        </div>
+      </div>`;
+    })
     // YouTube links with thumbnail - convert [youtube:ID] to clickable link cards
     // Use a placeholder to prevent double processing
     .replace(/\[youtube:([a-zA-Z0-9_-]+)\]/g, (_, videoId) => {

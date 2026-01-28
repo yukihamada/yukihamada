@@ -1072,11 +1072,11 @@ html {
 
 .blog-content ul,
 .blog-content ol {
-  @apply my-6 space-y-4;
+  @apply my-6 space-y-2 pl-4;
 }
 
 .blog-content li {
-  @apply leading-loose py-1;
+  @apply leading-loose py-0.5;
 }
 
 .blog-content h2 + p,
@@ -1096,7 +1096,13 @@ html {
 /* Player card following content spacing */
 .blog-content .player-card + ul,
 .blog-content .player-card + ol {
-  @apply mt-4;
+  @apply mt-6;
+}
+
+/* Session/paragraph before list spacing */
+.blog-content p + ul,
+.blog-content p + ol {
+  @apply mt-6;
 }
 
 /* Blog Heading Anchor Links */

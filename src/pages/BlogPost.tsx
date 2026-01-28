@@ -258,19 +258,20 @@ const processContent = (rawContent: string, lang: string): string => {
       const bgColor = emoji === '⚠️' ? 'bg-amber-500/10 border-amber-500/30' : emoji === '🎉' ? 'bg-green-500/10 border-green-500/30' : 'bg-primary/10 border-primary/30';
       return `<div class="flex items-start gap-3 p-4 my-4 rounded-xl ${bgColor} border"><span class="text-2xl">${emoji}</span><span class="text-foreground leading-relaxed">${text}</span></div>`;
     })
-    // Avatar syntax for profile photos - [avatar:/path:Name:Role]
+    // Avatar syntax for profile photos - [avatar:/path:Name:Role] (name empty = hide name)
     .replace(/\[avatar:([^\]]+)\]/g, (_, avatarInfo) => {
       const parts = avatarInfo.split(':');
       const imagePath = parts[0];
       const name = parts[1] || '';
       const role = parts.slice(2).join(':') || '';
+      const fallbackChar = name ? name.charAt(0) : (role ? role.charAt(0) : '?');
       return `<div class="player-card">
         <div class="player-header">
           <div class="player-avatar">
-            <img src="${imagePath}" alt="${name}" loading="lazy" decoding="async" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full bg-muted flex items-center justify-center text-muted-foreground text-2xl font-bold\\'>${name.charAt(0)}</div>'" />
+            <img src="${imagePath}" alt="${name || role}" loading="lazy" decoding="async" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full bg-muted flex items-center justify-center text-muted-foreground text-2xl font-bold\\'>${fallbackChar}</div>'" />
           </div>
           <div class="player-info">
-            <div class="player-name">${name}</div>
+            ${name ? `<div class="player-name">${name}</div>` : ''}
             ${role ? `<div class="player-role">${role}</div>` : ''}
           </div>
         </div>

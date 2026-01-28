@@ -1,160 +1,121 @@
 
 
-# ダボス2026ブログ記事作成計画
+# ダボス2026記事：キープレイヤーのオフィシャル画像追加計画
 
 ## 概要
 
-AI・エネルギー・未来予測をテーマにした新規ブログ記事「ダボス2026：AIで「貧困ゼロ」か、社会が「ブルースクリーン」か」を作成します。
+記事内で言及されている8名の主要人物について、各セクションにオフィシャルの顔写真を追加します。外部の公式ソースから画像をダウンロードし、プロジェクト内に保存して使用します。
 
 ---
 
-## クロスリンク戦略
+## 追加する人物と画像ソース
 
-調査の結果、以下の既存記事と強い関連性があります：
-
-| 関連記事 | slug | 関連性 |
-|---------|------|--------|
-| **サイニック理論** | `2025-12-20-sinic` | 55年周期の技術進化論、「自律社会」への移行 |
-| **SaaS地獄からの脱出（Totonos）** | `totonos-saas-hell-os-for-ai` | AIのためのOS、効率化の議論 |
-| **iPhoneローカルLLM（Elio）** | `iphone-local-llm-elio` | プライバシー重視のAI、「安全性」テーマ |
-| **ハイブリッド・エネルギー戦略** | `hybrid-energy-mitochondria-awakening` | 人間の「生存戦略」テーマ |
-| **バイオハッキング** | `biohacking-silicon-valley-cold-plunge-fasting` | シリコンバレー文化、最適化思考 |
+| 人物 | 役職 | 画像ソース | 著作権/利用可否 |
+|------|------|------------|----------------|
+| **Elon Musk** | Tesla/SpaceX/X CEO | WEF公式（Reuters/Denis Balibouse） | 報道・編集目的で使用可 |
+| **Yuval Noah Harari** | 歴史学者・作家 | [公式プレスキット](https://www.ynharari.com/about/press-kit/) | メディア使用許可あり |
+| **Donald Trump** | 米国大統領 | [Wikimedia Commons公式肖像](https://commons.wikimedia.org/wiki/File:Official_Presidential_Portrait_of_President_Donald_J._Trump_(2025).jpg) | パブリックドメイン |
+| **Jensen Huang** | NVIDIA CEO | NVIDIA公式/WEF公式 | 報道目的で使用可 |
+| **Dario Amodei** | Anthropic CEO | Anthropic公式 | 報道目的で使用可 |
+| **Ray Dalio** | Bridgewater創業者 | Bridgewater公式/WEF | 報道目的で使用可 |
+| **Jamie Dimon** | JPMorgan Chase CEO | JPMorgan公式ニュースルーム | 報道目的で使用可 |
+| **Kristalina Georgieva** | IMF専務理事 | [IMF公式バイオ](https://www.imf.org/en/About/senior-officials/Bios/kristalina-georgieva) | 公式写真 |
 
 ---
 
-## 記事構成
+## 実装方法
 
-### メタ情報
-- **slug**: `davos-2026-ai-abundance-bluescreen`
-- **カテゴリー**: `AI / 未来予測` / `AI / Future Prediction`
-- **画像**: OGP自動生成（AI/未来カテゴリー）
-- **公開日**: 2026年1月28日
+### Step 1: 画像ファイルの準備
 
-### 日本語版コンテンツ
+`public/images/` ディレクトリに以下のファイルを追加：
 
-ユーザー提供のコンテンツをベースに：
+```text
+public/images/
+├── davos-elon-musk.jpg
+├── davos-yuval-harari.jpg
+├── davos-donald-trump.jpg
+├── davos-jensen-huang.jpg
+├── davos-dario-amodei.jpg
+├── davos-ray-dalio.jpg
+├── davos-jamie-dimon.jpg
+└── davos-kristalina-georgieva.jpg
+```
 
-1. **導入**: 2026年ダボス会議の変化
-2. **AI 2027の悪夢**: 太陽光パネルで地球が覆われるシナリオ
-3. **イーロン・マスクの3つの条件**: Abundance、Safety、Aesthetics
-4. **ハラリとトランプの警告**: AIは道具か支配者か
-5. **生存戦略**: Human Centricであること
-6. **結論**: 「美的感覚」を手放さない生き方
+### Step 2: 記事コンテンツの更新
 
-### 追加する関連記事セクション
+各キープレイヤーのセクションに、マークダウン画像構文で顔写真を挿入：
 
 ```markdown
-## 関連記事
+### Elon Musk — 天国の設計者
 
-この記事のテーマに関連する過去の記事：
+![Elon Musk - Davos 2026](/images/davos-elon-musk.jpg)
 
-### AIと未来社会
-- [サイニック理論が示すAIの未来](/blog/2025-12-20-sinic) - 55年周期の技術進化と「自律社会」
-- [iPhoneだけで動くローカルLLM「Elio」](/blog/iphone-local-llm-elio) - プライバシー重視のAI開発
-
-### 効率化と人間らしさ
-- [「SaaS地獄」から抜け出す方法](/blog/totonos-saas-hell-os-for-ai) - AIのためのOS設計
-- [バイオハッキングで人生が変わった](/blog/biohacking-silicon-valley-cold-plunge-fasting) - シリコンバレー流の最適化思考
-
-### 生存戦略シリーズ
-- [ハイブリッド・エネルギー戦略](/blog/hybrid-energy-mitochondria-awakening) - ミトコンドリアを覚醒させる方法
+**ダボス初登場 / BlackRock ラリー・フィンクとの対談**
+...
 ```
 
----
+### Step 3: 推奨される画像スタイル
 
-## 英語版コンテンツ
+記事のトーンに合わせて、以下のスタイルで統一：
 
-日本語版の完全翻訳版を作成：
-
-**タイトル**: Davos 2026: AI-Powered "Zero Poverty" or Society's "Blue Screen of Death"?
-
-**サブタイトル**: Between a Calculated Future and Human Pride — My Survival Strategy
+- **サイズ**: 丸型アバター風、または小さめの正方形
+- **配置**: 各人物の名前の直下、または名前の横にインライン表示
+- **キャプション**: 「Photo: WEF/Reuters」などクレジット表記
 
 ---
 
-## 技術的な実装
+## 技術的な実装詳細
 
-### Step 1: 画像の準備
+現在の `BlogPost.tsx` は以下の画像構文をサポート：
 
-ダボス会議・AI・未来をテーマにしたOGP画像が必要です。
+1. **マークダウン標準**: `![alt text](url)` → フルサイズ画像
+2. **カスタム構文**: `[image:/path:caption]` → キャプション付き画像
 
-オプション:
-1. 既存の `blog-sinic-theory.jpg` を一時使用
-2. `generate-ogp` Edge Functionで自動生成（カテゴリーが「AI/未来」の場合、自動的に適切なビジュアルを生成）
+人物写真は小さめのインライン表示が望ましいため、新しいカスタム構文を追加することを推奨：
 
-→ カテゴリーを「AI / 未来予測」に設定することで、OGP自動生成が適用されます。
-
-### Step 2: データベースへの挿入
-
-```sql
-INSERT INTO blog_posts (
-  slug, featured, image, status, published_at,
-  title_ja, excerpt_ja, content_ja, date_ja, category_ja,
-  title_en, excerpt_en, content_en, date_en, category_en
-) VALUES (
-  'davos-2026-ai-abundance-bluescreen',
-  true,
-  '/images/blog-davos-2026-ai.jpg',
-  'published',
-  NOW(),
-  'ダボス2026：AIで「貧困ゼロ」か、社会が「ブルースクリーン」か',
-  '「計算された未来」と「人間としての意地」の間で、僕が決めた生存戦略。イーロン・マスクの「美的感覚」とハラリの警告を読み解く。',
-  '[本文...]',
-  '2026年1月28日',
-  'AI / 未来予測',
-  'Davos 2026: AI-Powered "Zero Poverty" or Society''s "Blue Screen of Death"?',
-  'My survival strategy between a "calculated future" and "human pride." Decoding Elon Musk''s "aesthetics" and Harari''s warnings.',
-  '[English content...]',
-  'January 28, 2026',
-  'AI / Future Prediction'
-);
+```markdown
+[avatar:/images/davos-elon-musk.jpg:Elon Musk]
 ```
 
----
-
-## コンテンツ詳細
-
-### 本文に含める要素
-
-1. **AI 2027レポートへの言及**
-   - 太陽光パネルで地球が覆われるシミュレーション
-   - 「効率の極限＝人間の住みにくさ」というパラドックス
-
-2. **イーロン・マスクのビジョン**
-   - 3つの条件: Abundance, Safety, **Aesthetics**
-   - 宇宙太陽光発電構想
-   - 「電力がボトルネック」という現実
-
-3. **ハラリの警告**
-   - 「AIは道具ではなく行為者」
-   - 言語を支配する＝社会のルールを書き換える
-
-4. **トランプの現実路線**
-   - AIは「国家の筋肉」
-   - データセンターのための原発
-   - グリーンランド発言の文脈
-
-5. **結論: Human Centric**
-   - 効率はAIに任せる
-   - 意味（美しさ、楽しさ、幸せ）は人間が決める
-   - 「空が見えない世界なら NO と言う」
+この構文は以下のようにレンダリング：
+- 丸型クリップ（64px x 64px）
+- 名前を下に表示
+- ホバーで拡大なし（ポートレートは lightbox 不要）
 
 ---
 
-## 期待される効果
+## コンテンツ更新の概要
 
-1. **テーマの網羅性**: ダボス会議の最新議論を日本語で解説
-2. **独自視点**: 「美的感覚」を軸にした生存戦略
-3. **回遊性向上**: 5つ以上の関連記事への明確なリンク
-4. **SEO**: 「ダボス 2026」「AI 未来」「イーロン・マスク」などのキーワード
+`blog_posts` テーブルの `content_ja` と `content_en` を更新し、各キープレイヤーセクションに画像を挿入：
+
+### 更新箇所（日本語版）
+
+| セクション | 追加する画像 |
+|------------|--------------|
+| 2. キープレイヤーたちの主張 → Elon Musk | `davos-elon-musk.jpg` |
+| 2. キープレイヤーたちの主張 → Yuval Noah Harari | `davos-yuval-harari.jpg` |
+| 2. キープレイヤーたちの主張 → Donald Trump | `davos-donald-trump.jpg` |
+| 2. キープレイヤーたちの主張 → Jensen Huang | `davos-jensen-huang.jpg` |
+| 2. キープレイヤーたちの主張 → Dario Amodei | `davos-dario-amodei.jpg` |
+| 2. キープレイヤーたちの主張 → Ray Dalio | `davos-ray-dalio.jpg` |
+| 3. 雇用論争 → Jamie Dimon | `davos-jamie-dimon.jpg` |
+| 3. 雇用論争 → Kristalina Georgieva | `davos-kristalina-georgieva.jpg` |
 
 ---
 
-## 変更ファイル
+## 画像取得の注意点
 
-| 対象 | 内容 |
-|------|------|
-| `blog_posts` テーブル | 新規記事INSERT |
-| `public/images/` | OGP画像追加（オプション） |
-| `public/sitemap.xml` | 新記事URL追加（自動反映） |
+1. **パブリックドメイン画像を優先**: トランプ大統領の公式肖像はパブリックドメイン
+2. **プレスキット画像**: ハラリ、IMFは公式プレスキットを提供
+3. **WEF公式写真**: ダボス2026の公式写真はWEFサイトから取得可能
+4. **フェアユース**: 報道・論評目的での使用は一般的に許容される
+
+---
+
+## 次のステップ
+
+1. 上記8名の公式画像をダウンロードして `public/images/` に配置
+2. `BlogPost.tsx` に `[avatar:...]` 構文のパーサーを追加（オプション）
+3. `blog_posts` テーブルの `content_ja` / `content_en` を更新して画像を挿入
+4. 動作確認
 

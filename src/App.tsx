@@ -11,10 +11,12 @@ import { TTSPlayerProvider } from "@/contexts/TTSPlayerContext";
 import { ChatProvider } from "@/contexts/ChatContext";
 import { UIVisibilityProvider } from "@/contexts/UIVisibilityContext";
 import { ReducedMotionProvider } from "@/contexts/ReducedMotionContext";
+import { VideoPlayerProvider } from "@/contexts/VideoPlayerContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import ScrollToTop from "@/components/ScrollToTop";
 import MusicPlayer from "@/components/MusicPlayer";
 import TTSFloatingPlayer from "@/components/TTSFloatingPlayer";
+import FloatingVideoPlayer from "@/components/FloatingVideoPlayer";
 import OrganicBackground from "@/components/OrganicBackground";
 import { AIChatSection } from "@/components/AIChatSection";
 import Index from "./pages/Index";
@@ -38,42 +40,45 @@ const App = () => (
         <LanguageProvider>
           <MusicPlayerProvider>
             <TTSPlayerProvider>
-              <ChatProvider>
-                <UIVisibilityProvider>
-                  <TooltipProvider>
-                    <Toaster />
-                    <Sonner />
-                    <BrowserRouter>
-                      <ScrollToTop />
-                      <OrganicBackground />
-                      <Routes>
-                        <Route path="/" element={<Index />} />
-                        <Route path="/blog" element={<Blog />} />
-                        <Route path="/blog/:slug" element={<BlogPost />} />
-                        <Route path="/auth" element={<Auth />} />
-                        <Route path="/profile" element={<Profile />} />
-                        <Route path="/community" element={<Community />} />
-                        <Route path="/community/:topicId" element={<Community />} />
-                        <Route path="/newsletter" element={<Newsletter />} />
-                        {/* Admin routes */}
-                        <Route path="/admin" element={<AdminDashboard />} />
-                        <Route path="/admin/blog" element={<AdminDashboard />} />
-                        <Route path="/admin/chat" element={<AdminDashboard />} />
-                        <Route path="/blog-admin" element={<AdminDashboard />} />
-                        <Route path="/chat-admin" element={<AdminDashboard />} />
-                        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
-                      <MusicPlayer />
-                      <TTSFloatingPlayer />
-                      <AIChatSection />
-                    </BrowserRouter>
-                  </TooltipProvider>
+              <VideoPlayerProvider>
+                <ChatProvider>
+                  <UIVisibilityProvider>
+                    <TooltipProvider>
+                      <Toaster />
+                      <Sonner />
+                      <BrowserRouter>
+                        <ScrollToTop />
+                        <OrganicBackground />
+                        <Routes>
+                          <Route path="/" element={<Index />} />
+                          <Route path="/blog" element={<Blog />} />
+                          <Route path="/blog/:slug" element={<BlogPost />} />
+                          <Route path="/auth" element={<Auth />} />
+                          <Route path="/profile" element={<Profile />} />
+                          <Route path="/community" element={<Community />} />
+                          <Route path="/community/:topicId" element={<Community />} />
+                          <Route path="/newsletter" element={<Newsletter />} />
+                          {/* Admin routes */}
+                          <Route path="/admin" element={<AdminDashboard />} />
+                          <Route path="/admin/blog" element={<AdminDashboard />} />
+                          <Route path="/admin/chat" element={<AdminDashboard />} />
+                          <Route path="/blog-admin" element={<AdminDashboard />} />
+                          <Route path="/chat-admin" element={<AdminDashboard />} />
+                          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                          <Route path="*" element={<NotFound />} />
+                        </Routes>
+                        <MusicPlayer />
+                        <TTSFloatingPlayer />
+                        <FloatingVideoPlayer />
+                        <AIChatSection />
+                      </BrowserRouter>
+                    </TooltipProvider>
                   </UIVisibilityProvider>
                 </ChatProvider>
-              </TTSPlayerProvider>
-            </MusicPlayerProvider>
-          </LanguageProvider>
+              </VideoPlayerProvider>
+            </TTSPlayerProvider>
+          </MusicPlayerProvider>
+            </LanguageProvider>
           </ReducedMotionProvider>
         </ThemeProvider>
       </QueryClientProvider>

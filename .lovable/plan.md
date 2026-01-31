@@ -1,74 +1,77 @@
 
 
-# 新規ブログ記事作成：「心地よい『正解』よりも、厳しい『事実』を」
+# Plan: Fix Video Display and Enhance Play Button
 
-## 概要
-友人からの反論を通じて科学的リテラシーとAI時代の情報との向き合い方を語る記事を作成します。
+## Issues Identified
 
-## 記事構成
+### Issue 1: Videos Not Displaying
+The videos are stored correctly in the database content (I verified they exist), but **DOMPurify is stripping out the `<video>` and `<source>` tags** during sanitization. The current allowed tags list doesn't include video elements.
 
-### メタ情報
-- **スラッグ**: `echo-chamber-scientific-literacy-2026`
-- **カテゴリ**: AI / 思考法
-- **画像**: 既存の `blog-echo-chamber.jpg` または `blog-ai-human.jpg` を使用
-
-### 本文構成
-
-1. **導入：エコーチェンバーの危険性**
-   - AIが「気持ちいい答え」を返す時代
-   - 自分の意見が強化されるだけの危うさ
-
-2. **友人からの「愛ある反論」**
-   - マイクロプラスチック記事への反論
-   - データに基づいた指摘への感謝
-   - → **リンク**: [マイクロプラスチック記事](/blog/microplastic-detox-guide)
-
-3. **「絶対」はない。けれど「論文」はある**
-   - 友人の主張の正しさ（大きい粒子は排出される）
-   - 同時に存在する「別の事実」（ナノレベルの粒子）
-   - 解像度の高い結論への到達
-
-4. **科学論文とは何か**
-   - 「人類が積み上げた共通認識のドキュメント」
-   - 「お気持ち」との違い
-   - 反論するなら論文で叩きつける姿勢
-   - → **リンク**: [ソクラテス・コーディング](/blog/socratic-coding-ai-development)
-
-5. **議論の価値**
-   - AIとの対話だけでは得られない「気づき」
-   - 他者からの批判的意見の重要性
-   - → **リンク**: [ダボス2026](/blog/davos-2026-ai-abundance-bluescreen)
-
-6. **健康で長生きするための「対話」**
-   - 読者との議論への招待
-   - コメント・反論ウェルカム
-   - → **リンク**: [ハイブリッドライフスタイル](/blog/hybrid-lifestyle-longevity-performance-2026)
-
-7. **結論まとめ**
-   - 正しく恐れて、賢く生きる
-   - ティーバッグだけは避ける具体的アクション
-
-## 技術的な実装
-
-### データベース操作
-`blog_posts` テーブルに新規レコードをINSERT：
-- 日本語版・英語版の両方を作成
-- `published_at` を現在時刻に設定
-- `status` を `published` に設定
-
-### 記事内リンク形式
-Markdownで内部リンクを記述：
-```markdown
-[マイクロプラスチック記事](/blog/microplastic-detox-guide)
-[ソクラテス・コーディング](/blog/socratic-coding-ai-development)
+**Current DOMPurify config (line 445-450):**
+```typescript
+ADD_TAGS: ['figure', 'figcaption', 'iframe', 'details', 'summary', 'pre', 'code', 'button'],
+ADD_ATTR: ['data-play-track-id', 'data-youtube-video-id', 'style', 'allow', 'allowfullscreen', 'frameborder', 'loading', 'decoding', 'open'],
 ```
 
-### 画像
-既存の `blog-echo-chamber.jpg` または `blog-ai-human.jpg` を使用
+**Missing:** `video`, `source` tags and `controls`, `autoplay`, `muted`, `loop`, `playsinline`, `src`, `type` attributes.
 
-## 作業手順
-1. `blog_posts` テーブルにINSERTクエリを実行
-2. 日本語版コンテンツ（ユーザー提供のドラフトをベースに）
-3. 英語版コンテンツ（翻訳版）
-4. 動作確認
+### Issue 2: Play Button Not Clear Enough
+The current play button has:
+- A small pulsing circle with SVG triangle
+- The triangle may be too small/subtle
+- Needs a more prominent, iconic "play" design that instantly communicates "click to play"
+
+---
+
+## Solution
+
+### Step 1: Add Video Tags to DOMPurify Allowlist
+Update the sanitization config to include HTML5 video elements:
+
+**File:** `src/pages/BlogPost.tsx` (lines 445-450)
+
+```typescript
+return DOMPurify.sanitize(processed, {
+  ADD_TAGS: ['figure', 'figcaption', 'iframe', 'details', 'summary', 'pre', 'code', 'button', 'video', 'source'],
+  ADD_ATTR: ['data-play-track-id', 'data-youtube-video-id', 'style', 'allow', 'allowfullscreen', 'frameborder', 'loading', 'decoding', 'open', 'controls', 'autoplay', 'muted', 'loop', 'playsinline', 'src', 'type'],
+  ALLOWED_URI_REGEXP: /^(?:(?:https?|data):|\/)/i,
+});
+```
+
+### Step 2: Redesign Music Play Button
+Create a more prominent play button with:
+- **Larger, bolder triangle play icon** (like YouTube's iconic red play button)
+- A clear visual hierarchy that says "PLAY"
+- Video-player-style design with prominent center play icon
+
+**Updated design (lines 386-407):**
+
+```
++------------------------------------------------------+
+|  [Album Art]   Track Title                 [▶ PLAY]  |
+|   (circle)     "I Need Your Attention..."  (big btn) |
++------------------------------------------------------+
+```
+
+The new play button will feature:
+- Large circular play icon (similar to YouTube's design)
+- Bold triangle icon with proper spacing
+- High contrast colors for visibility
+- Hover animation that scales up
+
+---
+
+## Technical Changes Summary
+
+| File | Change |
+|------|--------|
+| `src/pages/BlogPost.tsx` | Add `video`, `source` to ADD_TAGS |
+| `src/pages/BlogPost.tsx` | Add `controls`, `autoplay`, `muted`, `loop`, `playsinline`, `src`, `type` to ADD_ATTR |
+| `src/pages/BlogPost.tsx` | Redesign `[play:trackId]` button with larger, more prominent triangle play icon |
+
+---
+
+## Expected Result
+1. **Videos** will render properly with autoplay, muted, loop as originally intended
+2. **Play button** will have an unmistakable "play" appearance with a bold triangle icon
 

@@ -87,6 +87,7 @@ const trackMapping: Record<string, { titleJa: string; titleEn: string; artwork: 
   'shio-to-pixel': { titleJa: '塩とピクセル', titleEn: 'Salt and Pixels', artwork: 'album-shio-pixel.jpg' },
   'musubinaosu': { titleJa: '結び直す朝', titleEn: 'Morning to Reconnect', artwork: 'album-musubinaosu.jpg' },
   'attention-please': { titleJa: 'アテンションください', titleEn: 'Attention Please', artwork: 'album-attention-please.jpg' },
+  'i-need-your-attention-afro': { titleJa: 'I Need Your Attention (Afro House Edition)', titleEn: 'I Need Your Attention (Afro House Edition)', artwork: 'album-attention.jpg' },
 };
 
 const playTrackById = (trackId: string) => {

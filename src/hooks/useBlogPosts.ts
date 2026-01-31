@@ -194,11 +194,11 @@ export const useBlogPost = (slug: string | undefined, allowScheduled = false) =>
         setLoadingProgress(30);
 
         // Stage 2: Fetching from database (30-70%)
+        // Note: We don't filter by status here to allow viewing draft articles via direct URL
         const { data, error } = await supabase
           .from('blog_posts')
           .select('*')
           .eq('slug', slug)
-          .eq('status', 'published')
           .maybeSingle();
 
         setLoadingProgress(70);

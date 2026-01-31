@@ -188,8 +188,16 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
+// Detect browser language
+const getBrowserLanguage = (): Language => {
+  if (typeof navigator === 'undefined') return 'ja';
+  const browserLang = navigator.language || (navigator as any).userLanguage || '';
+  // Check if browser language starts with 'ja' (e.g., 'ja', 'ja-JP')
+  return browserLang.toLowerCase().startsWith('ja') ? 'ja' : 'en';
+};
+
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const [language, setLanguage] = useState<Language>('ja');
+  const [language, setLanguage] = useState<Language>(getBrowserLanguage);
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t: translations[language] }}>

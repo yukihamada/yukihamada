@@ -389,18 +389,21 @@ const processContent = (rawContent: string, lang: string): string => {
       const artworkFile = track?.artwork || `album-${trackId}.jpg`;
       const artworkPath = `/images/${artworkFile}`;
       return `<div class="my-12 flex justify-center">
-        <button data-play-track-id="${trackId}" class="group relative flex items-center gap-5 p-4 pr-8 rounded-full bg-gradient-to-r from-primary/30 to-accent/20 hover:from-primary/50 hover:to-accent/40 border-2 border-primary/50 hover:border-primary transition-all duration-300 shadow-2xl hover:shadow-primary/40 hover:scale-[1.02] cursor-pointer backdrop-blur-md w-auto max-w-lg">
+        <button data-play-track-id="${trackId}" class="group relative flex items-center gap-6 p-5 pr-6 rounded-2xl bg-gradient-to-br from-slate-900/90 to-slate-800/90 hover:from-slate-800/95 hover:to-slate-700/95 border border-white/10 hover:border-primary/50 transition-all duration-300 shadow-2xl hover:shadow-primary/30 hover:scale-[1.03] cursor-pointer backdrop-blur-xl w-auto max-w-md">
           <div class="relative flex-shrink-0">
-            <img src="${artworkPath}" alt="${trackTitle}" class="w-16 h-16 rounded-full object-cover shadow-lg ring-2 ring-primary/40 group-hover:ring-primary transition-all duration-300" />
+            <img src="${artworkPath}" alt="${trackTitle}" class="w-20 h-20 rounded-xl object-cover shadow-lg ring-1 ring-white/20 group-hover:ring-primary/50 transition-all duration-300" />
+            <div class="absolute inset-0 rounded-xl bg-black/40 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+              <div class="w-10 h-10 rounded-full bg-white/90 group-hover:bg-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-300">
+                <svg class="w-5 h-5 text-slate-900 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              </div>
+            </div>
           </div>
-          <div class="flex items-center gap-4">
-            <div class="text-left">
-              <span class="block text-xs text-primary font-semibold uppercase tracking-wide">${lang === 'ja' ? '🎵 再生する' : '🎵 Play Now'}</span>
-              <span class="block text-lg font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">${trackTitle || 'Unknown Track'}</span>
-            </div>
-            <div class="flex items-center justify-center w-14 h-14 rounded-full bg-primary shadow-xl group-hover:scale-110 transition-all duration-300 animate-pulse">
-              <svg class="w-7 h-7 text-primary-foreground ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-            </div>
+          <div class="flex-1 text-left min-w-0">
+            <span class="block text-xs text-primary font-bold uppercase tracking-wider mb-1">${lang === 'ja' ? '🎵 タップして再生' : '🎵 TAP TO PLAY'}</span>
+            <span class="block text-base font-bold text-white group-hover:text-primary transition-colors line-clamp-2">${trackTitle || 'Unknown Track'}</span>
+          </div>
+          <div class="flex-shrink-0 flex items-center justify-center w-16 h-16 rounded-full bg-primary shadow-xl shadow-primary/40 group-hover:scale-110 group-hover:shadow-primary/60 transition-all duration-300">
+            <svg class="w-8 h-8 text-primary-foreground ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
           </div>
         </button>
       </div>`;
@@ -443,8 +446,8 @@ const processContent = (rawContent: string, lang: string): string => {
   });
 
   return DOMPurify.sanitize(processed, {
-    ADD_TAGS: ['figure', 'figcaption', 'iframe', 'details', 'summary', 'pre', 'code', 'button'],
-    ADD_ATTR: ['data-play-track-id', 'data-youtube-video-id', 'style', 'allow', 'allowfullscreen', 'frameborder', 'loading', 'decoding', 'open'],
+    ADD_TAGS: ['figure', 'figcaption', 'iframe', 'details', 'summary', 'pre', 'code', 'button', 'video', 'source'],
+    ADD_ATTR: ['data-play-track-id', 'data-youtube-video-id', 'style', 'allow', 'allowfullscreen', 'frameborder', 'loading', 'decoding', 'open', 'controls', 'autoplay', 'muted', 'loop', 'playsinline', 'src', 'type'],
     // Allow same-origin relative URLs like /images/... in addition to https:// and data:
     ALLOWED_URI_REGEXP: /^(?:(?:https?|data):|\/)/i,
   });

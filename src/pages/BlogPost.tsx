@@ -388,21 +388,19 @@ const processContent = (rawContent: string, lang: string): string => {
       const trackTitle = lang === 'ja' ? track?.titleJa : track?.titleEn;
       const artworkFile = track?.artwork || `album-${trackId}.jpg`;
       const artworkPath = `/images/${artworkFile}`;
-      return `<div class="my-10 flex justify-center">
-        <button data-play-track-id="${trackId}" class="group relative flex flex-col sm:flex-row items-center gap-4 sm:gap-6 p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-primary/25 via-accent/15 to-primary/20 hover:from-primary/40 hover:via-accent/25 hover:to-primary/35 border-2 border-primary/40 hover:border-primary/70 transition-all duration-500 shadow-xl hover:shadow-2xl hover:shadow-primary/30 hover:scale-[1.03] cursor-pointer backdrop-blur-sm w-full max-w-md">
-          <span class="absolute inset-0 rounded-3xl bg-gradient-to-r from-primary/0 via-primary/10 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-pulse"></span>
-          <div class="relative">
-            <img src="${artworkPath}" alt="${trackTitle}" class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl object-cover shadow-xl ring-2 ring-primary/30 group-hover:ring-primary/60 transition-all group-hover:scale-105 duration-300" />
-            <div class="absolute inset-0 flex items-center justify-center">
-              <div class="flex items-center justify-center w-14 h-14 rounded-full bg-primary/90 group-hover:bg-primary shadow-xl backdrop-blur-sm transition-all group-hover:scale-110 duration-300">
-                <svg class="w-7 h-7 text-primary-foreground ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-              </div>
-            </div>
+      return `<div class="my-12 flex justify-center">
+        <button data-play-track-id="${trackId}" class="group relative flex items-center gap-5 p-4 pr-8 rounded-full bg-gradient-to-r from-primary/30 to-accent/20 hover:from-primary/50 hover:to-accent/40 border-2 border-primary/50 hover:border-primary transition-all duration-300 shadow-2xl hover:shadow-primary/40 hover:scale-[1.02] cursor-pointer backdrop-blur-md w-auto max-w-lg">
+          <div class="relative flex-shrink-0">
+            <img src="${artworkPath}" alt="${trackTitle}" class="w-16 h-16 rounded-full object-cover shadow-lg ring-2 ring-primary/40 group-hover:ring-primary transition-all duration-300" />
           </div>
-          <div class="text-center sm:text-left flex-1">
-            <span class="block text-sm text-primary/80 font-medium mb-1">${lang === 'ja' ? '🎧 この曲を聴く' : '🎧 Listen to this track'}</span>
-            <span class="block text-xl sm:text-2xl font-bold text-foreground group-hover:text-primary transition-colors">${trackTitle || 'Unknown Track'}</span>
-            <span class="block text-xs text-muted-foreground mt-1">${lang === 'ja' ? 'クリックして再生' : 'Click to play'}</span>
+          <div class="flex items-center gap-4">
+            <div class="text-left">
+              <span class="block text-xs text-primary font-semibold uppercase tracking-wide">${lang === 'ja' ? '🎵 再生する' : '🎵 Play Now'}</span>
+              <span class="block text-lg font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">${trackTitle || 'Unknown Track'}</span>
+            </div>
+            <div class="flex items-center justify-center w-14 h-14 rounded-full bg-primary shadow-xl group-hover:scale-110 transition-all duration-300 animate-pulse">
+              <svg class="w-7 h-7 text-primary-foreground ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            </div>
           </div>
         </button>
       </div>`;

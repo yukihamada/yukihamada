@@ -208,6 +208,18 @@ export const useBlogPost = (slug: string | undefined, allowScheduled = false) =>
         // Stage 3: Processing data (70-90%)
         if (data) {
           const convertedPost = convertDBToAppFormat(data);
+          // If this is a draft (or any non-published status), allow viewing via direct URL
+          // regardless of scheduled/future dates. This enables shareable preview links.
+          const isDraftPreview = (data as BlogPostDB).status !== 'published';
+
+          if (isDraftPreview) {
+            setIsScheduled(false);
+            setLoadingProgress(85);
+            setPost(convertedPost);
+            setLoadingProgress(100);
+            return;
+          }
+
           const now = new Date();
           const postDate = convertedPost.publishedAt || parseDateString(data.date_ja);
           const isFuturePost = postDate > now;

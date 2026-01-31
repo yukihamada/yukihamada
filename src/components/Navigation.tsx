@@ -237,7 +237,7 @@ const Navigation = () => {
           )}
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-4" ref={dropdownRef}>
+          <div className="hidden lg:flex items-center gap-3" ref={dropdownRef}>
             {/* Dropdown Groups */}
             <div className="flex items-center gap-1 bg-secondary/30 backdrop-blur-sm rounded-full p-1 border border-border/30">
               {Object.entries(navGroups).map(([key, group]) => (
@@ -393,7 +393,7 @@ const Navigation = () => {
             </div>
           </div>
 
-          <div className="md:hidden flex items-center gap-2">
+          <div className="lg:hidden flex items-center gap-2">
             <ThemeToggle />
             <LanguageSwitcher />
             <motion.button

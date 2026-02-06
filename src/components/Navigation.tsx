@@ -434,7 +434,7 @@ const Navigation = () => {
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div 
-            className="md:hidden fixed inset-0 top-0 bg-background/98 backdrop-blur-xl z-[-1]"
+            className="lg:hidden fixed inset-0 top-0 bg-background/98 backdrop-blur-xl z-[-1]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

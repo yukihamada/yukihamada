@@ -1,112 +1,79 @@
-# Yuki Hamada - Personal Website
+# Hi, I'm Yuki Hamada
 
-濱田優貴の個人ウェブサイト。イネブラ創業者、エンジェル投資家として、AI・テクノロジー・柔術など多様な分野で活動中。
+**Founder & CEO at [Enabler](https://enabler.co.jp) | Tokyo, Japan**
+
+I build products that make AI accessible to everyone. From multi-channel AI agent platforms to local-first iOS AI apps, I focus on shipping fast and iterating with real users.
+
+> *AI をすべての人に届けるプロダクトを作っています。*
+
+---
+
+## What I'm Building
+
+### [chatweb.ai](https://chatweb.ai) &mdash; AI Agent Platform
+Multi-model AI agent platform built in **Rust**. Connects to 14+ channels (LINE, Telegram, Slack, Web, etc.) with MCP tool integration, agentic workflows, and real-time streaming.
+`Rust` `AWS Lambda` `DynamoDB` `MCP` `SSE`
+
+### [elio](https://github.com/yukihamada/elio) &mdash; Local AI Agent for iOS
+On-device AI agent for iOS with MCP protocol support. Privacy-first, runs locally without cloud dependency.
+`Swift` `MCP` `Core ML`
+
+### [mcp-iphone](https://github.com/yukihamada/mcp-iphone) &mdash; MCP for iOS
+Model Context Protocol integration for iOS with LLM capabilities. My most-starred project.
+`Swift` `MCP`
+
+### [JitsuFlow](https://jitsuflow.app) &mdash; BJJ Dojo Management
+Brazilian Jiu-Jitsu dojo management platform serving 1,300+ users. Scheduling, attendance tracking, and member management.
+`Dart` `Flutter` `Firebase`
+
+---
 
 ## Tech Stack
 
-- **Framework**: React 18 + Vite
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS + shadcn/ui
-- **State**: TanStack Query
-- **Backend**: Supabase
-- **Hosting**: Cloudflare Pages
-
-## Development
-
-```bash
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
+```
+Languages     Rust  TypeScript  Swift  Python  Go
+Infrastructure  AWS Lambda  DynamoDB  Fly.io  Cloudflare
+Mobile        SwiftUI  Flutter
+AI/ML         Anthropic  OpenAI  MCP  Local LLM (candle)
 ```
 
-## Cloudflare Pages Deployment
+---
 
-### Initial Setup
+## GitHub Stats
 
-1. [Cloudflare Dashboard](https://dash.cloudflare.com/) にログイン
-2. **Pages** > **Create a project** > **Connect to Git**
-3. GitHubリポジトリを選択
-4. ビルド設定:
-   - **Build command**: `npm run build`
-   - **Build output directory**: `dist`
-   - **Root directory**: `/`
-5. **Deploy** をクリック
+<p>
+  <img src="https://github-readme-stats.vercel.app/api?username=yukihamada&show_icons=true&theme=default&hide_border=true&count_private=true" alt="GitHub Stats" height="165" />
+  <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=yukihamada&layout=compact&theme=default&hide_border=true&hide=html,css,hack" alt="Top Languages" height="165" />
+</p>
 
-### Custom Domain Setup
+<p>
+  <img src="https://github-readme-streak-stats.herokuapp.com/?user=yukihamada&theme=default&hide_border=true" alt="GitHub Streak" />
+</p>
 
-1. Cloudflare Pages プロジェクト設定 > **Custom domains**
-2. `yukihamada.jp` を追加
-3. DNSレコードを設定:
-   ```
-   Type: CNAME
-   Name: @
-   Content: <your-project>.pages.dev
-   ```
+---
 
-### Environment Variables
+## Notable Projects
 
-必要に応じて以下の環境変数を設定:
+| Project | Description | Tech |
+|---------|-------------|------|
+| [nanobot](https://github.com/yukihamada/nanobot) | AI Agent Platform &mdash; multi-model, MCP, 14+ channels | Rust |
+| [mcp-iphone](https://github.com/yukihamada/mcp-iphone) | MCP integration for iOS | Swift |
+| [elio](https://github.com/yukihamada/elio) | Local AI Agent for iOS | Swift |
+| [jitsuflow](https://github.com/yukihamada/jitsuflow) | BJJ dojo management (1.3k+ users) | Dart |
+| [voiceGPTweb](https://github.com/yukihamada/voiceGPTweb) | Voice-powered GPT interface | PHP |
+| [groq-cli](https://github.com/yukihamada/groq-cli) | CLI tool for Groq API | TypeScript |
+| [flyagi](https://github.com/yukihamada/flyagi) | AI agent framework on Fly.io | Go |
+| [godseye](https://github.com/yukihamada/godseye) | Monitoring & observability tool | Python |
 
-| Variable | Description |
-|----------|-------------|
-| `VITE_SUPABASE_URL` | Supabase URL |
-| `VITE_SUPABASE_ANON_KEY` | Supabase anonymous key |
+---
 
-## SEO Features
+## Links
 
-### Implemented
+- **Web**: [yukihamada.jp](https://yukihamada.jp)
+- **AI Platform**: [chatweb.ai](https://chatweb.ai)
+- **BJJ App**: [jitsuflow.app](https://jitsuflow.app)
+- **Company**: [Enabler Inc.](https://enabler.co.jp)
 
-- **Basic SEO Meta Tags**: title, description, keywords, robots
-- **Open Graph Protocol**: og:title, og:description, og:image, etc.
-- **Twitter Cards**: summary_large_image
-- **Structured Data (JSON-LD)**: Person, WebSite schemas
-- **Dynamic OGP**: Cloudflare Functions middleware for social crawlers
-- **Sitemap**: `public/sitemap.xml`
-- **Robots.txt**: `public/robots.txt`
-- **Performance**: Preconnect, DNS Prefetch, Preload LCP
+---
 
-### Dynamic OGP for Social Sharing
-
-Cloudflare Functions (`functions/_middleware.ts`) がTwitter、Facebook等のクローラーを検知し、サーバーサイドでOGPタグをインジェクトします。これによりSPAでも正しくOGP画像が表示されます。
-
-### Adding New Blog Posts
-
-ブログ記事を追加した場合:
-
-1. `functions/_middleware.ts` の `blogPosts` オブジェクトに記事情報を追加
-2. `public/sitemap.xml` にURLを追加
-3. OGP画像を `public/images/` に配置
-
-## Project Structure
-
-```
-├── functions/              # Cloudflare Pages Functions
-│   └── _middleware.ts      # OGP injection for crawlers
-├── public/
-│   ├── _headers           # HTTP headers config
-│   ├── _redirects         # SPA routing
-│   ├── images/            # Static images
-│   ├── robots.txt         # Robots config
-│   └── sitemap.xml        # Sitemap
-├── src/
-│   ├── components/        # React components
-│   ├── contexts/          # React contexts
-│   ├── hooks/             # Custom hooks
-│   ├── pages/             # Page components
-│   └── lib/               # Utilities
-├── index.html             # Entry HTML with SEO meta
-├── vite.config.ts         # Vite config
-└── wrangler.toml          # Cloudflare config
-```
-
-## License
-
-All rights reserved.
+<sub>Tokyo-based. Building with Rust, Swift, and TypeScript. Always shipping. / 東京拠点。AI とプロダクトを作り続けています。</sub>

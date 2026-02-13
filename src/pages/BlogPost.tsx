@@ -27,6 +27,7 @@ import jiuflowHero from '@/assets/jiuflow-hero.png';
 import jiuflowLesson from '@/assets/jiuflow-lesson.png';
 import yukiProfile from '@/assets/yuki-profile.jpg';
 import ElioSignupForm from '@/components/ElioSignupForm';
+import FeatureRequestForm from '@/components/FeatureRequestForm';
 import BlogPostCTA from '@/components/BlogPostCTA';
 import { AnimatePresence } from 'framer-motion';
 import mermaid from 'mermaid';
@@ -383,6 +384,8 @@ const processContent = (rawContent: string, lang: string): string => {
         </div>
       </a>`;
     })
+    // Feature request form placeholder
+    .replace(/\[feature-request\]/g, '<div data-component="feature-request-form"></div>')
     // Drumroll reveal button
     .replace(/\[drumroll:([^\]]+)\]/g, (_, domain) => {
       return `<div class="my-8 flex justify-center">
@@ -465,7 +468,7 @@ const processContent = (rawContent: string, lang: string): string => {
 
   return DOMPurify.sanitize(processed, {
     ADD_TAGS: ['figure', 'figcaption', 'iframe', 'details', 'summary', 'pre', 'code', 'button', 'video', 'source'],
-    ADD_ATTR: ['data-play-track-id', 'data-youtube-video-id', 'data-drumroll', 'style', 'allow', 'allowfullscreen', 'frameborder', 'loading', 'decoding', 'open', 'controls', 'autoplay', 'muted', 'loop', 'playsinline', 'src', 'type'],
+    ADD_ATTR: ['data-play-track-id', 'data-youtube-video-id', 'data-drumroll', 'data-component', 'style', 'allow', 'allowfullscreen', 'frameborder', 'loading', 'decoding', 'open', 'controls', 'autoplay', 'muted', 'loop', 'playsinline', 'src', 'type'],
     // Allow same-origin relative URLs like /images/... in addition to https:// and data:
     ALLOWED_URI_REGEXP: /^(?:(?:https?|data):|\/)/i,
   });
@@ -493,6 +496,7 @@ const BlogPost = () => {
   }, [post, language, setPageContext, setCurrentBlogTitle]);
 
   const [signupFormContainer, setSignupFormContainer] = useState<HTMLElement | null>(null);
+  const [featureRequestContainer, setFeatureRequestContainer] = useState<HTMLElement | null>(null);
   const [galleryState, setGalleryState] = useState<{ images: GalleryImage[]; currentIndex: number; isOpen: boolean }>({
     images: [],
     currentIndex: 0,
@@ -556,6 +560,12 @@ const BlogPost = () => {
     const signupPlaceholder = contentRef.current.querySelector('[data-component="elio-signup-form"]');
     if (signupPlaceholder) {
       setSignupFormContainer(signupPlaceholder as HTMLElement);
+    }
+
+    // Find feature request form placeholder
+    const featureRequestPlaceholder = contentRef.current.querySelector('[data-component="feature-request-form"]');
+    if (featureRequestPlaceholder) {
+      setFeatureRequestContainer(featureRequestPlaceholder as HTMLElement);
     }
 
     // Add lightbox image click handlers - collect all images for gallery
@@ -817,6 +827,11 @@ const BlogPost = () => {
                   {signupFormContainer && createPortal(
                     <ElioSignupForm lang={language} />,
                     signupFormContainer
+                  )}
+                  {/* Render FeatureRequestForm via portal */}
+                  {featureRequestContainer && createPortal(
+                    <FeatureRequestForm blogSlug={slug} />,
+                    featureRequestContainer
                   )}
                 </div>
               </div>

@@ -383,6 +383,24 @@ const processContent = (rawContent: string, lang: string): string => {
         </div>
       </a>`;
     })
+    // Drumroll reveal button
+    .replace(/\[drumroll:([^\]]+)\]/g, (_, domain) => {
+      return `<div class="my-8 flex justify-center">
+        <button data-drumroll="${domain}" class="group relative overflow-hidden px-8 py-5 rounded-2xl bg-gradient-to-br from-amber-500/20 via-orange-500/10 to-red-500/20 border-2 border-amber-500/30 hover:border-amber-500/60 transition-all duration-500 cursor-pointer shadow-lg hover:shadow-amber-500/30 hover:scale-105">
+          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+          <div class="drumroll-content flex flex-col items-center gap-3">
+            <span class="text-3xl">🥁</span>
+            <span class="text-lg font-bold text-foreground">${lang === 'ja' ? 'ドラムロール！タップして公開' : 'Drum Roll! Tap to Reveal'}</span>
+            <span class="text-sm text-muted-foreground">${lang === 'ja' ? '次回公開予定のドメインをチラ見せ' : 'Sneak peek at the upcoming domain'}</span>
+          </div>
+          <div class="drumroll-revealed hidden flex-col items-center gap-3">
+            <span class="text-3xl">🎉</span>
+            <span class="text-2xl font-black bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 bg-clip-text text-transparent">${domain}</span>
+            <span class="text-sm text-muted-foreground">${lang === 'ja' ? '詳細は次回の記事で…お楽しみに！' : 'Details in the next post... Stay tuned!'}</span>
+          </div>
+        </button>
+      </div>`;
+    })
     .replace(/\[play:([a-zA-Z0-9_-]+)\]/g, (_, trackId) => {
       const track = trackMapping[trackId];
       const trackTitle = lang === 'ja' ? track?.titleJa : track?.titleEn;
@@ -447,7 +465,7 @@ const processContent = (rawContent: string, lang: string): string => {
 
   return DOMPurify.sanitize(processed, {
     ADD_TAGS: ['figure', 'figcaption', 'iframe', 'details', 'summary', 'pre', 'code', 'button', 'video', 'source'],
-    ADD_ATTR: ['data-play-track-id', 'data-youtube-video-id', 'style', 'allow', 'allowfullscreen', 'frameborder', 'loading', 'decoding', 'open', 'controls', 'autoplay', 'muted', 'loop', 'playsinline', 'src', 'type'],
+    ADD_ATTR: ['data-play-track-id', 'data-youtube-video-id', 'data-drumroll', 'style', 'allow', 'allowfullscreen', 'frameborder', 'loading', 'decoding', 'open', 'controls', 'autoplay', 'muted', 'loop', 'playsinline', 'src', 'type'],
     // Allow same-origin relative URLs like /images/... in addition to https:// and data:
     ALLOWED_URI_REGEXP: /^(?:(?:https?|data):|\/)/i,
   });
@@ -558,6 +576,34 @@ const BlogPost = () => {
       };
       container.addEventListener('click', handleImageClick);
       handlers.push({ button: container, handler: handleImageClick });
+    });
+
+    // Add drumroll reveal handlers
+    const drumrollButtons = contentRef.current.querySelectorAll('[data-drumroll]');
+    drumrollButtons.forEach((button) => {
+      const handleDrumroll = () => {
+        const btn = button as HTMLElement;
+        const content = btn.querySelector('.drumroll-content');
+        const revealed = btn.querySelector('.drumroll-revealed');
+        if (!content || !revealed || revealed.classList.contains('flex')) return;
+        
+        // Shake animation
+        btn.style.animation = 'drumroll-shake 0.1s ease-in-out 8';
+        btn.style.borderColor = 'hsl(var(--primary))';
+        
+        setTimeout(() => {
+          btn.style.animation = 'drumroll-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
+          content.classList.add('hidden');
+          content.classList.remove('flex');
+          revealed.classList.remove('hidden');
+          revealed.classList.add('flex');
+          btn.classList.add('border-amber-500/60');
+          // Confetti-like effect
+          btn.style.boxShadow = '0 0 40px rgba(245, 158, 11, 0.4)';
+        }, 800);
+      };
+      button.addEventListener('click', handleDrumroll);
+      handlers.push({ button, handler: handleDrumroll });
     });
 
     // Render mermaid diagrams

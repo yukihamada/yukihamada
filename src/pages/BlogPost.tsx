@@ -807,10 +807,10 @@ const BlogPost = () => {
               </header>
 
               <div className="prose prose-lg dark:prose-invert max-w-none">
-                <div className="glass rounded-3xl p-4 md:p-8 lg:p-12">
+                <div className="glass rounded-3xl p-5 md:p-10 lg:p-14">
                   <div 
                     ref={contentRef}
-                    className="blog-content prose prose-lg dark:prose-invert max-w-none"
+                    className="blog-content prose prose-lg dark:prose-invert max-w-none mx-auto"
                     dangerouslySetInnerHTML={{ __html: processedContent }}
                   />
                   {/* Render ElioSignupForm via portal */}

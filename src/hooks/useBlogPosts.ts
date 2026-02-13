@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface BlogPostContent {
@@ -170,6 +171,7 @@ export const useBlogPost = (slug: string | undefined, allowScheduled = false) =>
   const [error, setError] = useState<Error | null>(null);
   const [isScheduled, setIsScheduled] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (!slug) {
@@ -193,13 +195,20 @@ export const useBlogPost = (slug: string | undefined, allowScheduled = false) =>
         }
         setLoadingProgress(30);
 
-        // Stage 2: Fetching from database (30-70%)
-        // Note: We don't filter by status here to allow viewing draft articles via direct URL
-        const { data, error } = await supabase
-          .from('blog_posts')
-          .select('*')
-          .eq('slug', slug)
-          .maybeSingle();
+        // Stage 2: Check React Query cache first, then fetch from database (30-70%)
+        const cachedData = queryClient.getQueryData(['blog-post', slug]);
+        let data: any = cachedData || null;
+        let error: any = null;
+        
+        if (!cachedData) {
+          const result = await supabase
+            .from('blog_posts')
+            .select('*')
+            .eq('slug', slug)
+            .maybeSingle();
+          data = result.data;
+          error = result.error;
+        }
 
         setLoadingProgress(70);
 

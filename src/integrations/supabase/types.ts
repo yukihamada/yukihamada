@@ -377,6 +377,33 @@ export type Database = {
         }
         Relationships: []
       }
+      feature_requests: {
+        Row: {
+          blog_slug: string | null
+          content: string
+          created_at: string
+          id: string
+          source: string | null
+          visitor_id: string | null
+        }
+        Insert: {
+          blog_slug?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          source?: string | null
+          visitor_id?: string | null
+        }
+        Update: {
+          blog_slug?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          source?: string | null
+          visitor_id?: string | null
+        }
+        Relationships: []
+      }
       forum_comments: {
         Row: {
           blog_slug: string | null

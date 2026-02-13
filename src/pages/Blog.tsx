@@ -14,15 +14,18 @@ import SEO from '@/components/SEO';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useChat } from '@/contexts/ChatContext';
 import { useEffect, useState, useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useBlogPosts } from '@/hooks/useBlogPosts';
 import { Skeleton } from '@/components/ui/skeleton';
 import OptimizedImage from '@/components/OptimizedImage';
+import { prefetchBlogPosts } from '@/lib/prefetchBlogPost';
 import { calculateReadingTime, formatReadingTime } from '@/lib/readingTime';
 
 const Blog = () => {
   const { language } = useLanguage();
   const { setPageContext } = useChat();
+  const queryClient = useQueryClient();
   const { posts: blogPosts, isLoading } = useBlogPosts();
   const [viewCounts, setViewCounts] = useState<Record<string, number>>({});
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -82,6 +85,13 @@ const Blog = () => {
       isMounted = false;
     };
   }, [blogPosts]);
+
+  // Prefetch all blog post data for instant navigation
+  useEffect(() => {
+    if (blogPosts.length > 0) {
+      prefetchBlogPosts(queryClient, blogPosts.map(p => p.slug));
+    }
+  }, [blogPosts, queryClient]);
 
   const containerVariants = {
     hidden: { opacity: 0 },

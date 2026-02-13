@@ -192,8 +192,10 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 const getBrowserLanguage = (): Language => {
   if (typeof navigator === 'undefined') return 'ja';
   const browserLang = navigator.language || (navigator as any).userLanguage || '';
-  // Check if browser language starts with 'ja' (e.g., 'ja', 'ja-JP')
-  return browserLang.toLowerCase().startsWith('ja') ? 'ja' : 'en';
+  if (!browserLang) return 'ja';
+  // Japanese environment → Japanese, all other languages → English
+  if (browserLang.toLowerCase().startsWith('ja')) return 'ja';
+  return 'en';
 };
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {

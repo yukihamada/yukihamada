@@ -51,6 +51,12 @@ interface Translations {
       description: string;
       features: string[];
     };
+    stayflow: {
+      title: string;
+      subtitle: string;
+      description: string;
+      features: string[];
+    };
   };
   footer: {
     description: string;
@@ -58,6 +64,37 @@ interface Translations {
     contact: string;
     contactDesc: string;
     contactBtn: string;
+  };
+  cta: {
+    jitsuflow: {
+      title: string;
+      description: string;
+      features: string[];
+      badge: string;
+    };
+    chatweb: {
+      title: string;
+      description: string;
+      features: string[];
+      badge: string;
+    };
+    elio: {
+      title: string;
+      description: string;
+      features: string[];
+      badge: string;
+    };
+    stayflow: {
+      title: string;
+      description: string;
+      features: string[];
+      badge: string;
+    };
+    aiToolsSection: {
+      title: string;
+      subtitle: string;
+      description: string;
+    };
   };
 }
 
@@ -111,6 +148,12 @@ const translations: Record<Language, Translations> = {
         description: '"Safe, long-lasting, and strong" — lifelong jiu-jitsu for you.',
         features: ['Supervised by World Champions', '4K filming from above', 'Systematic curriculum'],
       },
+      stayflow: {
+        title: 'stayflowapp.com',
+        subtitle: 'Flow State Tracker',
+        description: 'Track and optimize your deep work sessions. Measure your flow state.',
+        features: ['Focus time tracking', 'Flow analytics', 'Productivity insights'],
+      },
     },
     footer: {
       description: 'CEO of Enabler Inc. As an Enabler filling life with only what\'s essential, operating three businesses in lifestyle, fintech, and edutech.',
@@ -118,6 +161,37 @@ const translations: Record<Language, Translations> = {
       contact: 'Contact',
       contactDesc: 'Feel free to reach out for project consultations or investment inquiries.',
       contactBtn: 'Get in Touch',
+    },
+    cta: {
+      jitsuflow: {
+        title: 'jitsuflow.app',
+        description: 'World-class Brazilian Jiu-Jitsu instruction, available anytime, anywhere. Learn from champions.',
+        features: ['4K instructional videos', 'Systematic curriculum', 'Champion-supervised training'],
+        badge: 'Hobby Project',
+      },
+      chatweb: {
+        title: 'chatweb.ai',
+        description: 'Multi-model AI chat platform. Access GPT-4, Claude, Gemini, and more in one place.',
+        features: ['Multiple AI models', 'Free tier available', 'API & integrations'],
+        badge: 'AI Tools',
+      },
+      elio: {
+        title: 'elio',
+        description: 'Native iOS AI agent. Privacy-first, works locally without cloud dependency.',
+        features: ['On-device processing', 'MCP integration', 'Available on App Store'],
+        badge: 'AI Tools',
+      },
+      stayflow: {
+        title: 'stayflowapp.com',
+        description: 'Flow state tracker for deep work. Measure and optimize your productivity.',
+        features: ['Focus time tracking', 'Flow state analytics', 'Productivity insights'],
+        badge: 'Productivity',
+      },
+      aiToolsSection: {
+        title: 'AI Tools',
+        subtitle: 'Empowering creators with AI',
+        description: 'Building AI-powered tools to enhance creativity and productivity.',
+      },
     },
   },
   ja: {
@@ -169,6 +243,12 @@ const translations: Record<Language, Translations> = {
         description: '「安全で、長く、そして強い」一生モノの柔術を、あなたに。',
         features: ['世界チャンピオン監修', '上面からの4K撮影', '体系的なカリキュラム'],
       },
+      stayflow: {
+        title: 'stayflowapp.com',
+        subtitle: 'フロー状態トラッカー',
+        description: 'ディープワークセッションを追跡・最適化。フロー状態を計測。',
+        features: ['集中時間の追跡', 'フロー分析', '生産性インサイト'],
+      },
     },
     footer: {
       description: '株式会社イネブラ 代表取締役CEO。人生を「本質」だけで満たすEnablerとして、ライフスタイル・フィンテック・エデュテックの3つの事業を展開しています。',
@@ -176,6 +256,37 @@ const translations: Record<Language, Translations> = {
       contact: 'お問い合わせ',
       contactDesc: 'プロジェクトの相談や投資のお問い合わせはお気軽にどうぞ。',
       contactBtn: '連絡する',
+    },
+    cta: {
+      jitsuflow: {
+        title: 'jitsuflow.app',
+        description: '世界基準のブラジリアン柔術指導を、いつでもどこでも。チャンピオンから学ぶ。',
+        features: ['4K技術動画', '体系的カリキュラム', 'チャンピオン監修'],
+        badge: '趣味プロジェクト',
+      },
+      chatweb: {
+        title: 'chatweb.ai',
+        description: 'マルチモデル対応AIチャットプラットフォーム。GPT-4、Claude、Geminiなど、すべてを一箇所で。',
+        features: ['複数のAIモデル対応', '無料プランあり', 'API・連携機能'],
+        badge: 'AIツール',
+      },
+      elio: {
+        title: 'elio',
+        description: 'iOSネイティブのローカルAIエージェント。プライバシー重視、クラウド不要。',
+        features: ['オンデバイス処理', 'MCP統合', 'App Store配信中'],
+        badge: 'AIツール',
+      },
+      stayflow: {
+        title: 'stayflowapp.com',
+        description: 'ディープワークのためのフロー状態トラッカー。生産性を計測・最適化。',
+        features: ['集中時間の追跡', 'フロー状態の分析', '生産性インサイト'],
+        badge: '生産性向上',
+      },
+      aiToolsSection: {
+        title: 'AIツール',
+        subtitle: 'クリエイターをAIで支援',
+        description: '創造性と生産性を高めるAI駆動ツールを開発しています。',
+      },
     },
   },
 };

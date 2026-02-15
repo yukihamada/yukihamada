@@ -1,5 +1,5 @@
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
-import { Globe, Users, Zap, Home, Banknote, Award, ArrowRight } from 'lucide-react';
+import { Globe, Users, Zap, Home, Banknote, Award, ArrowRight, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import AnimatedSection from '@/components/AnimatedSection';
 import MagneticButton from '@/components/MagneticButton';
@@ -131,6 +131,15 @@ const EnablerSection = () => {
       href: 'https://jiuflow.art',
       color: 'from-violet-500 to-purple-600',
     },
+    {
+      icon: TrendingUp,
+      title: t.services.stayflow.title,
+      subtitle: t.services.stayflow.subtitle,
+      description: t.services.stayflow.description,
+      features: t.services.stayflow.features,
+      href: 'https://stayflowapp.com',
+      color: 'from-blue-500 to-indigo-600',
+    },
   ];
 
   return (
@@ -236,8 +245,8 @@ const EnablerSection = () => {
           </div>
         </AnimatedSection>
 
-        <motion.div 
-          className="grid md:grid-cols-3 gap-6"
+        <motion.div
+          className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"

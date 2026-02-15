@@ -5,6 +5,8 @@ import EnablerSection from '@/components/EnablerSection';
 import TimelineSection from '@/components/TimelineSection';
 import InvestmentsSection from '@/components/InvestmentsSection';
 import BlogSection from '@/components/BlogSection';
+import ProjectsSection from '@/components/ProjectsSection';
+import AIToolsSection from '@/components/AIToolsSection';
 import HobbiesSection from '@/components/HobbiesSection';
 import Footer from '@/components/Footer';
 import SEO from '@/components/SEO';
@@ -26,10 +28,12 @@ const Index = () => {
       <Navigation />
       <main className="relative z-10">
         <HeroSection onMusicPlay={handleMusicPlay} />
+        <ProjectsSection />
         <EnablerSection />
         <TimelineSection />
         <InvestmentsSection />
         <BlogSection />
+        <AIToolsSection />
         <HobbiesSection />
       </main>
       <Footer />

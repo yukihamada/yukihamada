@@ -26,29 +26,33 @@ interface BlogPost {
 }
 
 // 画像URLの存在確認（HEAD リクエストで疎通チェック）
-async function checkImageExists(imageUrl: string): Promise<boolean> {
+// オリジン（lovable.app）に直接アクセスして循環参照を避ける
+async function checkImageExists(imageUrl: string, originUrl: string): Promise<boolean> {
   try {
+    // yukihamada.jp の画像URLをオリジンURLに変換
+    const checkUrl = imageUrl.replace('https://yukihamada.jp', originUrl);
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 3000); // 3秒タイムアウト
-    
-    const response = await fetch(imageUrl, {
+
+    const response = await fetch(checkUrl, {
       method: 'HEAD',
       signal: controller.signal,
     });
-    
+
     clearTimeout(timeoutId);
-    
+
     if (!response.ok) {
-      console.log(`[OGP] Image check failed: ${imageUrl} - status ${response.status}`);
+      console.log(`[OGP] Image check failed: ${checkUrl} - status ${response.status}`);
       return false;
     }
-    
+
     const contentType = response.headers.get('content-type') || '';
     if (!contentType.startsWith('image/')) {
-      console.log(`[OGP] Image check failed: ${imageUrl} - invalid content-type: ${contentType}`);
+      console.log(`[OGP] Image check failed: ${checkUrl} - invalid content-type: ${contentType}`);
       return false;
     }
-    
+
     return true;
   } catch (error) {
     console.log(`[OGP] Image check error: ${imageUrl} - ${error}`);
@@ -475,7 +479,7 @@ export default {
         
         // 画像が設定されている場合は存在チェック
         if (candidateImageUrl) {
-          const imageExists = await checkImageExists(candidateImageUrl);
+          const imageExists = await checkImageExists(candidateImageUrl, env.ORIGIN_URL);
           if (imageExists) {
             imageUrl = candidateImageUrl;
             console.log(`[OGP Worker] Image exists: ${candidateImageUrl}`);

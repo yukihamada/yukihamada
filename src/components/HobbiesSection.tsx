@@ -1,6 +1,8 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
-import { Dumbbell, Spade, Guitar, ExternalLink, Heart } from 'lucide-react';
+import { Dumbbell, Spade, Guitar, ExternalLink, Heart, GraduationCap } from 'lucide-react';
+import ServiceCTACard from '@/components/ServiceCTACard';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const hobbies = [
   {
@@ -43,6 +45,7 @@ const HobbiesSection = () => {
   const [clickedHobby, setClickedHobby] = useState<number | null>(null);
   const containerRef = useRef(null);
   const isInView = useInView(containerRef, { once: true });
+  const { t } = useLanguage();
 
   return (
     <section id="hobbies" className="section-padding bg-background relative overflow-hidden">
@@ -268,6 +271,45 @@ const HobbiesSection = () => {
             );
           })}
         </div>
+
+        {/* Jitsuflow CTA */}
+        <motion.div
+          className="mt-16 max-w-3xl mx-auto"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+        >
+          <div className="text-center mb-8">
+            <motion.p
+              className="text-primary text-sm font-medium tracking-widest uppercase mb-2"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+            >
+              Related Project
+            </motion.p>
+            <motion.h3
+              className="text-2xl md:text-3xl font-bold text-foreground"
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+            >
+              柔術を<span className="gradient-text">もっと学ぶ</span>
+            </motion.h3>
+          </div>
+
+          <ServiceCTACard
+            title={{ ja: t.cta.jitsuflow.title, en: t.cta.jitsuflow.title }}
+            description={{ ja: t.cta.jitsuflow.description, en: t.cta.jitsuflow.description }}
+            features={{ ja: t.cta.jitsuflow.features, en: t.cta.jitsuflow.features }}
+            href="https://jitsuflow.app"
+            icon={GraduationCap}
+            color="from-violet-500 to-purple-600"
+            badge={{ ja: t.cta.jitsuflow.badge, en: t.cta.jitsuflow.badge }}
+          />
+        </motion.div>
       </div>
     </section>
   );

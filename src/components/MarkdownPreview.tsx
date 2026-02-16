@@ -13,8 +13,10 @@ const MarkdownPreview = ({ content, title, excerpt }: MarkdownPreviewProps) => {
         .replace(/^## (.+)$/gm, '<h2 class="text-xl md:text-2xl font-bold mt-8 mb-4 text-foreground border-l-4 border-primary pl-4">$1</h2>')
         .replace(/^### (.+)$/gm, '<h3 class="text-lg md:text-xl font-semibold mt-6 mb-3 text-foreground">$1</h3>')
         .replace(/\|(.+)\|/g, (match, _, offset, fullStr) => {
-          const cells = match.split('|').filter(c => c.trim());
-          if (cells.every(c => c.trim().match(/^[-:]+$/))) return '';
+          const rawCells = match.split('|');
+          // Remove only the first and last empty entries from split, keep inner empty cells
+          const cells = rawCells.slice(1, rawCells.length - 1);
+          if (cells.length > 0 && cells.every(c => c.trim().match(/^[-:]+$/))) return '';
           const beforeThis = fullStr.substring(0, offset);
           const tableStarted = beforeThis.match(/\|[^|]+\|[^|]*$/);
           const isHeader = !tableStarted || beforeThis.endsWith('\n\n') || beforeThis.endsWith('---\n');

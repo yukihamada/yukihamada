@@ -16,7 +16,8 @@ interface ServiceCTACardProps {
     en: string[];
   };
   href: string;
-  icon: LucideIcon;
+  icon?: LucideIcon;
+  logoSrc?: string;
   color: string;
   badge?: {
     ja: string;
@@ -30,6 +31,7 @@ const ServiceCTACard = ({
   features,
   href,
   icon: Icon,
+  logoSrc,
   color,
   badge,
 }: ServiceCTACardProps) => {
@@ -52,8 +54,12 @@ const ServiceCTACard = ({
         </div>
       )}
 
-      <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center mb-4 shadow-lg`}>
-        <Icon className="h-7 w-7 text-white" />
+      <div className={`w-14 h-14 rounded-xl ${logoSrc ? 'bg-white/10' : `bg-gradient-to-br ${color}`} flex items-center justify-center mb-4 shadow-lg overflow-hidden`}>
+        {logoSrc ? (
+          <img src={logoSrc} alt={title[language]} className="w-full h-full object-cover" />
+        ) : Icon ? (
+          <Icon className="h-7 w-7 text-white" />
+        ) : null}
       </div>
 
       <h3 className="text-xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors">

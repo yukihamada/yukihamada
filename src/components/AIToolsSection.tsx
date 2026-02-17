@@ -90,7 +90,7 @@ const AIToolsSection = () => {
             description={{ ja: t.cta.chatweb.description, en: t.cta.chatweb.description }}
             features={{ ja: t.cta.chatweb.features, en: t.cta.chatweb.features }}
             href="https://chatweb.ai"
-            icon={Bot}
+            logoSrc="/images/chatweb-icon.svg"
             color="from-blue-500 to-cyan-600"
             badge={{ ja: t.cta.chatweb.badge, en: t.cta.chatweb.badge }}
           />
@@ -100,7 +100,7 @@ const AIToolsSection = () => {
             description={{ ja: t.cta.elio.description, en: t.cta.elio.description }}
             features={{ ja: t.cta.elio.features, en: t.cta.elio.features }}
             href="https://elio.love"
-            icon={Smartphone}
+            logoSrc="/images/elio-app-icon.png"
             color="from-purple-500 to-pink-600"
             badge={{ ja: t.cta.elio.badge, en: t.cta.elio.badge }}
           />

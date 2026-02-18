@@ -165,15 +165,20 @@ const processContent = (rawContent: string, lang: string): string => {
       const idAttr = hasId ? '' : ` id="${id}"`;
       return `<h3${attrs}${idAttr} class="blog-heading blog-heading-h3 group">${text}${generateAnchorLink(id)}</h3>`;
     })
-    .replace(/^## (.+)$/gm, (_, heading) => {
+    .replace(/^#### (.+)$/gm, (_, heading) => {
       const cleanHeading = heading.replace(/\*\*/g, '').trim();
       const id = cleanHeading.toLowerCase().replace(/[^\w\s\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/g, '').replace(/\s+/g, '-').slice(0, 50);
-      return `<h2 id="${id}" class="blog-heading blog-heading-h2 group">${heading}${generateAnchorLink(id)}</h2>`;
+      return `<h4 id="${id}" class="blog-heading blog-heading-h4 group">${heading}</h4>`;
     })
     .replace(/^### (.+)$/gm, (_, heading) => {
       const cleanHeading = heading.replace(/\*\*/g, '').trim();
       const id = cleanHeading.toLowerCase().replace(/[^\w\s\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/g, '').replace(/\s+/g, '-').slice(0, 50);
       return `<h3 id="${id}" class="blog-heading blog-heading-h3 group">${heading}${generateAnchorLink(id)}</h3>`;
+    })
+    .replace(/^## (.+)$/gm, (_, heading) => {
+      const cleanHeading = heading.replace(/\*\*/g, '').trim();
+      const id = cleanHeading.toLowerCase().replace(/[^\w\s\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/g, '').replace(/\s+/g, '-').slice(0, 50);
+      return `<h2 id="${id}" class="blog-heading blog-heading-h2 group">${heading}${generateAnchorLink(id)}</h2>`;
     });
   
   // Process markdown tables properly (handle multiline)

@@ -10,34 +10,33 @@
 [![chatweb.ai](https://img.shields.io/badge/chatweb.ai-6C63FF?style=for-the-badge&logo=probot&logoColor=white)](https://chatweb.ai)
 [![X](https://img.shields.io/badge/@yukihamada-000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/yukihamada)
 
-</div>
-
 <br>
 
-<img src="https://raw.githubusercontent.com/yukihamada/yukihamada/output/github-snake-dark.svg" width="100%" alt="contribution snake" />
+<img src="https://skillicons.dev/icons?i=rust,swift,ts,go,python,aws,dynamodb,docker,cloudflare&perline=9" />
+
+</div>
 
 ---
-
-<table>
-<tr>
-<td width="50%" valign="top">
 
 ### What I Ship
 
 **[chatweb.ai](https://chatweb.ai)** &mdash; AI Agent Platform
 <br>Multi-model Rust agent. 14+ channels. MCP tools. Agentic loops. Real-time SSE streaming.
+<br>`Rust` `AWS Lambda` `DynamoDB` `MCP` `SSE`
 
 **[elio](https://github.com/yukihamada/elio)** &mdash; Local AI for iOS
 <br>On-device agent with MCP protocol. No cloud. Your data stays yours.
-
-**[JitsuFlow](https://jitsuflow.app)** &mdash; BJJ Dojo Platform
-<br>1,300+ martial artists. Scheduling, attendance, community.
+<br>`Swift` `MCP` `Core ML`
 
 **[nanobot](https://github.com/yukihamada/nanobot)** &mdash; The Engine
 <br>Powers chatweb.ai. Rust + Lambda + DynamoDB. Sub-100ms cold starts.
+<br>`Rust` `Axum` `ARM64`
 
-</td>
-<td width="50%" valign="top">
+**[JitsuFlow](https://jitsuflow.app)** &mdash; BJJ Dojo Platform
+<br>1,300+ martial artists. Scheduling, attendance, community.
+<br>`Dart` `Flutter` `Firebase`
+
+---
 
 ### Stack
 
@@ -49,37 +48,18 @@ ai          = ["Anthropic", "OpenAI", "MCP", "Local LLM"]
 philosophy  = "Ship daily. Measure everything. Stay paranoid."
 ```
 
-<br>
-
-<p align="center">
-<img src="https://skillicons.dev/icons?i=rust,swift,ts,go,python,aws,dynamodb,docker,cloudflare&perline=5" />
-</p>
-
-</td>
-</tr>
-</table>
-
 ---
 
 <div align="center">
 
 ### Activity
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://github-readme-stats.vercel.app/api?username=yukihamada&show_icons=true&theme=tokyonight&hide_border=true&count_private=true&bg_color=0d1117" />
-  <img src="https://github-readme-stats.vercel.app/api?username=yukihamada&show_icons=true&theme=default&hide_border=true&count_private=true" height="165" />
-</picture>
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://github-readme-stats.vercel.app/api/top-langs/?username=yukihamada&layout=compact&theme=tokyonight&hide_border=true&hide=html,css,hack&bg_color=0d1117" />
-  <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=yukihamada&layout=compact&theme=default&hide_border=true&hide=html,css,hack" height="165" />
-</picture>
+<img src="https://github-readme-stats.vercel.app/api?username=yukihamada&show_icons=true&theme=tokyonight&hide_border=true&count_private=true&bg_color=0d1117" height="165" />
+<img src="https://github-readme-stats.vercel.app/api/top-langs/?username=yukihamada&layout=compact&theme=tokyonight&hide_border=true&hide=html,css,hack&bg_color=0d1117" height="165" />
 
 <br><br>
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://github-readme-streak-stats.herokuapp.com/?user=yukihamada&theme=tokyonight&hide_border=true&background=0d1117" />
-  <img src="https://github-readme-streak-stats.herokuapp.com/?user=yukihamada&theme=default&hide_border=true" />
-</picture>
+<img src="https://github-readme-streak-stats.herokuapp.com/?user=yukihamada&theme=tokyonight&hide_border=true&background=0d1117" />
 
 <br><br>
 
@@ -115,8 +95,6 @@ philosophy  = "Ship daily. Measure everything. Stay paranoid."
 東京 → 世界。毎日出荷。止まらない。
 Tokyo → The World. Ship daily. Never stop.
 ```
-
-<br>
 
 <a href="https://enabler.co.jp">
   <img src="https://img.shields.io/badge/Enabler_Inc.-Founder_&_CEO-6C63FF?style=flat-square" />

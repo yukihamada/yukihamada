@@ -1,79 +1,129 @@
-# Hi, I'm Yuki Hamada
+<div align="center">
 
-**Founder & CEO at [Enabler](https://enabler.co.jp) | Tokyo, Japan**
+# `> yuki.hamada_`
 
-I build products that make AI accessible to everyone. From multi-channel AI agent platforms to local-first iOS AI apps, I focus on shipping fast and iterating with real users.
+[![Typing SVG](https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=600&size=22&pause=1000&color=6C63FF&center=true&vCenter=true&random=false&width=600&lines=Building+AI+agents+in+Rust+%F0%9F%A6%80;Shipping+to+14%2B+channels+worldwide+%F0%9F%8C%8F;Voice-first+%7C+Local-first+%7C+Privacy-first+%F0%9F%94%92;Tokyo+%E2%86%92+The+World+%F0%9F%97%BC)](https://chatweb.ai)
 
-> *AI をすべての人に届けるプロダクトを作っています。*
+<br>
 
----
+[![Website](https://img.shields.io/badge/yukihamada.jp-000?style=for-the-badge&logo=safari&logoColor=white)](https://yukihamada.jp)
+[![chatweb.ai](https://img.shields.io/badge/chatweb.ai-6C63FF?style=for-the-badge&logo=probot&logoColor=white)](https://chatweb.ai)
+[![X](https://img.shields.io/badge/@yukihamada-000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/yukihamada)
 
-## What I'm Building
+</div>
 
-### [chatweb.ai](https://chatweb.ai) &mdash; AI Agent Platform
-Multi-model AI agent platform built in **Rust**. Connects to 14+ channels (LINE, Telegram, Slack, Web, etc.) with MCP tool integration, agentic workflows, and real-time streaming.
-`Rust` `AWS Lambda` `DynamoDB` `MCP` `SSE`
+<br>
 
-### [elio](https://github.com/yukihamada/elio) &mdash; Local AI Agent for iOS
-On-device AI agent for iOS with MCP protocol support. Privacy-first, runs locally without cloud dependency.
-`Swift` `MCP` `Core ML`
-
-### [mcp-iphone](https://github.com/yukihamada/mcp-iphone) &mdash; MCP for iOS
-Model Context Protocol integration for iOS with LLM capabilities. My most-starred project.
-`Swift` `MCP`
-
-### [JitsuFlow](https://jitsuflow.app) &mdash; BJJ Dojo Management
-Brazilian Jiu-Jitsu dojo management platform serving 1,300+ users. Scheduling, attendance tracking, and member management.
-`Dart` `Flutter` `Firebase`
+<img src="https://raw.githubusercontent.com/yukihamada/yukihamada/output/github-snake-dark.svg" width="100%" alt="contribution snake" />
 
 ---
 
-## Tech Stack
+<table>
+<tr>
+<td width="50%" valign="top">
 
+### What I Ship
+
+**[chatweb.ai](https://chatweb.ai)** &mdash; AI Agent Platform
+<br>Multi-model Rust agent. 14+ channels. MCP tools. Agentic loops. Real-time SSE streaming.
+
+**[elio](https://github.com/yukihamada/elio)** &mdash; Local AI for iOS
+<br>On-device agent with MCP protocol. No cloud. Your data stays yours.
+
+**[JitsuFlow](https://jitsuflow.app)** &mdash; BJJ Dojo Platform
+<br>1,300+ martial artists. Scheduling, attendance, community.
+
+**[nanobot](https://github.com/yukihamada/nanobot)** &mdash; The Engine
+<br>Powers chatweb.ai. Rust + Lambda + DynamoDB. Sub-100ms cold starts.
+
+</td>
+<td width="50%" valign="top">
+
+### Stack
+
+```ruby
+languages   = ["Rust", "Swift", "TypeScript", "Go", "Python"]
+infra       = ["AWS Lambda", "DynamoDB", "Fly.io", "Cloudflare"]
+mobile      = ["SwiftUI", "Core ML", "Flutter"]
+ai          = ["Anthropic", "OpenAI", "MCP", "Local LLM"]
+philosophy  = "Ship daily. Measure everything. Stay paranoid."
 ```
-Languages     Rust  TypeScript  Swift  Python  Go
-Infrastructure  AWS Lambda  DynamoDB  Fly.io  Cloudflare
-Mobile        SwiftUI  Flutter
-AI/ML         Anthropic  OpenAI  MCP  Local LLM (candle)
-```
 
----
+<br>
 
-## GitHub Stats
-
-<p>
-  <img src="https://github-readme-stats.vercel.app/api?username=yukihamada&show_icons=true&theme=default&hide_border=true&count_private=true" alt="GitHub Stats" height="165" />
-  <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=yukihamada&layout=compact&theme=default&hide_border=true&hide=html,css,hack" alt="Top Languages" height="165" />
+<p align="center">
+<img src="https://skillicons.dev/icons?i=rust,swift,ts,go,python,aws,dynamodb,docker,cloudflare&perline=5" />
 </p>
 
-<p>
-  <img src="https://github-readme-streak-stats.herokuapp.com/?user=yukihamada&theme=default&hide_border=true" alt="GitHub Streak" />
-</p>
+</td>
+</tr>
+</table>
 
 ---
 
-## Notable Projects
+<div align="center">
 
-| Project | Description | Tech |
-|---------|-------------|------|
-| [nanobot](https://github.com/yukihamada/nanobot) | AI Agent Platform &mdash; multi-model, MCP, 14+ channels | Rust |
-| [mcp-iphone](https://github.com/yukihamada/mcp-iphone) | MCP integration for iOS | Swift |
-| [elio](https://github.com/yukihamada/elio) | Local AI Agent for iOS | Swift |
-| [jitsuflow](https://github.com/yukihamada/jitsuflow) | BJJ dojo management (1.3k+ users) | Dart |
-| [voiceGPTweb](https://github.com/yukihamada/voiceGPTweb) | Voice-powered GPT interface | PHP |
-| [groq-cli](https://github.com/yukihamada/groq-cli) | CLI tool for Groq API | TypeScript |
-| [flyagi](https://github.com/yukihamada/flyagi) | AI agent framework on Fly.io | Go |
-| [godseye](https://github.com/yukihamada/godseye) | Monitoring & observability tool | Python |
+### Activity
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://github-readme-stats.vercel.app/api?username=yukihamada&show_icons=true&theme=tokyonight&hide_border=true&count_private=true&bg_color=0d1117" />
+  <img src="https://github-readme-stats.vercel.app/api?username=yukihamada&show_icons=true&theme=default&hide_border=true&count_private=true" height="165" />
+</picture>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://github-readme-stats.vercel.app/api/top-langs/?username=yukihamada&layout=compact&theme=tokyonight&hide_border=true&hide=html,css,hack&bg_color=0d1117" />
+  <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=yukihamada&layout=compact&theme=default&hide_border=true&hide=html,css,hack" height="165" />
+</picture>
+
+<br><br>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://github-readme-streak-stats.herokuapp.com/?user=yukihamada&theme=tokyonight&hide_border=true&background=0d1117" />
+  <img src="https://github-readme-streak-stats.herokuapp.com/?user=yukihamada&theme=default&hide_border=true" />
+</picture>
+
+<br><br>
+
+<img src="https://github-readme-activity-graph.vercel.app/graph?username=yukihamada&theme=tokyo-night&hide_border=true&area=true" width="95%" />
+
+</div>
 
 ---
 
-## Links
+<details>
+<summary><b>All Projects</b></summary>
+<br>
 
-- **Web**: [yukihamada.jp](https://yukihamada.jp)
-- **AI Platform**: [chatweb.ai](https://chatweb.ai)
-- **BJJ App**: [jitsuflow.app](https://jitsuflow.app)
-- **Company**: [Enabler Inc.](https://enabler.co.jp)
+| Project | What it does | Tech |
+|:--------|:------------|:-----|
+| **[nanobot](https://github.com/yukihamada/nanobot)** | AI Agent Platform &mdash; multi-model, MCP, 14+ channels | `Rust` |
+| **[elio](https://github.com/yukihamada/elio)** | Local AI Agent for iOS | `Swift` |
+| **[mcp-iphone](https://github.com/yukihamada/mcp-iphone)** | MCP protocol for iOS | `Swift` |
+| **[jitsuflow](https://github.com/yukihamada/jitsuflow)** | BJJ dojo management &mdash; 1.3k+ users | `Dart` |
+| **[flyagi](https://github.com/yukihamada/flyagi)** | AI agent framework on Fly.io | `Go` |
+| **[opensonic](https://github.com/yukihamada/opensonic)** | Synchronized network audio | `C++` |
+| **[groq-cli](https://github.com/yukihamada/groq-cli)** | CLI for Groq API | `TypeScript` |
+| **[godseye](https://github.com/yukihamada/godseye)** | Monitoring & observability | `Python` |
+| **[voiceGPTweb](https://github.com/yukihamada/voiceGPTweb)** | Voice-powered GPT interface | `PHP` |
+
+</details>
 
 ---
 
-<sub>Tokyo-based. Building with Rust, Swift, and TypeScript. Always shipping. / 東京拠点。AI とプロダクトを作り続けています。</sub>
+<div align="center">
+
+```
+東京 → 世界。毎日出荷。止まらない。
+Tokyo → The World. Ship daily. Never stop.
+```
+
+<br>
+
+<a href="https://enabler.co.jp">
+  <img src="https://img.shields.io/badge/Enabler_Inc.-Founder_&_CEO-6C63FF?style=flat-square" />
+</a>
+
+<br><br>
+
+<img src="https://komarev.com/ghpvc/?username=yukihamada&style=flat-square&color=6C63FF" alt="Profile views" />
+
+</div>

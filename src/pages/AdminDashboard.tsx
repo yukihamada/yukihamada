@@ -552,6 +552,52 @@ const AdminDashboard = () => {
   };
 
   // Chat functions
+  const downloadAllChats = async () => {
+    toast.info('チャットデータをダウンロード中...');
+    try {
+      const { data: allConvs, error: convError } = await supabase
+        .from('chat_conversations')
+        .select('*')
+        .order('created_at', { ascending: true });
+      if (convError) throw convError;
+
+      const { data: allMsgs, error: msgError } = await supabase
+        .from('chat_messages')
+        .select('*')
+        .order('created_at', { ascending: true });
+      if (msgError) throw msgError;
+
+      // Build CSV
+      const rows: string[] = [
+        ['conversation_id', 'visitor_id', 'user_id', 'conv_created_at', 'message_id', 'role', 'content', 'msg_created_at'].join('\t')
+      ];
+
+      for (const conv of (allConvs || [])) {
+        const convMsgs = (allMsgs || []).filter(m => m.conversation_id === conv.id);
+        if (convMsgs.length === 0) {
+          rows.push([conv.id, conv.visitor_id, conv.user_id || '', conv.created_at, '', '', '', ''].join('\t'));
+        } else {
+          for (const msg of convMsgs) {
+            const cleanContent = msg.content.replace(/[\t\n\r]/g, ' ');
+            rows.push([conv.id, conv.visitor_id, conv.user_id || '', conv.created_at, msg.id, msg.role, cleanContent, msg.created_at].join('\t'));
+          }
+        }
+      }
+
+      const blob = new Blob([rows.join('\n')], { type: 'text/tab-separated-values;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `chat-export-${format(new Date(), 'yyyy-MM-dd-HHmm')}.tsv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success('ダウンロード完了');
+    } catch (e) {
+      console.error('Download error:', e);
+      toast.error('ダウンロードに失敗しました');
+    }
+  };
+
   const fetchConversations = async () => {
     const { data: convData, error } = await supabase
       .from('chat_conversations')
@@ -2083,6 +2129,9 @@ const AdminDashboard = () => {
                   </Select>
                   <Button variant="outline" onClick={fetchConversations}>
                     <RefreshCw className="mr-2 h-4 w-4" />更新
+                  </Button>
+                  <Button variant="outline" onClick={downloadAllChats}>
+                    <ArrowLeft className="mr-2 h-4 w-4 rotate-[-90deg]" />全DL
                   </Button>
                 </div>
               </div>
